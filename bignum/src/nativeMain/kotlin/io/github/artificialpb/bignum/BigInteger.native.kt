@@ -60,6 +60,7 @@ actual class BigInteger internal constructor(
     }
 
     actual fun modInverse(modulus: BigInteger): BigInteger {
+        if (modulus.signum() <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // JVM: x.modInverse(1) == 0 for any x
         if (modulus == BigIntegers.ONE) return BigIntegers.ZERO
         val result = allocMp()
@@ -438,8 +439,17 @@ internal fun validateAndSliceBytes(bytes: ByteArray, off: Int, len: Int): CPoint
 
 @OptIn(ExperimentalForeignApi::class)
 internal fun parseTomMath(value: String, radix: Int): CPointer<mp_int> {
-    // JVM accepts leading '+'; LibTomMath does not
-    val normalized = if (value.startsWith("+")) value.substring(1) else value
+    // JVM accepts a single leading '+'; LibTomMath does not
+    // Reject malformed inputs like "+-1" or "+"
+    val normalized = if (value.startsWith("+")) {
+        val rest = value.substring(1)
+        if (rest.isEmpty() || rest.startsWith("-") || rest.startsWith("+")) {
+            throw NumberFormatException("Invalid BigInteger string: $value")
+        }
+        rest
+    } else {
+        value
+    }
     if (normalized.isEmpty()) throw NumberFormatException("Zero length BigInteger")
     val mp = allocMp()
     if (mp_read_radix(mp, normalized, radix) != MP_OKAY) {

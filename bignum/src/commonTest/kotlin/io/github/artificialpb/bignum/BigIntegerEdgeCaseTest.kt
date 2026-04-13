@@ -498,6 +498,22 @@ class ErrorHandlingTest : FunSpec({
         }
     }
 
+    test("malformed leading plus throws NumberFormatException") {
+        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("+-1") }
+        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("+") }
+        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("++1") }
+        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("+-FF", 16) }
+    }
+
+    test("modInverse with non-positive modulus throws ArithmeticException") {
+        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+            BigInteger("3").modInverse(BigIntegers.ZERO)
+        }
+        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+            BigInteger("3").modInverse(BigInteger("-5"))
+        }
+    }
+
     test("empty byte array throws") {
         io.kotest.assertions.throwables.shouldThrow<NumberFormatException> {
             BigInteger(byteArrayOf())
