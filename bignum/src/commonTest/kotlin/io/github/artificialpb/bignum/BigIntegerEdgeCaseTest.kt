@@ -539,6 +539,12 @@ class ErrorHandlingTest : FunSpec({
         }
     }
 
+    test("modPow with modulus == 1 always returns 0") {
+        BigInteger("2").modPow(BigInteger("10"), BigIntegers.ONE) shouldBe BigIntegers.ZERO
+        BigInteger("2").modPow(BigInteger("-1"), BigIntegers.ONE) shouldBe BigIntegers.ZERO
+        BigInteger("0").modPow(BigInteger("0"), BigIntegers.ONE) shouldBe BigIntegers.ZERO
+    }
+
     test("sqrt of negative throws ArithmeticException") {
         io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
             BigInteger("-1").sqrt()

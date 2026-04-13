@@ -90,6 +90,10 @@ class BigIntegerConstructionTest : FunSpec({
             StringParseCase("-123456789012345678901234567890", "-123456789012345678901234567890"),
             StringParseCase("18446744073709551616", "18446744073709551616"),
             StringParseCase("340282366920938463463374607431768211456", "340282366920938463463374607431768211456"),
+            StringParseCase("+0", "0"),
+            StringParseCase("+1", "1"),
+            StringParseCase("+42", "42"),
+            StringParseCase("+999999999999999999", "999999999999999999"),
         ) { (input, expected) ->
             BigInteger(input).toString() shouldBe expected
         }
@@ -110,6 +114,8 @@ class BigIntegerConstructionTest : FunSpec({
             RadixParseCase("10", 8, "8"),
             RadixParseCase("10", 10, "10"),
             RadixParseCase("10", 16, "16"),
+            RadixParseCase("+FF", 16, "255"),
+            RadixParseCase("+111", 2, "7"),
         ) { (input, radix, expected) ->
             BigInteger(input, radix) shouldBe bi(expected)
         }
@@ -318,6 +324,9 @@ class BigIntegerArithmeticTest : FunSpec({
             BinaryOpCase("7", "13", "2"),
             BinaryOpCase("2", "17", "9"),
             BinaryOpCase("10", "7", "5"),
+            BinaryOpCase("3", "1", "0"),     // x.modInverse(1) == 0
+            BinaryOpCase("0", "1", "0"),
+            BinaryOpCase("100", "1", "0"),
         ) { (a, m, expected) ->
             bi(a).modInverse(bi(m)) shouldBe bi(expected)
         }

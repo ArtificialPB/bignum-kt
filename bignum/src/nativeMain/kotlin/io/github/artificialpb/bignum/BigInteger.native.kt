@@ -42,6 +42,8 @@ actual class BigInteger internal constructor(
 
     actual fun modPow(exponent: BigInteger, modulus: BigInteger): BigInteger {
         if (modulus.signum() <= 0) throw ArithmeticException("BigInteger: modulus not positive")
+        // x^e mod 1 == 0 for all x, e
+        if (modulus == BigIntegers.ONE) return BigIntegers.ZERO
         if (exponent.signum() < 0) {
             // JVM semantics: modPow(negExp, mod) = modInverse(this, mod)^|negExp| mod mod
             val inverse = modInverse(modulus)
@@ -58,6 +60,8 @@ actual class BigInteger internal constructor(
     }
 
     actual fun modInverse(modulus: BigInteger): BigInteger {
+        // JVM: x.modInverse(1) == 0 for any x
+        if (modulus == BigIntegers.ONE) return BigIntegers.ZERO
         val result = allocMp()
         val err = mp_invmod(handle, modulus.handle, result)
         if (err != MP_OKAY) {
@@ -123,7 +127,7 @@ actual class BigInteger internal constructor(
             if (n == Int.MIN_VALUE) {
                 // shiftLeft(MIN_VALUE) = shiftRight(2^31): arithmetic right shift by huge amount
                 // positive/zero → 0, negative → -1
-                return if (signum() < 0) BigIntegers.of(-1L) else BigIntegers.ZERO.copy()
+                return if (signum() < 0) BigIntegers.of(-1L) else BigIntegers.ZERO
             }
             return shiftRight(-n)
         }
@@ -136,7 +140,7 @@ actual class BigInteger internal constructor(
         if (n < 0) {
             if (n == Int.MIN_VALUE) {
                 // shiftRight(MIN_VALUE) = shiftLeft(2^31): only zero survives
-                if (signum() == 0) return BigIntegers.ZERO.copy()
+                if (signum() == 0) return BigIntegers.ZERO
                 throw ArithmeticException("Shift amount too large")
             }
             return shiftLeft(-n)
@@ -171,13 +175,13 @@ actual class BigInteger internal constructor(
 
     actual fun setBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
-        if (testBit(n)) return this.copy()
+        if (testBit(n)) return this
         return this.flipBit(n)
     }
 
     actual fun clearBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
-        if (!testBit(n)) return this.copy()
+        if (!testBit(n)) return this
         return this.flipBit(n)
     }
 
@@ -344,10 +348,10 @@ actual class BigInteger internal constructor(
     // Comparison
 
     actual fun min(other: BigInteger): BigInteger =
-        if (compareTo(other) <= 0) this.copy() else other.copy()
+        if (compareTo(other) <= 0) this else other
 
     actual fun max(other: BigInteger): BigInteger =
-        if (compareTo(other) >= 0) this.copy() else other.copy()
+        if (compareTo(other) >= 0) this else other
 
     actual override fun compareTo(other: BigInteger): Int =
         mp_cmp(handle, other.handle)
@@ -366,9 +370,7 @@ actual class BigInteger internal constructor(
         if (handle.pointed.used == 0) return 0
         val bytes = toByteArray()
         // Strip sign byte if present to get magnitude
-        val start = if (signum() >= 0 && bytes[0] == 0.toByte() && bytes.size > 1) 1 else {
-            if (signum() < 0) 0 else 0
-        }
+        val start = if (signum() >= 0 && bytes[0] == 0.toByte() && bytes.size > 1) 1 else 0
         // For negative, compute magnitude from two's complement
         val mag: ByteArray
         if (signum() >= 0) {
@@ -399,12 +401,6 @@ actual class BigInteger internal constructor(
             hashCode = 31 * hashCode + word
         }
         return hashCode * signum()
-    }
-
-    internal fun copy(): BigInteger {
-        val result = allocMp()
-        mp_copy(handle, result)
-        return BigInteger(result)
     }
 }
 
@@ -442,8 +438,11 @@ internal fun validateAndSliceBytes(bytes: ByteArray, off: Int, len: Int): CPoint
 
 @OptIn(ExperimentalForeignApi::class)
 internal fun parseTomMath(value: String, radix: Int): CPointer<mp_int> {
+    // JVM accepts leading '+'; LibTomMath does not
+    val normalized = if (value.startsWith("+")) value.substring(1) else value
+    if (normalized.isEmpty()) throw NumberFormatException("Zero length BigInteger")
     val mp = allocMp()
-    if (mp_read_radix(mp, value, radix) != MP_OKAY) {
+    if (mp_read_radix(mp, normalized, radix) != MP_OKAY) {
         mp_clear(mp)
         nativeHeap.free(mp)
         throw NumberFormatException("Invalid BigInteger string: $value")
