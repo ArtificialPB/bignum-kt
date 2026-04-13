@@ -1,5 +1,6 @@
 package io.github.artificialpb.bignum
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.ints.shouldBeExactly
@@ -190,10 +191,10 @@ class NegativeShiftEdgeCaseTest : FunSpec({
         // Zero is fine
         BigIntegers.ZERO.shiftRight(Int.MIN_VALUE) shouldBe BigIntegers.ZERO
         // Nonzero throws
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigIntegers.ONE.shiftRight(Int.MIN_VALUE)
         }
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("-1").shiftRight(Int.MIN_VALUE)
         }
     }
@@ -431,38 +432,38 @@ class ErrorHandlingTest : FunSpec({
 
     test("div by zero throws ArithmeticException") {
         val a = BigInteger("42")
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             a / BigIntegers.ZERO
         }
     }
 
     test("rem by zero throws ArithmeticException") {
         val a = BigInteger("42")
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             a % BigIntegers.ZERO
         }
     }
 
     test("divideAndRemainder by zero throws ArithmeticException") {
         val a = BigInteger("42")
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             a.divideAndRemainder(BigIntegers.ZERO)
         }
     }
 
     test("negative bit address throws ArithmeticException") {
         val a = BigInteger("42")
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> { a.testBit(-1) }
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> { a.setBit(-1) }
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> { a.clearBit(-1) }
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> { a.flipBit(-1) }
+        shouldThrow<ArithmeticException> { a.testBit(-1) }
+        shouldThrow<ArithmeticException> { a.setBit(-1) }
+        shouldThrow<ArithmeticException> { a.clearBit(-1) }
+        shouldThrow<ArithmeticException> { a.flipBit(-1) }
     }
 
     test("invalid radix in constructor throws NumberFormatException") {
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("10", 1) }
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("10", 37) }
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("10", 0) }
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("10", -1) }
+        shouldThrow<NumberFormatException> { BigInteger("10", 1) }
+        shouldThrow<NumberFormatException> { BigInteger("10", 37) }
+        shouldThrow<NumberFormatException> { BigInteger("10", 0) }
+        shouldThrow<NumberFormatException> { BigInteger("10", -1) }
     }
 
     test("invalid radix in toString falls back to decimal (JVM semantics)") {
@@ -473,9 +474,9 @@ class ErrorHandlingTest : FunSpec({
 
     test("constructor(bytes, off, len) validates bounds") {
         val bytes = byteArrayOf(0x01, 0x02, 0x03)
-        io.kotest.assertions.throwables.shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, -1, 2) }
-        io.kotest.assertions.throwables.shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 0, 4) }
-        io.kotest.assertions.throwables.shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 2, 2) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, -1, 2) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 0, 4) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 2, 2) }
     }
 
     test("constructor(bytes, off, len) with len=0 returns zero for valid offsets") {
@@ -487,41 +488,41 @@ class ErrorHandlingTest : FunSpec({
 
     test("constructor(bytes, off, len) with len=0 at off==size throws") {
         val bytes = byteArrayOf(0x01, 0x02, 0x03)
-        io.kotest.assertions.throwables.shouldThrow<IndexOutOfBoundsException> {
+        shouldThrow<IndexOutOfBoundsException> {
             BigInteger(bytes, 3, 0)
         }
     }
 
     test("constructor(bytes, off, len) with empty array and len=0 throws") {
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> {
+        shouldThrow<NumberFormatException> {
             BigInteger(byteArrayOf(), 0, 0)
         }
     }
 
     test("malformed leading plus throws NumberFormatException") {
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("+-1") }
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("+") }
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("++1") }
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> { BigInteger("+-FF", 16) }
+        shouldThrow<NumberFormatException> { BigInteger("+-1") }
+        shouldThrow<NumberFormatException> { BigInteger("+") }
+        shouldThrow<NumberFormatException> { BigInteger("++1") }
+        shouldThrow<NumberFormatException> { BigInteger("+-FF", 16) }
     }
 
     test("modInverse with non-positive modulus throws ArithmeticException") {
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("3").modInverse(BigIntegers.ZERO)
         }
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("3").modInverse(BigInteger("-5"))
         }
     }
 
     test("empty byte array throws") {
-        io.kotest.assertions.throwables.shouldThrow<NumberFormatException> {
+        shouldThrow<NumberFormatException> {
             BigInteger(byteArrayOf())
         }
     }
 
     test("nextProbablePrime on negative throws") {
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("-1").nextProbablePrime()
         }
     }
@@ -533,10 +534,10 @@ class ErrorHandlingTest : FunSpec({
     }
 
     test("modPow with non-positive modulus throws ArithmeticException") {
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("2").modPow(BigInteger("3"), BigIntegers.ZERO)
         }
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("2").modPow(BigInteger("3"), BigInteger("-5"))
         }
     }
@@ -550,7 +551,7 @@ class ErrorHandlingTest : FunSpec({
 
     test("modPow with negative exponent throws when inverse does not exist") {
         // 2 has no inverse mod 4 (gcd(2,4)=2≠1)
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("2").modPow(BigInteger("-1"), BigInteger("4"))
         }
     }
@@ -562,19 +563,19 @@ class ErrorHandlingTest : FunSpec({
     }
 
     test("sqrt of negative throws ArithmeticException") {
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("-1").sqrt()
         }
     }
 
     test("pow with negative exponent throws ArithmeticException") {
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("2").pow(-1)
         }
     }
 
     test("mod with zero modulus throws ArithmeticException") {
-        io.kotest.assertions.throwables.shouldThrow<ArithmeticException> {
+        shouldThrow<ArithmeticException> {
             BigInteger("7").mod(BigIntegers.ZERO)
         }
     }
