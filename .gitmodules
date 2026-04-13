@@ -1,0 +1,3 @@
+[submodule "bignum/src/nativeInterop/libtommath"]
+	path = bignum/src/nativeInterop/libtommath
+	url = https://github.com/libtom/libtommath.git
