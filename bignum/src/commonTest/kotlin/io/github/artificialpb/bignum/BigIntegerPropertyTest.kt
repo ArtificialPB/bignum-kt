@@ -34,11 +34,22 @@ fun Arb.Companion.largeBigInteger(): Arb<BigInteger> =
         BigInteger("${sign}${abs}${abs.toString().takeLast(10)}")
     }
 
+// -- Immutability helper --
+// Captures snapshots of all inputs, runs the block, and asserts none changed.
+
+private inline fun assertImmutable(vararg values: BigInteger, block: () -> Unit) {
+    val snapshots = values.map { it.toString() }
+    block()
+    values.zip(snapshots).forEach { (value, snapshot) ->
+        value.toString() shouldBe snapshot
+    }
+}
+
 class BigIntegerArithmeticPropertyTest : FunSpec({
 
     test("addition is commutative: a + b == b + a") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            (a + b) shouldBe (b + a)
+            assertImmutable(a, b) { (a + b) shouldBe (b + a) }
         }
     }
 
@@ -56,19 +67,19 @@ class BigIntegerArithmeticPropertyTest : FunSpec({
 
     test("additive inverse: a + (-a) == 0") {
         checkAll(Arb.bigInteger()) { a ->
-            (a + (-a)) shouldBe BigIntegers.ZERO
+            assertImmutable(a) { (a + (-a)) shouldBe BigIntegers.ZERO }
         }
     }
 
     test("subtraction: a - b == a + (-b)") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            (a - b) shouldBe (a + (-b))
+            assertImmutable(a, b) { (a - b) shouldBe (a + (-b)) }
         }
     }
 
     test("multiplication is commutative: a * b == b * a") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            (a * b) shouldBe (b * a)
+            assertImmutable(a, b) { (a * b) shouldBe (b * a) }
         }
     }
 
@@ -98,31 +109,37 @@ class BigIntegerArithmeticPropertyTest : FunSpec({
 
     test("division-remainder identity: a == (a / b) * b + (a % b)") {
         checkAll(Arb.bigInteger(), Arb.nonZeroBigInteger()) { a, b ->
-            val q = a / b
-            val r = a % b
-            ((q * b) + r) shouldBe a
+            assertImmutable(a, b) {
+                val q = a / b
+                val r = a % b
+                ((q * b) + r) shouldBe a
+            }
         }
     }
 
     test("divideAndRemainder matches division and remainder") {
         checkAll(Arb.bigInteger(), Arb.nonZeroBigInteger()) { a, b ->
-            val result = a.divideAndRemainder(b)
-            result[0] shouldBe (a / b)
-            result[1] shouldBe (a % b)
+            assertImmutable(a, b) {
+                val result = a.divideAndRemainder(b)
+                result[0] shouldBe (a / b)
+                result[1] shouldBe (a % b)
+            }
         }
     }
 
     test("negation is self-inverse: -(-a) == a") {
         checkAll(Arb.bigInteger()) { a ->
-            (-(-a)) shouldBe a
+            assertImmutable(a) { (-(-a)) shouldBe a }
         }
     }
 
     test("abs is non-negative and preserves magnitude") {
         checkAll(Arb.bigInteger()) { a ->
-            val absA = a.abs()
-            absA.signum() shouldBe if (a.signum() == 0) 0 else 1
-            absA shouldBe (-a).abs()
+            assertImmutable(a) {
+                val absA = a.abs()
+                absA.signum() shouldBe if (a.signum() == 0) 0 else 1
+                absA shouldBe (-a).abs()
+            }
         }
     }
 })
@@ -131,7 +148,7 @@ class BigIntegerBitwisePropertyTest : FunSpec({
 
     test("not is self-inverse: ~~a == a") {
         checkAll(Arb.bigInteger()) { a ->
-            a.not().not() shouldBe a
+            assertImmutable(a) { a.not().not() shouldBe a }
         }
     }
 
@@ -143,19 +160,19 @@ class BigIntegerBitwisePropertyTest : FunSpec({
 
     test("and is commutative: a & b == b & a") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            a.and(b) shouldBe b.and(a)
+            assertImmutable(a, b) { a.and(b) shouldBe b.and(a) }
         }
     }
 
     test("or is commutative: a | b == b | a") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            a.or(b) shouldBe b.or(a)
+            assertImmutable(a, b) { a.or(b) shouldBe b.or(a) }
         }
     }
 
     test("xor is commutative: a ^ b == b ^ a") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            a.xor(b) shouldBe b.xor(a)
+            assertImmutable(a, b) { a.xor(b) shouldBe b.xor(a) }
         }
     }
 
@@ -179,19 +196,19 @@ class BigIntegerBitwisePropertyTest : FunSpec({
 
     test("andNot identity: a & ~b == a andNot b") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            a.and(b.not()) shouldBe a.andNot(b)
+            assertImmutable(a, b) { a.and(b.not()) shouldBe a.andNot(b) }
         }
     }
 
     test("shiftLeft then shiftRight recovers value for positive") {
         checkAll(Arb.positiveBigInteger(), Arb.int(0..30)) { a, n ->
-            a.shiftLeft(n).shiftRight(n) shouldBe a
+            assertImmutable(a) { a.shiftLeft(n).shiftRight(n) shouldBe a }
         }
     }
 
     test("shiftLeft by n == multiply by 2^n") {
         checkAll(Arb.bigInteger(), Arb.int(0..30)) { a, n ->
-            a.shiftLeft(n) shouldBe (a * BigInteger("2").pow(n))
+            assertImmutable(a) { a.shiftLeft(n) shouldBe (a * BigInteger("2").pow(n)) }
         }
     }
 })
@@ -212,7 +229,7 @@ class BigIntegerConversionPropertyTest : FunSpec({
 
     test("toByteArray round-trips through constructor") {
         checkAll(Arb.bigInteger()) { a ->
-            BigInteger(a.toByteArray()) shouldBe a
+            assertImmutable(a) { BigInteger(a.toByteArray()) shouldBe a }
         }
     }
 
@@ -295,7 +312,7 @@ class BigIntegerGcdPropertyTest : FunSpec({
 
     test("gcd is commutative: gcd(a, b) == gcd(b, a)") {
         checkAll(Arb.bigInteger(), Arb.bigInteger()) { a, b ->
-            a.gcd(b) shouldBe b.gcd(a)
+            assertImmutable(a, b) { a.gcd(b) shouldBe b.gcd(a) }
         }
     }
 
@@ -315,7 +332,7 @@ class BigIntegerGcdPropertyTest : FunSpec({
 
     test("|lcm(a, b)| * gcd(a, b) == |a * b|") {
         checkAll(Arb.nonZeroBigInteger(), Arb.nonZeroBigInteger()) { a, b ->
-            (a.lcm(b).abs() * a.gcd(b)) shouldBe (a * b).abs()
+            assertImmutable(a, b) { (a.lcm(b).abs() * a.gcd(b)) shouldBe (a * b).abs() }
         }
     }
 })
@@ -324,7 +341,7 @@ class BigIntegerPowPropertyTest : FunSpec({
 
     test("pow(0) == 1 for any base") {
         checkAll(Arb.bigInteger()) { a ->
-            a.pow(0) shouldBe BigIntegers.ONE
+            assertImmutable(a) { a.pow(0) shouldBe BigIntegers.ONE }
         }
     }
 
@@ -352,7 +369,10 @@ class BigIntegerPowPropertyTest : FunSpec({
             Arb.int(1..20),
             Arb.long(2L..1000L).map { BigIntegers.of(it) },
         ) { base, exp, modulus ->
-            base.modPow(BigIntegers.of(exp.toLong()), modulus) shouldBe base.pow(exp).mod(modulus)
+            val expBi = BigIntegers.of(exp.toLong())
+            assertImmutable(base, expBi, modulus) {
+                base.modPow(expBi, modulus) shouldBe base.pow(exp).mod(modulus)
+            }
         }
     }
 })
@@ -361,8 +381,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
 
     test("addition matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            val expected = a + b // Long addition (wraps on overflow, but same inputs won't overflow BigInteger)
-            // Only check when Long doesn't overflow
+            val expected = a + b
             if ((a xor b) < 0 || (a xor expected) >= 0) {
                 (BigIntegers.of(a) + BigIntegers.of(b)).toLong() shouldBe expected
             }
@@ -381,7 +400,6 @@ class BigIntegerVsLongPropertyTest : FunSpec({
     test("multiplication matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
             val expected = a * b
-            // Skip if Long overflowed: a*b overflows when a != 0 && expected/a != b
             if (a == 0L || expected / a == b) {
                 (BigIntegers.of(a) * BigIntegers.of(b)).toLong() shouldBe expected
             }
@@ -390,7 +408,6 @@ class BigIntegerVsLongPropertyTest : FunSpec({
 
     test("division matches Long") {
         checkAll(Arb.long(), Arb.long().filter { it != 0L }) { a, b ->
-            // Skip Long.MIN_VALUE / -1 which overflows
             if (!(a == Long.MIN_VALUE && b == -1L)) {
                 (BigIntegers.of(a) / BigIntegers.of(b)).toLong() shouldBe (a / b)
             }
@@ -406,7 +423,6 @@ class BigIntegerVsLongPropertyTest : FunSpec({
     }
 
     test("negation matches Long") {
-        // Skip Long.MIN_VALUE since -Long.MIN_VALUE overflows
         checkAll(Arb.long().filter { it != Long.MIN_VALUE }) { a ->
             (-BigIntegers.of(a)).toLong() shouldBe (-a)
         }

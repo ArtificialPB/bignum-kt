@@ -327,20 +327,6 @@ actual class BigInteger internal constructor(
 
     actual fun toDouble(): Double = mp_get_double(handle)
 
-    actual fun toString(radix: Int): String {
-        // JVM semantics: invalid radix falls back to radix 10
-        val effectiveRadix = if (radix in 2..36) radix else 10
-        return memScoped {
-            val sizeVar = alloc<IntVar>()
-            mp_radix_size(handle, effectiveRadix, sizeVar.ptr)
-            val size = sizeVar.value
-            val buf = allocArray<ByteVar>(size)
-            val written = alloc<ULongVar>()
-            mp_to_radix(handle, buf, size.toULong(), written.ptr, effectiveRadix)
-            buf.toKString().lowercase()
-        }
-    }
-
     actual fun signum(): Int {
         if (handle.pointed.used == 0) return 0
         return if (handle.pointed.sign == MP_NEG) -1 else 1
@@ -356,6 +342,20 @@ actual class BigInteger internal constructor(
 
     actual override fun compareTo(other: BigInteger): Int =
         mp_cmp(handle, other.handle)
+
+    actual fun toString(radix: Int): String {
+        // JVM semantics: invalid radix falls back to radix 10
+        val effectiveRadix = if (radix in 2..36) radix else 10
+        return memScoped {
+            val sizeVar = alloc<IntVar>()
+            mp_radix_size(handle, effectiveRadix, sizeVar.ptr)
+            val size = sizeVar.value
+            val buf = allocArray<ByteVar>(size)
+            val written = alloc<ULongVar>()
+            mp_to_radix(handle, buf, size.toULong(), written.ptr, effectiveRadix)
+            buf.toKString().lowercase()
+        }
+    }
 
     actual override fun toString(): String = toString(10)
 
@@ -443,8 +443,11 @@ internal fun parseTomMath(value: String, radix: Int): CPointer<mp_int> {
     // Reject malformed inputs like "+-1" or "+"
     val normalized = if (value.startsWith("+")) {
         val rest = value.substring(1)
-        if (rest.isEmpty() || rest.startsWith("-") || rest.startsWith("+")) {
-            throw NumberFormatException("Invalid BigInteger string: $value")
+        if (rest.isEmpty()) {
+            throw NumberFormatException("Zero length BigInteger")
+        }
+        if (rest.startsWith("-") || rest.startsWith("+")) {
+            throw NumberFormatException("Illegal embedded sign character")
         }
         rest
     } else {

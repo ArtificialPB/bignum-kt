@@ -486,7 +486,9 @@ class ErrorHandlingTest : FunSpec({
         BigInteger(bytes, 2, 0) shouldBe BigIntegers.ZERO
     }
 
-    test("constructor(bytes, off, len) with len=0 at off==size throws") {
+    test("constructor(bytes, off, len) with len=0 at off==size throws IndexOutOfBoundsException") {
+        // JVM throws ArrayIndexOutOfBoundsException (subclass of IndexOutOfBoundsException)
+        // Kotlin/Native deprecates ArrayIndexOutOfBoundsException(String), so we assert the supertype
         val bytes = byteArrayOf(0x01, 0x02, 0x03)
         shouldThrow<IndexOutOfBoundsException> {
             BigInteger(bytes, 3, 0)
@@ -499,11 +501,11 @@ class ErrorHandlingTest : FunSpec({
         }
     }
 
-    test("malformed leading plus throws NumberFormatException") {
-        shouldThrow<NumberFormatException> { BigInteger("+-1") }
-        shouldThrow<NumberFormatException> { BigInteger("+") }
-        shouldThrow<NumberFormatException> { BigInteger("++1") }
-        shouldThrow<NumberFormatException> { BigInteger("+-FF", 16) }
+    test("malformed leading plus throws NumberFormatException with JVM-matching message") {
+        shouldThrow<NumberFormatException> { BigInteger("+") }.message shouldBe "Zero length BigInteger"
+        shouldThrow<NumberFormatException> { BigInteger("+-1") }.message shouldBe "Illegal embedded sign character"
+        shouldThrow<NumberFormatException> { BigInteger("++1") }.message shouldBe "Illegal embedded sign character"
+        shouldThrow<NumberFormatException> { BigInteger("+-FF", 16) }.message shouldBe "Illegal embedded sign character"
     }
 
     test("modInverse with non-positive modulus throws ArithmeticException") {
