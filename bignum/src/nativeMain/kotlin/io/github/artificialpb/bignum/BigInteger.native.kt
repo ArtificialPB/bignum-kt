@@ -54,6 +54,8 @@ actual class BigInteger internal constructor(
     }
 
     actual fun abs(): BigInteger {
+        if (signum() >= 0) return this
+
         val result = allocMp()
         checkMp(mp_abs(handle, result), result)
         return BigInteger(result)
@@ -61,13 +63,23 @@ actual class BigInteger internal constructor(
 
     actual fun pow(exponent: Int): BigInteger {
         if (exponent < 0) throw ArithmeticException("Negative exponent")
-        // Guard against absurdly large results that LibTomMath would attempt
-        // to allocate, matching JVM's ArithmeticException behavior.
-        // Estimate result bit length: bitLength(base) * exponent.
-        val baseBits = bitLength().toLong()
-        if (baseBits > 1 && exponent.toLong() * baseBits > MAX_BIT_LENGTH) {
+        if (signum() == 0) return if (exponent == 0) BigIntegers.ONE else BigIntegers.ZERO
+
+        // Match JVM overflow checks (java.math.BigInteger.pow):
+        // 1. The trailing-zero shift must fit in an Int.
+        val powersOfTwo = abs().getLowestSetBit().toLong()
+        val bitsToShift = powersOfTwo * exponent.toLong()
+        if (bitsToShift > MAX_BIT_LENGTH) {
             throw ArithmeticException("BigInteger would overflow supported range")
         }
+
+        // 2. Estimated result magnitude must not exceed MAX_MAG_LENGTH int[] slots.
+        //    JVM: (long)bitLength() * exponent / Integer.SIZE > MAX_MAG_LENGTH
+        val scaleFactor = bitLength().toLong() * exponent.toLong()
+        if (scaleFactor / 32 > MAX_MAG_LENGTH) {
+            throw ArithmeticException("BigInteger would overflow supported range")
+        }
+
         val result = allocMp()
         val err = mp_expt_n(handle, exponent, result)
         if (err != MP_OKAY) {
@@ -331,8 +343,12 @@ actual class BigInteger internal constructor(
         } else {
             handle
         }
+        // JVM certainty means error probability ≤ 2^(-certainty).
+        // Each Miller-Rabin round has error ≤ 1/4 = 2^(-2),
+        // so ceil(certainty / 2) rounds achieve the required bound.
+        val rounds = (certainty + 1) / 2
         val result = alloc<IntVar>()
-        checkMp(mp_prime_is_prime(target, certainty.coerceAtLeast(1), result.ptr))
+        checkMp(mp_prime_is_prime(target, rounds.coerceAtLeast(1), result.ptr))
         if (target != handle) {
             freeMp(target)
         }
@@ -490,6 +506,9 @@ actual class BigInteger internal constructor(
  * Matches the JVM's practical limit (~2^31 bits, i.e. ~256 MB magnitude).
  */
 private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
+
+/** Matches JVM's BigInteger.MAX_MAG_LENGTH: Integer.MAX_VALUE / Integer.SIZE + 1 */
+private const val MAX_MAG_LENGTH = Int.MAX_VALUE / 32 + 1L
 
 @OptIn(ExperimentalForeignApi::class)
 internal fun allocMp(): CPointer<mp_int> {

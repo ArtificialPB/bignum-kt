@@ -614,6 +614,12 @@ class ErrorHandlingTest : FunSpec({
         }
     }
 
+    test("pow with large-but-accepted exponent does not throw") {
+        // 2^1073741824 has bit length 1073741825, within Int.MAX_VALUE
+        val result = BigIntegers.TWO.pow(1073741824)
+        result.bitLength() shouldBeExactly 1073741825
+    }
+
     test("shiftLeft by Int.MAX_VALUE throws ArithmeticException") {
         shouldThrow<ArithmeticException> {
             BigIntegers.ONE.shiftLeft(Int.MAX_VALUE)
