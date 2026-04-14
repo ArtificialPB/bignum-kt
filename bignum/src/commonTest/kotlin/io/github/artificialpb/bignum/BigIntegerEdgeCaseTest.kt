@@ -479,6 +479,13 @@ class ErrorHandlingTest : FunSpec({
         shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 2, 2) }
     }
 
+    test("constructor(bytes, off, len) validates bounds when off + len overflows Int") {
+        val bytes = byteArrayOf(0x01, 0x02, 0x03)
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, Int.MAX_VALUE, Int.MAX_VALUE) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, Int.MAX_VALUE, 2) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 1, Int.MAX_VALUE) }
+    }
+
     test("constructor(bytes, off, len) with len=0 returns zero for valid offsets") {
         val bytes = byteArrayOf(0x01, 0x02, 0x03)
         BigInteger(bytes, 0, 0) shouldBe BigIntegers.ZERO
@@ -506,6 +513,22 @@ class ErrorHandlingTest : FunSpec({
         shouldThrow<NumberFormatException> { BigInteger("+-1") }.message shouldBe "Illegal embedded sign character"
         shouldThrow<NumberFormatException> { BigInteger("++1") }.message shouldBe "Illegal embedded sign character"
         shouldThrow<NumberFormatException> { BigInteger("+-FF", 16) }.message shouldBe "Illegal embedded sign character"
+    }
+
+    test("malformed leading minus throws NumberFormatException with JVM-matching message") {
+        shouldThrow<NumberFormatException> { BigInteger("-") }.message shouldBe "Zero length BigInteger"
+        shouldThrow<NumberFormatException> { BigInteger("--1") }.message shouldBe "Illegal embedded sign character"
+        shouldThrow<NumberFormatException> { BigInteger("-+1") }.message shouldBe "Illegal embedded sign character"
+        shouldThrow<NumberFormatException> { BigInteger("--FF", 16) }.message shouldBe "Illegal embedded sign character"
+        shouldThrow<NumberFormatException> { BigInteger("-+FF", 16) }.message shouldBe "Illegal embedded sign character"
+    }
+
+    test("invalid digits throw NumberFormatException with JVM-matching message") {
+        shouldThrow<NumberFormatException> { BigInteger("12a") }.message shouldBe "For input string: \"12a\""
+        shouldThrow<NumberFormatException> { BigInteger("abc") }.message shouldBe "For input string: \"abc\""
+        shouldThrow<NumberFormatException> { BigInteger("hello") }.message shouldBe "For input string: \"hello\""
+        shouldThrow<NumberFormatException> { BigInteger("2", 2) }.message shouldBe "For input string: \"2\" under radix 2"
+        shouldThrow<NumberFormatException> { BigInteger("1G", 16) }.message shouldBe "For input string: \"1G\" under radix 16"
     }
 
     test("modInverse with non-positive modulus throws ArithmeticException") {

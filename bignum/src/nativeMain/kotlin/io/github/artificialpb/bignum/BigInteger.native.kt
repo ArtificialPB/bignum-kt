@@ -422,8 +422,8 @@ internal fun validateRadixAndParse(value: String, radix: Int): CPointer<mp_int> 
 
 @OptIn(ExperimentalForeignApi::class)
 internal fun validateAndSliceBytes(bytes: ByteArray, off: Int, len: Int): CPointer<mp_int> {
-    if (off < 0 || len < 0 || off + len > bytes.size) {
-        throw IndexOutOfBoundsException("Range [$off, ${off + len}) out of bounds for length ${bytes.size}")
+    if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
+        throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
     }
     if (len == 0) {
         // JVM: zero-length on empty array throws NumberFormatException
@@ -439,26 +439,32 @@ internal fun validateAndSliceBytes(bytes: ByteArray, off: Int, len: Int): CPoint
 
 @OptIn(ExperimentalForeignApi::class)
 internal fun parseTomMath(value: String, radix: Int): CPointer<mp_int> {
-    // JVM accepts a single leading '+'; LibTomMath does not
-    // Reject malformed inputs like "+-1" or "+"
-    val normalized = if (value.startsWith("+")) {
+    // JVM accepts a single leading sign character (+ or -), then digits only.
+    // Reject malformed inputs: empty after sign, or embedded sign characters.
+    if (value.isEmpty()) throw NumberFormatException("Zero length BigInteger")
+    val hasSign = value[0] == '+' || value[0] == '-'
+    if (hasSign && value.length == 1) {
+        throw NumberFormatException("Zero length BigInteger")
+    }
+    if (hasSign) {
         val rest = value.substring(1)
-        if (rest.isEmpty()) {
-            throw NumberFormatException("Zero length BigInteger")
-        }
-        if (rest.startsWith("-") || rest.startsWith("+")) {
+        if (rest.contains('+') || rest.contains('-')) {
             throw NumberFormatException("Illegal embedded sign character")
         }
-        rest
-    } else {
-        value
     }
-    if (normalized.isEmpty()) throw NumberFormatException("Zero length BigInteger")
+    // Strip leading '+' since LibTomMath doesn't accept it (but does accept '-')
+    val normalized = if (value.startsWith("+")) value.substring(1) else value
     val mp = allocMp()
     if (mp_read_radix(mp, normalized, radix) != MP_OKAY) {
         mp_clear(mp)
         nativeHeap.free(mp)
-        throw NumberFormatException("Invalid BigInteger string: $value")
+        // Match JVM message format
+        val msg = if (radix != 10) {
+            "For input string: \"$value\" under radix $radix"
+        } else {
+            "For input string: \"$value\""
+        }
+        throw NumberFormatException(msg)
     }
     return mp
 }
