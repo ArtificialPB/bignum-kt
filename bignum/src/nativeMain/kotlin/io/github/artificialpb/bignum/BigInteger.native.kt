@@ -63,14 +63,31 @@ actual class BigInteger internal constructor(
         if (modulus.signum() <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // JVM: x.modInverse(1) == 0 for any x
         if (modulus == BigIntegers.ONE) return BigIntegers.ZERO
+        // mp_invmod gives incorrect results for negative inputs, so always
+        // compute the inverse of the absolute value and adjust for sign.
+        val absHandle = if (signum() < 0) {
+            val abs = allocMp()
+            mp_abs(handle, abs)
+            abs
+        } else {
+            handle
+        }
         val result = allocMp()
-        val err = mp_invmod(handle, modulus.handle, result)
+        val err = mp_invmod(absHandle, modulus.handle, result)
+        if (absHandle != handle) {
+            mp_clear(absHandle); nativeHeap.free(absHandle)
+        }
         if (err != MP_OKAY) {
             mp_clear(result)
             nativeHeap.free(result)
             throw ArithmeticException("BigInteger not invertible")
         }
-        return BigInteger(result)
+        val bi = BigInteger(result)
+        // For negative input: (-a)^-1 mod m = m - (a^-1 mod m), when a^-1 != 0
+        if (signum() < 0 && bi.signum() != 0) {
+            return modulus - bi
+        }
+        return bi
     }
 
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {

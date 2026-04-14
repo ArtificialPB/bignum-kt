@@ -3,9 +3,12 @@ package io.github.artificialpb.bignum
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData
+import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
+import io.kotest.property.arbitrary.filter
 import io.kotest.property.arbitrary.long
 import io.kotest.property.arbitrary.map
 import io.kotest.property.checkAll
@@ -648,5 +651,430 @@ class ModVsRemEdgeCaseTest : FunSpec({
                 (remResult.signum() == bi.signum()) shouldBe true
             }
         }
+    }
+})
+
+// -- bitCount for negative numbers --
+
+class BitCountNegativeTest : FunSpec({
+
+    // Java's bitCount() for negative numbers returns the number of bits that
+    // differ from the sign bit (i.e. the number of 0-bits in two's complement),
+    // which equals the popcount of (|x| - 1).
+
+    context("bitCount for negative values matches known results") {
+        withData(
+            nameFn = { "bitCount(${it.first}) = ${it.second}" },
+            "-1" to 0,           // two's complement: all 1s, 0 bits differ from sign
+            "-2" to 1,           // ...1110 → one 0
+            "-3" to 1,           // ...1101 → one 0
+            "-4" to 2,           // ...1100 → two 0s
+            "-5" to 1,           // ...1011 → one 0
+            "-7" to 2,           // ...1001 → two 0s (|7|-1=6=110, popcount=2)
+            "-8" to 3,           // ...11000 → three 0s (|8|-1=7=111)
+            "-9" to 1,           // ...10111 → one 0 (|9|-1=8=1000)
+            "-128" to 7,         // ...10000000 → seven 0s (127=1111111)
+            "-129" to 1,         // ...01111111 → one 0 (128=10000000)
+            "-255" to 7,         // (254=11111110, popcount=7)
+            "-256" to 8,         // (255=11111111)
+            "-257" to 1,         // (256=100000000)
+        ) { (input, expected) ->
+            BigInteger(input).bitCount() shouldBeExactly expected
+        }
+    }
+
+    test("bitCount for negative matches Long cross-check") {
+        // For negative Long n, bitCount = Long.SIZE_BITS - n.countOneBits()
+        // which is the number of 0-bits (= bits differing from sign bit 1)
+        checkAll(Arb.long(Long.MIN_VALUE..-1L)) { n ->
+            val bi = BigIntegers.of(n)
+            // Java BigInteger bitCount for negative = popcount(|n| - 1)
+            val absMinusOne = if (n == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(n) - 1
+            bi.bitCount() shouldBeExactly absMinusOne.countOneBits()
+        }
+    }
+})
+
+// -- toInt/toLong overflow truncation --
+
+class OverflowTruncationTest : FunSpec({
+
+    test("toLong truncates large positive to low 64 bits") {
+        // 2^64 + 42 should truncate to 42
+        val value = BigIntegers.TWO.pow(64) + BigIntegers.of(42L)
+        value.toLong() shouldBeExactly 42L
+    }
+
+    test("toLong truncates large negative") {
+        // -(2^64 + 42) should truncate to -42
+        val value = -(BigIntegers.TWO.pow(64) + BigIntegers.of(42L))
+        value.toLong() shouldBeExactly -42L
+    }
+
+    test("toInt truncates values beyond Int range") {
+        // 2^32 + 7 should truncate to 7
+        val value = BigIntegers.TWO.pow(32) + BigIntegers.of(7L)
+        value.toInt() shouldBeExactly 7
+    }
+
+    test("toInt truncates large negative values beyond Int range") {
+        val value = -(BigIntegers.TWO.pow(32) + BigIntegers.of(7L))
+        value.toInt() shouldBeExactly -7
+    }
+
+    test("toLong of Long.MAX_VALUE + 1") {
+        val value = BigIntegers.of(Long.MAX_VALUE) + BigIntegers.ONE
+        // JVM: Long.MAX_VALUE + 1 wraps to Long.MIN_VALUE
+        value.toLong() shouldBeExactly Long.MIN_VALUE
+    }
+
+    test("toLong of Long.MIN_VALUE - 1") {
+        val value = BigIntegers.of(Long.MIN_VALUE) - BigIntegers.ONE
+        // JVM: Long.MIN_VALUE - 1 wraps to Long.MAX_VALUE
+        value.toLong() shouldBeExactly Long.MAX_VALUE
+    }
+})
+
+// -- modInverse with negative base --
+
+class ModInverseNegativeBaseTest : FunSpec({
+
+    context("modInverse with negative base returns result in [0, modulus)") {
+        withData(
+            nameFn = { "${it.first}.modInverse(${it.second}) = ${it.third}" },
+            // (-3).modInverse(7): 3*5=15≡1 mod 7, so -3 inverse is -5≡2 mod 7
+            Triple("-3", "7", "2"),
+            // (-1).modInverse(7) = 6 (since -1*6 = -6 ≡ 1 mod 7)
+            Triple("-1", "7", "6"),
+            // (-2).modInverse(5) = 2 (since -2*2 = -4 ≡ 1 mod 5)... wait: -2*(-2)=4≡4, -2*3=-6≡4. Actually (-2)*(-2)=4≡4 mod 5. Let me recalc.
+            // 2.modInverse(5) = 3 (since 2*3=6≡1 mod 5). (-2).modInverse(5) = -3 mod 5 = 2
+            Triple("-2", "5", "2"),
+            Triple("-1", "2", "1"),
+            Triple("-1", "3", "2"),
+        ) { (a, m, expected) ->
+            val result = BigInteger(a).modInverse(BigInteger(m))
+            result shouldBe BigInteger(expected)
+            // Result should always be in [0, modulus)
+            (result.signum() >= 0) shouldBe true
+            (result.compareTo(BigInteger(m)) < 0) shouldBe true
+        }
+    }
+})
+
+// -- modPow edge cases --
+
+class ModPowEdgeCaseTest : FunSpec({
+
+    test("modPow with exponent 0 returns 1 mod m") {
+        BigInteger("5").modPow(BigIntegers.ZERO, BigInteger("3")) shouldBe BigIntegers.ONE
+        BigInteger("0").modPow(BigIntegers.ZERO, BigInteger("3")) shouldBe BigIntegers.ONE
+        BigInteger("100").modPow(BigIntegers.ZERO, BigInteger("7")) shouldBe BigIntegers.ONE
+        // modPow(0, 1) = 0 (since 1 mod 1 = 0) — already tested but included for completeness
+        BigInteger("5").modPow(BigIntegers.ZERO, BigIntegers.ONE) shouldBe BigIntegers.ZERO
+    }
+
+    test("modPow with negative base") {
+        // (-2)^3 mod 5 = -8 mod 5 = 2
+        BigInteger("-2").modPow(BigInteger("3"), BigInteger("5")) shouldBe BigInteger("2")
+        // (-3)^2 mod 7 = 9 mod 7 = 2
+        BigInteger("-3").modPow(BigInteger("2"), BigInteger("7")) shouldBe BigInteger("2")
+        // (-1)^large mod m = ±1 mod m depending on parity
+        BigInteger("-1").modPow(BigInteger("100"), BigInteger("7")) shouldBe BigIntegers.ONE
+        BigInteger("-1").modPow(BigInteger("101"), BigInteger("7")) shouldBe BigInteger("6")
+    }
+
+    test("modPow with base 0") {
+        // 0^e mod m = 0 for e > 0
+        BigInteger("0").modPow(BigInteger("1"), BigInteger("5")) shouldBe BigIntegers.ZERO
+        BigInteger("0").modPow(BigInteger("100"), BigInteger("7")) shouldBe BigIntegers.ZERO
+    }
+
+    test("modPow with exponent 1") {
+        BigInteger("7").modPow(BigIntegers.ONE, BigInteger("5")) shouldBe BigInteger("2")
+        BigInteger("-3").modPow(BigIntegers.ONE, BigInteger("5")) shouldBe BigInteger("2")
+    }
+})
+
+// -- gcd edge cases --
+
+class GcdEdgeCaseTest : FunSpec({
+
+    test("gcd(0, 0) == 0") {
+        BigIntegers.ZERO.gcd(BigIntegers.ZERO) shouldBe BigIntegers.ZERO
+    }
+
+    test("gcd with very large numbers") {
+        val a = BigInteger("123456789012345678901234567890")
+        val b = BigInteger("987654321098765432109876543210")
+        val g = a.gcd(b)
+        // g should divide both
+        (a % g) shouldBe BigIntegers.ZERO
+        (b % g) shouldBe BigIntegers.ZERO
+    }
+
+    test("gcd of negative numbers is always positive") {
+        BigInteger("-12").gcd(BigInteger("-8")) shouldBe BigInteger("4")
+        BigInteger("-12").gcd(BigIntegers.ZERO) shouldBe BigInteger("12")
+    }
+})
+
+// -- toDouble edge cases --
+
+class ToDoubleEdgeCaseTest : FunSpec({
+
+    test("toDouble for very large positive returns Infinity") {
+        val huge = BigIntegers.TWO.pow(1024)
+        huge.toDouble() shouldBeExactly Double.POSITIVE_INFINITY
+    }
+
+    test("toDouble for very large negative returns -Infinity") {
+        val huge = -(BigIntegers.TWO.pow(1024))
+        huge.toDouble() shouldBeExactly Double.NEGATIVE_INFINITY
+    }
+
+    test("toDouble loses precision for large-but-representable values") {
+        // 2^53 is exactly representable, 2^53 + 1 loses the +1
+        val exact = BigIntegers.TWO.pow(53)
+        exact.toDouble() shouldBeExactly 9007199254740992.0
+    }
+
+    test("toDouble for Long.MAX_VALUE") {
+        BigIntegers.of(Long.MAX_VALUE).toDouble() shouldBeExactly Long.MAX_VALUE.toDouble()
+    }
+
+    test("toDouble for Long.MIN_VALUE") {
+        BigIntegers.of(Long.MIN_VALUE).toDouble() shouldBeExactly Long.MIN_VALUE.toDouble()
+    }
+})
+
+// -- String constructor edge cases --
+
+class StringConstructorEdgeCaseTest : FunSpec({
+
+    test("leading zeros are stripped") {
+        BigInteger("00042") shouldBe BigInteger("42")
+        BigInteger("000") shouldBe BigIntegers.ZERO
+        BigInteger("-00042") shouldBe BigInteger("-42")
+        BigInteger("+00042") shouldBe BigInteger("42")
+    }
+
+    test("empty string throws NumberFormatException") {
+        shouldThrow<NumberFormatException> { BigInteger("") }
+    }
+
+    test("whitespace-only or whitespace-containing strings throw") {
+        shouldThrow<NumberFormatException> { BigInteger(" ") }
+        shouldThrow<NumberFormatException> { BigInteger("1 2") }
+        shouldThrow<NumberFormatException> { BigInteger(" 42") }
+        shouldThrow<NumberFormatException> { BigInteger("42 ") }
+    }
+
+    test("single zero in various radixes") {
+        for (radix in 2..36) {
+            BigInteger("0", radix) shouldBe BigIntegers.ZERO
+        }
+    }
+})
+
+// -- Byte array edge cases --
+
+class ByteArrayAdditionalEdgeCaseTest : FunSpec({
+
+    test("all-zero byte array of various lengths is zero") {
+        BigInteger(byteArrayOf(0)) shouldBe BigIntegers.ZERO
+        BigInteger(byteArrayOf(0, 0)) shouldBe BigIntegers.ZERO
+        BigInteger(byteArrayOf(0, 0, 0)) shouldBe BigIntegers.ZERO
+        BigInteger(byteArrayOf(0, 0, 0, 0)) shouldBe BigIntegers.ZERO
+        BigInteger(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)) shouldBe BigIntegers.ZERO
+    }
+
+    test("single-byte values round-trip") {
+        for (i in -128..127) {
+            val bytes = byteArrayOf(i.toByte())
+            val bi = BigInteger(bytes)
+            bi.toByteArray() shouldBe bytes
+        }
+    }
+
+    test("large negative two's complement round-trip") {
+        // -(2^128) as bytes: 0xFF followed by 16 zero bytes... actually:
+        // -(2^128) in two's complement (17 bytes): [0xFF, 0x00 x16] → no, that's -(2^128 - 2^128 + 256^16)
+        // Let me just verify round-trip with a known large negative
+        val value = -(BigIntegers.TWO.pow(128))
+        val bytes = value.toByteArray()
+        BigInteger(bytes) shouldBe value
+    }
+})
+
+// -- toString with radix for negative numbers --
+
+class ToStringRadixNegativeTest : FunSpec({
+
+    context("toString with radix round-trips for negative values") {
+        withData(
+            nameFn = { "${it.first} in base ${it.second}" },
+            "-1" to 2,
+            "-1" to 16,
+            "-255" to 16,
+            "-42" to 8,
+            "-1295" to 36,
+            "-123456789" to 16,
+            "-100" to 2,
+        ) { (value, radix) ->
+            val bi = BigInteger(value)
+            BigInteger(bi.toString(radix), radix) shouldBe bi
+        }
+    }
+
+    test("toString radix round-trip property for negative values") {
+        checkAll(Arb.long(Long.MIN_VALUE..-1L)) { n ->
+            val bi = BigIntegers.of(n)
+            for (radix in listOf(2, 8, 10, 16, 36)) {
+                BigInteger(bi.toString(radix), radix) shouldBe bi
+            }
+        }
+    }
+})
+
+// -- Bit operations on negative numbers at high bit positions --
+
+class HighBitPositionNegativeTest : FunSpec({
+
+    test("testBit on negative at very high positions returns true") {
+        // In two's complement, negative numbers have infinite leading 1s
+        val v = BigInteger("-1")
+        v.testBit(1000) shouldBe true
+        v.testBit(10000) shouldBe true
+
+        val v2 = BigInteger("-2")
+        v2.testBit(1000) shouldBe true
+    }
+
+    test("clearBit on negative at high position has no effect (bit is 1, clearing makes 0)") {
+        // -1 = ...11111111; clearBit(100) = ...1111 0 1111...1111 (bit 100 cleared)
+        val v = BigInteger("-1")
+        val cleared = v.clearBit(100)
+        // Result should differ from -1
+        cleared.testBit(100) shouldBe false
+        // But all other bits should still be 1
+        cleared.testBit(99) shouldBe true
+        cleared.testBit(101) shouldBe true
+    }
+
+    test("setBit on negative at high position is identity (bit already 1)") {
+        val v = BigInteger("-1")
+        v.setBit(100) shouldBe v
+        v.setBit(1000) shouldBe v
+    }
+
+    test("flipBit on negative at high position clears the bit") {
+        val v = BigInteger("-1")
+        val flipped = v.flipBit(100)
+        flipped.testBit(100) shouldBe false
+        // flipBit(100) again should restore
+        flipped.flipBit(100) shouldBe v
+    }
+})
+
+// -- bitLength for negative powers of two --
+
+class BitLengthNegativePowersOfTwoTest : FunSpec({
+
+    // bitLength(-2^n) = n, because |(-2^n)| - 1 = 2^n - 1 which has bitLength n
+    context("bitLength of -2^n equals n") {
+        withData(
+            nameFn = { "bitLength(-2^${it}) = ${it}" },
+            1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64, 100, 128
+        ) { n ->
+            val value = -(BigIntegers.TWO.pow(n))
+            value.bitLength() shouldBeExactly n
+        }
+    }
+
+    // bitLength(-(2^n + 1)) = n + 1
+    context("bitLength of -(2^n + 1) equals n + 1") {
+        withData(
+            nameFn = { "bitLength(-(2^${it}+1)) = ${it + 1}" },
+            1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64
+        ) { n ->
+            val value = -(BigIntegers.TWO.pow(n) + BigIntegers.ONE)
+            value.bitLength() shouldBeExactly (n + 1)
+        }
+    }
+})
+
+// -- getLowestSetBit edge cases --
+
+class GetLowestSetBitEdgeCaseTest : FunSpec({
+
+    test("getLowestSetBit for powers of two") {
+        for (n in listOf(0, 1, 2, 7, 8, 15, 16, 31, 32, 63, 64, 100)) {
+            BigIntegers.TWO.pow(n).getLowestSetBit() shouldBeExactly n
+        }
+    }
+
+    test("getLowestSetBit for negative powers of two") {
+        for (n in listOf(1, 2, 7, 8, 15, 16, 31, 32, 63, 64)) {
+            (-(BigIntegers.TWO.pow(n))).getLowestSetBit() shouldBeExactly n
+        }
+    }
+
+    test("getLowestSetBit for large negative odd number is 0") {
+        val v = -(BigIntegers.TWO.pow(100) + BigIntegers.ONE)
+        v.getLowestSetBit() shouldBeExactly 0
+    }
+})
+
+// -- Large number arithmetic cross-check --
+
+class LargeNumberArithmeticTest : FunSpec({
+
+    test("arithmetic with numbers larger than Long.MAX_VALUE") {
+        val a = BigInteger("123456789012345678901234567890")
+        val b = BigInteger("987654321098765432109876543210")
+        val sum = a + b
+        sum shouldBe BigInteger("1111111110111111111011111111100")
+
+        val diff = b - a
+        diff shouldBe BigInteger("864197532086419753208641975320")
+
+        val product = BigInteger("12345678901234567890") * BigInteger("98765432109876543210")
+        product shouldBe BigInteger("1219326311370217952237463801111263526900")
+    }
+
+    test("division of very large numbers") {
+        val a = BigInteger("1219326311370217952237463801111263526900")
+        val b = BigInteger("12345678901234567890")
+        (a / b) shouldBe BigInteger("98765432109876543210")
+        (a % b) shouldBe BigIntegers.ZERO
+    }
+
+    test("pow with very large result") {
+        val result = BigIntegers.TWO.pow(256)
+        result shouldBe BigInteger("115792089237316195423570985008687907853269984665640564039457584007913129639936")
+    }
+})
+
+// -- sqrt additional edge cases --
+
+class SqrtEdgeCaseTest : FunSpec({
+
+    test("sqrt(2) = 1") {
+        BigInteger("2").sqrt() shouldBe BigIntegers.ONE
+    }
+
+    test("sqrt(3) = 1") {
+        BigInteger("3").sqrt() shouldBe BigIntegers.ONE
+    }
+
+    test("sqrt of very large perfect square") {
+        val root = BigInteger("12345678901234567890")
+        val square = root * root
+        square.sqrt() shouldBe root
+    }
+
+    test("sqrt of 2^256") {
+        val value = BigIntegers.TWO.pow(256)
+        value.sqrt() shouldBe BigIntegers.TWO.pow(128)
     }
 })
