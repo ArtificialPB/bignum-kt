@@ -607,6 +607,18 @@ class ErrorHandlingTest : FunSpec({
             BigInteger("7").mod(BigIntegers.ZERO)
         }
     }
+
+    test("pow with Int.MAX_VALUE exponent throws ArithmeticException") {
+        shouldThrow<ArithmeticException> {
+            BigIntegers.TWO.pow(Int.MAX_VALUE)
+        }
+    }
+
+    test("shiftLeft by Int.MAX_VALUE throws ArithmeticException") {
+        shouldThrow<ArithmeticException> {
+            BigIntegers.ONE.shiftLeft(Int.MAX_VALUE)
+        }
+    }
 })
 
 // -- lcm sign semantics (JVM: preserves sign of (this/gcd)*other) --
@@ -732,6 +744,22 @@ class OverflowTruncationTest : FunSpec({
         val value = BigIntegers.of(Long.MIN_VALUE) - BigIntegers.ONE
         // JVM: Long.MIN_VALUE - 1 wraps to Long.MAX_VALUE
         value.toLong() shouldBeExactly Long.MAX_VALUE
+    }
+
+    test("toInt of 2147483648 (Int.MAX_VALUE + 1)") {
+        BigInteger("2147483648").toInt() shouldBeExactly Int.MIN_VALUE
+    }
+
+    test("toInt of -2147483649 (Int.MIN_VALUE - 1)") {
+        BigInteger("-2147483649").toInt() shouldBeExactly Int.MAX_VALUE
+    }
+
+    test("toLong of 9223372036854775808 (Long.MAX_VALUE + 1)") {
+        BigInteger("9223372036854775808").toLong() shouldBeExactly Long.MIN_VALUE
+    }
+
+    test("toLong of -9223372036854775809 (Long.MIN_VALUE - 1)") {
+        BigInteger("-9223372036854775809").toLong() shouldBeExactly Long.MAX_VALUE
     }
 })
 

@@ -13,10 +13,6 @@ actual object BigIntegers {
 }
 
 // Operators
-actual operator fun BigInteger.plus(other: BigInteger): BigInteger = this.add(other)
-actual operator fun BigInteger.minus(other: BigInteger): BigInteger = this.subtract(other)
-actual operator fun BigInteger.times(other: BigInteger): BigInteger = this.multiply(other)
-actual operator fun BigInteger.div(other: BigInteger): BigInteger = this.divide(other)
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger = this.remainder(other)
 actual operator fun BigInteger.unaryMinus(): BigInteger = this.negate()
 

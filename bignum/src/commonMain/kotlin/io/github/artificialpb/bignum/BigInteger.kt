@@ -7,6 +7,10 @@ expect class BigInteger : Comparable<BigInteger> {
     constructor(bytes: ByteArray, off: Int, len: Int)
 
     // Arithmetic
+    fun add(other: BigInteger): BigInteger
+    fun subtract(other: BigInteger): BigInteger
+    fun multiply(other: BigInteger): BigInteger
+    fun divide(other: BigInteger): BigInteger
     fun abs(): BigInteger
     fun pow(exponent: Int): BigInteger
     fun mod(modulus: BigInteger): BigInteger
@@ -67,10 +71,10 @@ expect object BigIntegers {
 }
 
 // Operators
-expect operator fun BigInteger.plus(other: BigInteger): BigInteger
-expect operator fun BigInteger.minus(other: BigInteger): BigInteger
-expect operator fun BigInteger.times(other: BigInteger): BigInteger
-expect operator fun BigInteger.div(other: BigInteger): BigInteger
+operator fun BigInteger.plus(other: BigInteger): BigInteger = add(other)
+operator fun BigInteger.minus(other: BigInteger): BigInteger = subtract(other)
+operator fun BigInteger.times(other: BigInteger): BigInteger = multiply(other)
+operator fun BigInteger.div(other: BigInteger): BigInteger = divide(other)
 expect operator fun BigInteger.rem(other: BigInteger): BigInteger
 expect operator fun BigInteger.unaryMinus(): BigInteger
 

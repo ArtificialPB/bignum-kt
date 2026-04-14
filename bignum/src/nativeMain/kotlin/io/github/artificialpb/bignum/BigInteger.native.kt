@@ -1,12 +1,20 @@
 package io.github.artificialpb.bignum
 
 import io.github.artificialpb.bignum.tommath.*
+import kotlin.experimental.ExperimentalNativeApi
+import kotlin.native.ref.createCleaner
 import kotlinx.cinterop.*
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 actual class BigInteger internal constructor(
     internal val handle: CPointer<mp_int>
 ) : Comparable<BigInteger> {
+
+    @Suppress("unused")
+    private val cleaner = createCleaner(handle) { ptr ->
+        mp_clear(ptr)
+        nativeHeap.free(ptr)
+    }
 
     actual constructor(value: String) : this(parseTomMath(value, 10))
 
@@ -20,23 +28,59 @@ actual class BigInteger internal constructor(
 
     // Arithmetic
 
+    actual fun add(other: BigInteger): BigInteger {
+        val result = allocMp()
+        checkMp(mp_add(handle, other.handle, result), result)
+        return BigInteger(result)
+    }
+
+    actual fun subtract(other: BigInteger): BigInteger {
+        val result = allocMp()
+        checkMp(mp_sub(handle, other.handle, result), result)
+        return BigInteger(result)
+    }
+
+    actual fun multiply(other: BigInteger): BigInteger {
+        val result = allocMp()
+        checkMp(mp_mul(handle, other.handle, result), result)
+        return BigInteger(result)
+    }
+
+    actual fun divide(other: BigInteger): BigInteger {
+        if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
+        val result = allocMp()
+        checkMp(mp_div(handle, other.handle, result, null), result)
+        return BigInteger(result)
+    }
+
     actual fun abs(): BigInteger {
         val result = allocMp()
-        mp_abs(handle, result)
+        checkMp(mp_abs(handle, result), result)
         return BigInteger(result)
     }
 
     actual fun pow(exponent: Int): BigInteger {
         if (exponent < 0) throw ArithmeticException("Negative exponent")
+        // Guard against absurdly large results that LibTomMath would attempt
+        // to allocate, matching JVM's ArithmeticException behavior.
+        // Estimate result bit length: bitLength(base) * exponent.
+        val baseBits = bitLength().toLong()
+        if (baseBits > 1 && exponent.toLong() * baseBits > MAX_BIT_LENGTH) {
+            throw ArithmeticException("BigInteger would overflow supported range")
+        }
         val result = allocMp()
-        mp_expt_n(handle, exponent, result)
+        val err = mp_expt_n(handle, exponent, result)
+        if (err != MP_OKAY) {
+            freeMp(result)
+            throw ArithmeticException("BigInteger would overflow supported range")
+        }
         return BigInteger(result)
     }
 
     actual fun mod(modulus: BigInteger): BigInteger {
         if (modulus.signum() <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         val result = allocMp()
-        mp_mod(handle, modulus.handle, result)
+        checkMp(mp_mod(handle, modulus.handle, result), result)
         return BigInteger(result)
     }
 
@@ -49,13 +93,13 @@ actual class BigInteger internal constructor(
             val inverse = modInverse(modulus)
             val result = allocMp()
             val absExp = allocMp()
-            mp_abs(exponent.handle, absExp)
-            mp_exptmod(inverse.handle, absExp, modulus.handle, result)
-            mp_clear(absExp); nativeHeap.free(absExp)
+            checkMp(mp_abs(exponent.handle, absExp), absExp)
+            checkMp(mp_exptmod(inverse.handle, absExp, modulus.handle, result), result)
+            freeMp(absExp)
             return BigInteger(result)
         }
         val result = allocMp()
-        mp_exptmod(handle, exponent.handle, modulus.handle, result)
+        checkMp(mp_exptmod(handle, exponent.handle, modulus.handle, result), result)
         return BigInteger(result)
     }
 
@@ -67,7 +111,7 @@ actual class BigInteger internal constructor(
         // compute the inverse of the absolute value and adjust for sign.
         val absHandle = if (signum() < 0) {
             val abs = allocMp()
-            mp_abs(handle, abs)
+            checkMp(mp_abs(handle, abs), abs)
             abs
         } else {
             handle
@@ -75,11 +119,10 @@ actual class BigInteger internal constructor(
         val result = allocMp()
         val err = mp_invmod(absHandle, modulus.handle, result)
         if (absHandle != handle) {
-            mp_clear(absHandle); nativeHeap.free(absHandle)
+            freeMp(absHandle)
         }
         if (err != MP_OKAY) {
-            mp_clear(result)
-            nativeHeap.free(result)
+            freeMp(result)
             throw ArithmeticException("BigInteger not invertible")
         }
         val bi = BigInteger(result)
@@ -94,13 +137,13 @@ actual class BigInteger internal constructor(
         if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
         val quotient = allocMp()
         val remainder = allocMp()
-        mp_div(handle, other.handle, quotient, remainder)
+        checkMp(mp_div(handle, other.handle, quotient, remainder), quotient, remainder)
         return arrayOf(BigInteger(quotient), BigInteger(remainder))
     }
 
     actual fun gcd(other: BigInteger): BigInteger {
         val result = allocMp()
-        mp_gcd(handle, other.handle, result)
+        checkMp(mp_gcd(handle, other.handle, result), result)
         return BigInteger(result)
     }
 
@@ -108,35 +151,38 @@ actual class BigInteger internal constructor(
 
     actual fun and(other: BigInteger): BigInteger {
         val result = allocMp()
-        mp_and(handle, other.handle, result)
+        checkMp(mp_and(handle, other.handle, result), result)
         return BigInteger(result)
     }
 
     actual fun or(other: BigInteger): BigInteger {
         val result = allocMp()
-        mp_or(handle, other.handle, result)
+        checkMp(mp_or(handle, other.handle, result), result)
         return BigInteger(result)
     }
 
     actual fun xor(other: BigInteger): BigInteger {
         val result = allocMp()
-        mp_xor(handle, other.handle, result)
+        checkMp(mp_xor(handle, other.handle, result), result)
         return BigInteger(result)
     }
 
     actual fun not(): BigInteger {
         val result = allocMp()
-        mp_complement(handle, result)
+        checkMp(mp_complement(handle, result), result)
         return BigInteger(result)
     }
 
     actual fun andNot(other: BigInteger): BigInteger {
         val notOther = allocMp()
-        mp_complement(other.handle, notOther)
+        checkMp(mp_complement(other.handle, notOther), notOther)
         val result = allocMp()
-        mp_and(handle, notOther, result)
-        mp_clear(notOther)
-        nativeHeap.free(notOther)
+        val err = mp_and(handle, notOther, result)
+        freeMp(notOther)
+        if (err != MP_OKAY) {
+            freeMp(result)
+            throw ArithmeticException("LibTomMath error: $err")
+        }
         return BigInteger(result)
     }
 
@@ -149,8 +195,15 @@ actual class BigInteger internal constructor(
             }
             return shiftRight(-n)
         }
+        if (signum() != 0 && n.toLong() + bitLength().toLong() > MAX_BIT_LENGTH) {
+            throw ArithmeticException("BigInteger would overflow supported range")
+        }
         val result = allocMp()
-        mp_mul_2d(handle, n, result)
+        val err = mp_mul_2d(handle, n, result)
+        if (err != MP_OKAY) {
+            freeMp(result)
+            throw ArithmeticException("BigInteger would overflow supported range")
+        }
         return BigInteger(result)
     }
 
@@ -164,7 +217,7 @@ actual class BigInteger internal constructor(
             return shiftLeft(-n)
         }
         val result = allocMp()
-        mp_signed_rsh(handle, n, result)
+        checkMp(mp_signed_rsh(handle, n, result), result)
         return BigInteger(result)
     }
 
@@ -177,8 +230,8 @@ actual class BigInteger internal constructor(
             return (handle.pointed.dp!![digitIndex].toLong() ushr bitIndex) and 1L == 1L
         } else {
             val absMinusOne = allocMp()
-            mp_abs(handle, absMinusOne)
-            mp_decr(absMinusOne)
+            checkMp(mp_abs(handle, absMinusOne), absMinusOne)
+            checkMp(mp_decr(absMinusOne), absMinusOne)
             val digitIndex = n / MP_DIGIT_BIT
             val bitIndex = n % MP_DIGIT_BIT
             val isSet = if (digitIndex >= absMinusOne.pointed.used) {
@@ -186,7 +239,7 @@ actual class BigInteger internal constructor(
             } else {
                 (absMinusOne.pointed.dp!![digitIndex].toLong() ushr bitIndex) and 1L == 0L
             }
-            mp_clear(absMinusOne); nativeHeap.free(absMinusOne)
+            freeMp(absMinusOne)
             return isSet
         }
     }
@@ -206,10 +259,14 @@ actual class BigInteger internal constructor(
     actual fun flipBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         val bitMask = allocMp()
-        mp_2expt(bitMask, n)
+        checkMp(mp_2expt(bitMask, n), bitMask)
         val result = allocMp()
-        mp_xor(handle, bitMask, result)
-        mp_clear(bitMask); nativeHeap.free(bitMask)
+        val err = mp_xor(handle, bitMask, result)
+        freeMp(bitMask)
+        if (err != MP_OKAY) {
+            freeMp(result)
+            throw ArithmeticException("LibTomMath error: $err")
+        }
         return BigInteger(result)
     }
 
@@ -222,10 +279,10 @@ actual class BigInteger internal constructor(
         if (handle.pointed.used == 0) return 0
         if (signum() > 0) return mp_count_bits(handle)
         val absMinusOne = allocMp()
-        mp_abs(handle, absMinusOne)
-        mp_decr(absMinusOne)
+        checkMp(mp_abs(handle, absMinusOne), absMinusOne)
+        checkMp(mp_decr(absMinusOne), absMinusOne)
         val bits = if (absMinusOne.pointed.used == 0) 0 else mp_count_bits(absMinusOne)
-        mp_clear(absMinusOne); nativeHeap.free(absMinusOne)
+        freeMp(absMinusOne)
         return bits
     }
 
@@ -239,8 +296,8 @@ actual class BigInteger internal constructor(
             needsFree = false
         } else {
             target = allocMp()
-            mp_abs(handle, target)
-            mp_decr(target)
+            checkMp(mp_abs(handle, target), target)
+            checkMp(mp_decr(target), target)
             needsFree = true
         }
 
@@ -255,7 +312,7 @@ actual class BigInteger internal constructor(
         }
 
         if (needsFree) {
-            mp_clear(target); nativeHeap.free(target)
+            freeMp(target)
         }
         return count
     }
@@ -269,15 +326,15 @@ actual class BigInteger internal constructor(
         if (handle.pointed.used == 0) return false
         val target = if (signum() < 0) {
             val abs = allocMp()
-            mp_abs(handle, abs)
+            checkMp(mp_abs(handle, abs), abs)
             abs
         } else {
             handle
         }
         val result = alloc<IntVar>()
-        mp_prime_is_prime(target, certainty.coerceAtLeast(1), result.ptr)
+        checkMp(mp_prime_is_prime(target, certainty.coerceAtLeast(1), result.ptr))
         if (target != handle) {
-            mp_clear(target); nativeHeap.free(target)
+            freeMp(target)
         }
         result.value != 0
     }
@@ -285,8 +342,12 @@ actual class BigInteger internal constructor(
     actual fun nextProbablePrime(): BigInteger {
         if (signum() < 0) throw ArithmeticException("start < 0: $this")
         val result = allocMp()
-        mp_copy(handle, result)
-        mp_prime_next_prime(result, 8, 0)
+        checkMp(mp_copy(handle, result), result)
+        // Use LibTomMath's recommended trial count based on bit size,
+        // but enforce a minimum matching JVM's default certainty of 100.
+        val trials = mp_prime_rabin_miller_trials(mp_count_bits(handle))
+            .coerceAtLeast(100)
+        checkMp(mp_prime_next_prime(result, trials, 0), result)
         return BigInteger(result)
     }
 
@@ -295,7 +356,7 @@ actual class BigInteger internal constructor(
     actual fun sqrt(): BigInteger {
         if (signum() < 0) throw ArithmeticException("Negative BigInteger")
         val result = allocMp()
-        mp_sqrt(handle, result)
+        checkMp(mp_sqrt(handle, result), result)
         return BigInteger(result)
     }
 
@@ -424,11 +485,40 @@ actual class BigInteger internal constructor(
 
 // Internal helpers
 
+/**
+ * Maximum bit length we allow before refusing an operation.
+ * Matches the JVM's practical limit (~2^31 bits, i.e. ~256 MB magnitude).
+ */
+private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
+
 @OptIn(ExperimentalForeignApi::class)
 internal fun allocMp(): CPointer<mp_int> {
     val mp = nativeHeap.alloc<mp_int>().ptr
-    mp_init(mp)
+    if (mp_init(mp) != MP_OKAY) {
+        nativeHeap.free(mp)
+        throw OutOfMemoryError("Failed to initialize mp_int")
+    }
     return mp
+}
+
+/** Free a temporary mp_int that is NOT owned by a BigInteger instance. */
+@OptIn(ExperimentalForeignApi::class)
+internal fun freeMp(mp: CPointer<mp_int>) {
+    mp_clear(mp)
+    nativeHeap.free(mp)
+}
+
+/**
+ * Check a LibTomMath error code; if not OK, free the given temporaries and throw.
+ * Use this for operations that should never fail under normal conditions
+ * (allocation-only failures).
+ */
+@OptIn(ExperimentalForeignApi::class)
+internal fun checkMp(err: mp_err, vararg temps: CPointer<mp_int>) {
+    if (err != MP_OKAY) {
+        for (t in temps) freeMp(t)
+        throw ArithmeticException("LibTomMath error: $err")
+    }
 }
 
 @OptIn(ExperimentalForeignApi::class)
@@ -473,8 +563,7 @@ internal fun parseTomMath(value: String, radix: Int): CPointer<mp_int> {
     val normalized = if (value.startsWith("+")) value.substring(1) else value
     val mp = allocMp()
     if (mp_read_radix(mp, normalized, radix) != MP_OKAY) {
-        mp_clear(mp)
-        nativeHeap.free(mp)
+        freeMp(mp)
         // Match JVM message format
         val msg = if (radix != 10) {
             "For input string: \"$value\" under radix $radix"
@@ -540,48 +629,17 @@ actual object BigIntegers {
 // Operators
 
 @OptIn(ExperimentalForeignApi::class)
-private inline fun binaryOp(
-    a: BigInteger,
-    b: BigInteger,
-    op: (CPointer<mp_int>, CPointer<mp_int>, CPointer<mp_int>) -> Unit
-): BigInteger {
-    val result = allocMp()
-    op(a.handle, b.handle, result)
-    return BigInteger(result)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-actual operator fun BigInteger.plus(other: BigInteger): BigInteger =
-    binaryOp(this, other) { a, b, r -> mp_add(a, b, r) }
-
-@OptIn(ExperimentalForeignApi::class)
-actual operator fun BigInteger.minus(other: BigInteger): BigInteger =
-    binaryOp(this, other) { a, b, r -> mp_sub(a, b, r) }
-
-@OptIn(ExperimentalForeignApi::class)
-actual operator fun BigInteger.times(other: BigInteger): BigInteger =
-    binaryOp(this, other) { a, b, r -> mp_mul(a, b, r) }
-
-@OptIn(ExperimentalForeignApi::class)
-actual operator fun BigInteger.div(other: BigInteger): BigInteger {
-    if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
-    val result = allocMp()
-    mp_div(this.handle, other.handle, result, null)
-    return BigInteger(result)
-}
-
-@OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
     val result = allocMp()
-    mp_div(this.handle, other.handle, null, result)
+    checkMp(mp_div(this.handle, other.handle, null, result), result)
     return BigInteger(result)
 }
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.unaryMinus(): BigInteger {
     val result = allocMp()
-    mp_neg(this.handle, result)
+    checkMp(mp_neg(this.handle, result), result)
     return BigInteger(result)
 }
 
@@ -589,17 +647,18 @@ actual operator fun BigInteger.unaryMinus(): BigInteger {
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.inc(): BigInteger {
+    this + BigIntegers.ONE
     val result = allocMp()
-    mp_copy(this.handle, result)
-    mp_incr(result)
+    checkMp(mp_copy(this.handle, result), result)
+    checkMp(mp_incr(result), result)
     return BigInteger(result)
 }
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.dec(): BigInteger {
     val result = allocMp()
-    mp_copy(this.handle, result)
-    mp_decr(result)
+    checkMp(mp_copy(this.handle, result), result)
+    checkMp(mp_decr(result), result)
     return BigInteger(result)
 }
 
@@ -610,12 +669,20 @@ actual fun BigInteger.lcm(other: BigInteger): BigInteger {
     if (this.signum() == 0 || other.signum() == 0) return BigIntegers.ZERO
     // Match JVM semantics: result = (this / gcd) * other (preserves sign)
     val g = allocMp()
-    mp_gcd(this.handle, other.handle, g)
+    checkMp(mp_gcd(this.handle, other.handle, g), g)
     val quot = allocMp()
-    mp_div(this.handle, g, quot, null)
+    val err1 = mp_div(this.handle, g, quot, null)
+    freeMp(g)
+    if (err1 != MP_OKAY) {
+        freeMp(quot)
+        throw ArithmeticException("LibTomMath error: $err1")
+    }
     val result = allocMp()
-    mp_mul(quot, other.handle, result)
-    mp_clear(g); nativeHeap.free(g)
-    mp_clear(quot); nativeHeap.free(quot)
+    val err2 = mp_mul(quot, other.handle, result)
+    freeMp(quot)
+    if (err2 != MP_OKAY) {
+        freeMp(result)
+        throw ArithmeticException("LibTomMath error: $err2")
+    }
     return BigInteger(result)
 }
