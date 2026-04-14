@@ -130,7 +130,7 @@ class BigIntegerConstructionTest : FunSpec({
             Long.MAX_VALUE to "9223372036854775807",
             Long.MIN_VALUE to "-9223372036854775808",
         ) { (input, expected) ->
-            BigIntegers.of(input) shouldBe bi(expected)
+            bigIntegerOf(input) shouldBe bi(expected)
         }
     }
 
@@ -153,10 +153,10 @@ class BigIntegerConstructionTest : FunSpec({
     }
 
     test("constants") {
-        BigIntegers.ZERO shouldBe bi("0")
-        BigIntegers.ONE shouldBe bi("1")
-        BigIntegers.TWO shouldBe bi("2")
-        BigIntegers.TEN shouldBe bi("10")
+        bigIntegerOf(0L) shouldBe bi("0")
+        bigIntegerOf(1L) shouldBe bi("1")
+        bigIntegerOf(2L) shouldBe bi("2")
+        bigIntegerOf(10L) shouldBe bi("10")
     }
 })
 

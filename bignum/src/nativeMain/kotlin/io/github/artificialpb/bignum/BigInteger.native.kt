@@ -63,7 +63,7 @@ actual class BigInteger internal constructor(
 
     actual fun pow(exponent: Int): BigInteger {
         if (exponent < 0) throw ArithmeticException("Negative exponent")
-        if (signum() == 0) return if (exponent == 0) BigIntegers.ONE else BigIntegers.ZERO
+        if (signum() == 0) return if (exponent == 0) ONE else ZERO
 
         // Match JVM overflow checks (java.math.BigInteger.pow):
         // Factor out trailing zeros, check the shift, then check the odd part.
@@ -83,9 +83,9 @@ actual class BigInteger internal constructor(
         // its own overflow guard.
         if (remainingBits == 1L) {
             return if (signum() < 0 && exponent % 2 == 1) {
-                BigIntegers.of(-1L).shiftLeft(bitsToShift.toInt())
+                MINUS_ONE.shiftLeft(bitsToShift.toInt())
             } else {
-                BigIntegers.ONE.shiftLeft(bitsToShift.toInt())
+                ONE.shiftLeft(bitsToShift.toInt())
             }
         }
 
@@ -113,7 +113,7 @@ actual class BigInteger internal constructor(
     actual fun modPow(exponent: BigInteger, modulus: BigInteger): BigInteger {
         if (modulus.signum() <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // x^e mod 1 == 0 for all x, e
-        if (modulus == BigIntegers.ONE) return BigIntegers.ZERO
+        if (modulus == ONE) return ZERO
         if (exponent.signum() < 0) {
             // JVM semantics: modPow(negExp, mod) = modInverse(this, mod)^|negExp| mod mod
             val inverse = modInverse(modulus)
@@ -132,7 +132,7 @@ actual class BigInteger internal constructor(
     actual fun modInverse(modulus: BigInteger): BigInteger {
         if (modulus.signum() <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // JVM: x.modInverse(1) == 0 for any x
-        if (modulus == BigIntegers.ONE) return BigIntegers.ZERO
+        if (modulus == ONE) return ZERO
         // mp_invmod gives incorrect results for negative inputs, so always
         // compute the inverse of the absolute value and adjust for sign.
         val absHandle = if (signum() < 0) {
@@ -217,7 +217,7 @@ actual class BigInteger internal constructor(
             if (n == Int.MIN_VALUE) {
                 // shiftLeft(MIN_VALUE) = shiftRight(2^31): arithmetic right shift by huge amount
                 // positive/zero → 0, negative → -1
-                return if (signum() < 0) BigIntegers.of(-1L) else BigIntegers.ZERO
+                return if (signum() < 0) MINUS_ONE else ZERO
             }
             return shiftRight(-n)
         }
@@ -237,7 +237,7 @@ actual class BigInteger internal constructor(
         if (n < 0) {
             if (n == Int.MIN_VALUE) {
                 // shiftRight(MIN_VALUE) = shiftLeft(2^31): only zero survives
-                if (signum() == 0) return BigIntegers.ZERO
+                if (signum() == 0) return ZERO
                 throw ArithmeticException("Shift amount too large")
             }
             return shiftLeft(-n)
@@ -652,22 +652,47 @@ internal fun fromTwosComplement(bytes: ByteArray): CPointer<mp_int> {
     return mp
 }
 
-// Constants and factory methods
+// Cached constants
+private val MINUS_ONE = bigIntegerOf(-1L)
+private val ZERO = newBigIntegerFromLong(0L)
+private val ONE = newBigIntegerFromLong(1L)
+private val TWO = newBigIntegerFromLong(2L)
+private val TEN = newBigIntegerFromLong(10L)
+private val HUNDRED = newBigIntegerFromLong(100L)
 
-actual object BigIntegers {
-    actual val ZERO: BigInteger = of(0L)
-    actual val ONE: BigInteger = of(1L)
-    actual val TWO: BigInteger = of(2L)
-    actual val TEN: BigInteger = of(10L)
+// Top-level factory functions
+actual fun bigIntegerOf(value: String): BigInteger = when (value) {
+    "0" -> ZERO
+    "1" -> ONE
+    "2" -> TWO
+    "10" -> TEN
+    "100" -> HUNDRED
+    else -> BigInteger(value)
+}
 
-    actual fun of(value: String): BigInteger = BigInteger(value)
+actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
+    0L -> ZERO
+    1L -> ONE
+    2L -> TWO
+    10L -> TEN
+    100L -> HUNDRED
+    else -> newBigIntegerFromLong(value)
+}
 
-    @OptIn(ExperimentalForeignApi::class)
-    actual fun of(value: Long): BigInteger {
-        val mp = allocMp()
-        mp_set_i64(mp, value)
-        return BigInteger(mp)
-    }
+actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
+    0 -> ZERO
+    1 -> ONE
+    2 -> TWO
+    10 -> TEN
+    100 -> HUNDRED
+    else -> newBigIntegerFromLong(value.toLong())
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun newBigIntegerFromLong(value: Long): BigInteger {
+    val mp = allocMp()
+    mp_set_i64(mp, value)
+    return BigInteger(mp)
 }
 
 // Operators
@@ -691,7 +716,7 @@ actual operator fun BigInteger.unaryMinus(): BigInteger {
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.inc(): BigInteger {
-    this + BigIntegers.ONE
+    this + ONE
     val result = allocMp()
     checkMp(mp_copy(this.handle, result), result)
     checkMp(mp_incr(result), result)
@@ -710,7 +735,7 @@ actual operator fun BigInteger.dec(): BigInteger {
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun BigInteger.lcm(other: BigInteger): BigInteger {
-    if (this.signum() == 0 || other.signum() == 0) return BigIntegers.ZERO
+    if (this.signum() == 0 || other.signum() == 0) return ZERO
     // Match JVM semantics: result = (this / gcd) * other (preserves sign)
     val g = allocMp()
     checkMp(mp_gcd(this.handle, other.handle, g), g)

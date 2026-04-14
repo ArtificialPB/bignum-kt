@@ -15,15 +15,15 @@ import io.kotest.property.checkAll
 
 /** Generates BigIntegers from random Long values */
 fun Arb.Companion.bigInteger(): Arb<BigInteger> =
-    Arb.long().map { BigIntegers.of(it) }
+    Arb.long().map { bigIntegerOf(it) }
 
 /** Generates non-zero BigIntegers */
 fun Arb.Companion.nonZeroBigInteger(): Arb<BigInteger> =
-    Arb.long().filter { it != 0L }.map { BigIntegers.of(it) }
+    Arb.long().filter { it != 0L }.map { bigIntegerOf(it) }
 
 /** Generates positive BigIntegers (> 0) */
 fun Arb.Companion.positiveBigInteger(): Arb<BigInteger> =
-    Arb.long(1L..Long.MAX_VALUE).map { BigIntegers.of(it) }
+    Arb.long(1L..Long.MAX_VALUE).map { bigIntegerOf(it) }
 
 /** Generates large BigIntegers from string concatenation of random longs */
 fun Arb.Companion.largeBigInteger(): Arb<BigInteger> =
@@ -61,13 +61,13 @@ class BigIntegerArithmeticPropertyTest : FunSpec({
 
     test("addition identity: a + 0 == a") {
         checkAll(Arb.bigInteger()) { a ->
-            (a + BigIntegers.ZERO) shouldBe a
+            (a + bigIntegerOf(0L)) shouldBe a
         }
     }
 
     test("additive inverse: a + (-a) == 0") {
         checkAll(Arb.bigInteger()) { a ->
-            assertImmutable(a) { (a + (-a)) shouldBe BigIntegers.ZERO }
+            assertImmutable(a) { (a + (-a)) shouldBe bigIntegerOf(0L) }
         }
     }
 
@@ -91,13 +91,13 @@ class BigIntegerArithmeticPropertyTest : FunSpec({
 
     test("multiplication identity: a * 1 == a") {
         checkAll(Arb.bigInteger()) { a ->
-            (a * BigIntegers.ONE) shouldBe a
+            (a * bigIntegerOf(1L)) shouldBe a
         }
     }
 
     test("multiplication by zero: a * 0 == 0") {
         checkAll(Arb.bigInteger()) { a ->
-            (a * BigIntegers.ZERO) shouldBe BigIntegers.ZERO
+            (a * bigIntegerOf(0L)) shouldBe bigIntegerOf(0L)
         }
     }
 
@@ -154,7 +154,7 @@ class BigIntegerBitwisePropertyTest : FunSpec({
 
     test("not identity: ~a == -(a + 1)") {
         checkAll(Arb.bigInteger()) { a ->
-            a.not() shouldBe (-(a + BigIntegers.ONE))
+            a.not() shouldBe (-(a + bigIntegerOf(1L)))
         }
     }
 
@@ -178,7 +178,7 @@ class BigIntegerBitwisePropertyTest : FunSpec({
 
     test("xor self-cancels: a ^ a == 0") {
         checkAll(Arb.bigInteger()) { a ->
-            a.xor(a) shouldBe BigIntegers.ZERO
+            a.xor(a) shouldBe bigIntegerOf(0L)
         }
     }
 
@@ -241,13 +241,13 @@ class BigIntegerConversionPropertyTest : FunSpec({
 
     test("toLong round-trips for values that fit in Long") {
         checkAll(Arb.long()) { n ->
-            BigIntegers.of(n).toLong() shouldBe n
+            bigIntegerOf(n).toLong() shouldBe n
         }
     }
 
     test("toInt round-trips for values that fit in Int") {
         checkAll(Arb.int()) { n ->
-            BigIntegers.of(n.toLong()).toInt() shouldBeExactly n
+            bigIntegerOf(n.toLong()).toInt() shouldBeExactly n
         }
     }
 
@@ -261,7 +261,7 @@ class BigIntegerConversionPropertyTest : FunSpec({
 
     test("signum matches sign of value") {
         checkAll(Arb.long()) { n ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             val expected = when {
                 n > 0 -> 1
                 n < 0 -> -1
@@ -319,14 +319,14 @@ class BigIntegerGcdPropertyTest : FunSpec({
     test("gcd divides both operands") {
         checkAll(Arb.nonZeroBigInteger(), Arb.nonZeroBigInteger()) { a, b ->
             val g = a.gcd(b)
-            (a % g) shouldBe BigIntegers.ZERO
-            (b % g) shouldBe BigIntegers.ZERO
+            (a % g) shouldBe bigIntegerOf(0L)
+            (b % g) shouldBe bigIntegerOf(0L)
         }
     }
 
     test("gcd(a, 0) == |a|") {
         checkAll(Arb.bigInteger()) { a ->
-            a.gcd(BigIntegers.ZERO) shouldBe a.abs()
+            a.gcd(bigIntegerOf(0L)) shouldBe a.abs()
         }
     }
 
@@ -341,7 +341,7 @@ class BigIntegerPowPropertyTest : FunSpec({
 
     test("pow(0) == 1 for any base") {
         checkAll(Arb.bigInteger()) { a ->
-            assertImmutable(a) { a.pow(0) shouldBe BigIntegers.ONE }
+            assertImmutable(a) { a.pow(0) shouldBe bigIntegerOf(1L) }
         }
     }
 
@@ -358,18 +358,18 @@ class BigIntegerPowPropertyTest : FunSpec({
     }
 
     test("pow(n+1) == pow(n) * a for small exponents") {
-        checkAll(Arb.long(-100L..100L).map { BigIntegers.of(it) }, Arb.int(1..8)) { a, n ->
+        checkAll(Arb.long(-100L..100L).map { bigIntegerOf(it) }, Arb.int(1..8)) { a, n ->
             a.pow(n + 1) shouldBe (a.pow(n) * a)
         }
     }
 
     test("modPow is consistent with pow and mod for small values") {
         checkAll(
-            Arb.long(1L..100L).map { BigIntegers.of(it) },
+            Arb.long(1L..100L).map { bigIntegerOf(it) },
             Arb.int(1..20),
-            Arb.long(2L..1000L).map { BigIntegers.of(it) },
+            Arb.long(2L..1000L).map { bigIntegerOf(it) },
         ) { base, exp, modulus ->
-            val expBi = BigIntegers.of(exp.toLong())
+            val expBi = bigIntegerOf(exp.toLong())
             assertImmutable(base, expBi, modulus) {
                 base.modPow(expBi, modulus) shouldBe base.pow(exp).mod(modulus)
             }
@@ -383,7 +383,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
         checkAll(Arb.long(), Arb.long()) { a, b ->
             val expected = a + b
             if ((a xor b) < 0 || (a xor expected) >= 0) {
-                (BigIntegers.of(a) + BigIntegers.of(b)).toLong() shouldBe expected
+                (bigIntegerOf(a) + bigIntegerOf(b)).toLong() shouldBe expected
             }
         }
     }
@@ -392,7 +392,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
         checkAll(Arb.long(), Arb.long()) { a, b ->
             val expected = a - b
             if ((a xor b) >= 0 || (a xor expected) >= 0) {
-                (BigIntegers.of(a) - BigIntegers.of(b)).toLong() shouldBe expected
+                (bigIntegerOf(a) - bigIntegerOf(b)).toLong() shouldBe expected
             }
         }
     }
@@ -401,7 +401,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
         checkAll(Arb.long(), Arb.long()) { a, b ->
             val expected = a * b
             if (a == 0L || expected / a == b) {
-                (BigIntegers.of(a) * BigIntegers.of(b)).toLong() shouldBe expected
+                (bigIntegerOf(a) * bigIntegerOf(b)).toLong() shouldBe expected
             }
         }
     }
@@ -409,7 +409,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
     test("division matches Long") {
         checkAll(Arb.long(), Arb.long().filter { it != 0L }) { a, b ->
             if (!(a == Long.MIN_VALUE && b == -1L)) {
-                (BigIntegers.of(a) / BigIntegers.of(b)).toLong() shouldBe (a / b)
+                (bigIntegerOf(a) / bigIntegerOf(b)).toLong() shouldBe (a / b)
             }
         }
     }
@@ -417,44 +417,44 @@ class BigIntegerVsLongPropertyTest : FunSpec({
     test("remainder matches Long") {
         checkAll(Arb.long(), Arb.long().filter { it != 0L }) { a, b ->
             if (!(a == Long.MIN_VALUE && b == -1L)) {
-                (BigIntegers.of(a) % BigIntegers.of(b)).toLong() shouldBe (a % b)
+                (bigIntegerOf(a) % bigIntegerOf(b)).toLong() shouldBe (a % b)
             }
         }
     }
 
     test("negation matches Long") {
         checkAll(Arb.long().filter { it != Long.MIN_VALUE }) { a ->
-            (-BigIntegers.of(a)).toLong() shouldBe (-a)
+            (-bigIntegerOf(a)).toLong() shouldBe (-a)
         }
     }
 
     test("abs matches Long") {
         checkAll(Arb.long().filter { it != Long.MIN_VALUE }) { a ->
-            BigIntegers.of(a).abs().toLong() shouldBe kotlin.math.abs(a)
+            bigIntegerOf(a).abs().toLong() shouldBe kotlin.math.abs(a)
         }
     }
 
     test("compareTo matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            Integer.signum(BigIntegers.of(a).compareTo(BigIntegers.of(b))) shouldBeExactly Integer.signum(a.compareTo(b))
+            Integer.signum(bigIntegerOf(a).compareTo(bigIntegerOf(b))) shouldBeExactly Integer.signum(a.compareTo(b))
         }
     }
 
     test("min matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            BigIntegers.of(a).min(BigIntegers.of(b)).toLong() shouldBe kotlin.math.min(a, b)
+            bigIntegerOf(a).min(bigIntegerOf(b)).toLong() shouldBe kotlin.math.min(a, b)
         }
     }
 
     test("max matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            BigIntegers.of(a).max(BigIntegers.of(b)).toLong() shouldBe kotlin.math.max(a, b)
+            bigIntegerOf(a).max(bigIntegerOf(b)).toLong() shouldBe kotlin.math.max(a, b)
         }
     }
 
     test("signum matches Long") {
         checkAll(Arb.long()) { a ->
-            BigIntegers.of(a).signum() shouldBeExactly when {
+            bigIntegerOf(a).signum() shouldBeExactly when {
                 a > 0 -> 1
                 a < 0 -> -1
                 else -> 0
@@ -464,55 +464,55 @@ class BigIntegerVsLongPropertyTest : FunSpec({
 
     test("toInt matches Long.toInt") {
         checkAll(Arb.int()) { a ->
-            BigIntegers.of(a.toLong()).toInt() shouldBeExactly a
+            bigIntegerOf(a.toLong()).toInt() shouldBeExactly a
         }
     }
 
     test("toString matches Long.toString") {
         checkAll(Arb.long()) { a ->
-            BigIntegers.of(a).toString() shouldBe a.toString()
+            bigIntegerOf(a).toString() shouldBe a.toString()
         }
     }
 
     test("bitwise and matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            BigIntegers.of(a).and(BigIntegers.of(b)).toLong() shouldBe (a and b)
+            bigIntegerOf(a).and(bigIntegerOf(b)).toLong() shouldBe (a and b)
         }
     }
 
     test("bitwise or matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            BigIntegers.of(a).or(BigIntegers.of(b)).toLong() shouldBe (a or b)
+            bigIntegerOf(a).or(bigIntegerOf(b)).toLong() shouldBe (a or b)
         }
     }
 
     test("bitwise xor matches Long") {
         checkAll(Arb.long(), Arb.long()) { a, b ->
-            BigIntegers.of(a).xor(BigIntegers.of(b)).toLong() shouldBe (a xor b)
+            bigIntegerOf(a).xor(bigIntegerOf(b)).toLong() shouldBe (a xor b)
         }
     }
 
     test("bitwise not matches Long") {
         checkAll(Arb.long()) { a ->
-            BigIntegers.of(a).not().toLong() shouldBe a.inv()
+            bigIntegerOf(a).not().toLong() shouldBe a.inv()
         }
     }
 
     test("shiftLeft matches Long for small shifts") {
         checkAll(Arb.long(-1_000_000L..1_000_000L), Arb.int(0..30)) { a, n ->
-            BigIntegers.of(a).shiftLeft(n).toLong() shouldBe (a shl n)
+            bigIntegerOf(a).shiftLeft(n).toLong() shouldBe (a shl n)
         }
     }
 
     test("shiftRight matches Long") {
         checkAll(Arb.long(), Arb.int(0..62)) { a, n ->
-            BigIntegers.of(a).shiftRight(n).toLong() shouldBe (a shr n)
+            bigIntegerOf(a).shiftRight(n).toLong() shouldBe (a shr n)
         }
     }
 
     test("inc matches Long") {
         checkAll(Arb.long().filter { it != Long.MAX_VALUE }) { a ->
-            var bi = BigIntegers.of(a)
+            var bi = bigIntegerOf(a)
             bi++
             bi.toLong() shouldBe (a + 1)
         }
@@ -520,7 +520,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
 
     test("dec matches Long") {
         checkAll(Arb.long().filter { it != Long.MIN_VALUE }) { a ->
-            var bi = BigIntegers.of(a)
+            var bi = bigIntegerOf(a)
             bi--
             bi.toLong() shouldBe (a - 1)
         }
@@ -529,7 +529,7 @@ class BigIntegerVsLongPropertyTest : FunSpec({
     test("divideAndRemainder matches Long") {
         checkAll(Arb.long(), Arb.long().filter { it != 0L }) { a, b ->
             if (!(a == Long.MIN_VALUE && b == -1L)) {
-                val result = BigIntegers.of(a).divideAndRemainder(BigIntegers.of(b))
+                val result = bigIntegerOf(a).divideAndRemainder(bigIntegerOf(b))
                 result[0].toLong() shouldBe (a / b)
                 result[1].toLong() shouldBe (a % b)
             }

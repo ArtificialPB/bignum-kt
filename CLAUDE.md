@@ -47,13 +47,12 @@ bignum-kt/
 JVM uses `actual typealias BigInteger = java.math.BigInteger` for zero-overhead interop. This means:
 - Only methods that exist on `java.math.BigInteger` can be declared inside the `expect class` body
 - Operators (`+`, `-`, `*`, `/`, `%`, unary `-`) are top-level `expect`/`actual` extension functions
-- Factory methods and constants live on `BigIntegers` object (not a companion — typealias'd classes can't have one)
+- Factory functions are top-level `bigIntegerOf(String)`, `bigIntegerOf(Long)`, `bigIntegerOf(Int)`
 
 ```kotlin
-val a = BigIntegers.of("123456789")
-val b = BigIntegers.of(42L)
+val a = bigIntegerOf("123456789")
+val b = bigIntegerOf(42L)
 val sum = a + b
-val zero = BigIntegers.ZERO
 ```
 
 ## Conventions

@@ -9,8 +9,8 @@
   ```
 - **JDK 17+** — for building JVM targets. Install via [SDKMAN](https://sdkman.io/) or [Homebrew](https://brew.sh/):
   ```bash
-  sdk install java 21-tem    # SDKMAN
-  brew install openjdk@21    # Homebrew
+  sdk install java 17-tem    # SDKMAN
+  brew install openjdk@17    # Homebrew
   ```
 
 No other dependencies are needed. LibTomMath (the native math library) is included as a git submodule and compiled from source during the build.
@@ -64,7 +64,7 @@ bignum-kt/
 Zero-overhead: our `BigInteger` IS `java.math.BigInteger` on JVM. This means:
 - Only methods that exist on `java.math.BigInteger` can go inside the `expect class` body
 - Operators and extra functions are top-level `expect`/`actual` extension functions
-- Factory methods and constants live on the `BigIntegers` object (no companion — typealias'd classes can't have one)
+- Factory functions are top-level: `bigIntegerOf(String)`, `bigIntegerOf(Long)`, `bigIntegerOf(Int)`
 
 ### Native — LibTomMath via cinterop
 

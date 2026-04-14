@@ -60,15 +60,10 @@ expect class BigInteger : Comparable<BigInteger> {
     override fun hashCode(): Int
 }
 
-expect object BigIntegers {
-    val ZERO: BigInteger
-    val ONE: BigInteger
-    val TWO: BigInteger
-    val TEN: BigInteger
-
-    fun of(value: String): BigInteger
-    fun of(value: Long): BigInteger
-}
+// Top-level factory functions
+expect fun bigIntegerOf(value: String): BigInteger
+expect fun bigIntegerOf(value: Long): BigInteger
+expect fun bigIntegerOf(value: Int): BigInteger
 
 // Operators
 operator fun BigInteger.plus(other: BigInteger): BigInteger = add(other)

@@ -624,7 +624,7 @@ object DifferentialFixtureGenerator {
             if (nextChoice(rs, 2) == 0) square.toString() else (-square).toString()
         }
 
-        4 -> (BigInteger(randomPositiveBigInt(rs, maxDigits = 12)) * BigIntegers.TWO).toString()
+        4 -> (BigInteger(randomPositiveBigInt(rs, maxDigits = 12)) * bigIntegerOf(2L)).toString()
         else -> randomCanonicalBigInt(rs, maxDigits = 24)
     }
 
@@ -670,7 +670,7 @@ object DifferentialFixtureGenerator {
 
         2 -> {
             val root = BigInteger(randomPositiveBigInt(rs, maxDigits = 18))
-            ((root * root) + BigIntegers.ONE).toString()
+            ((root * root) + bigIntegerOf(1L)).toString()
         }
 
         else -> randomPositiveBigInt(rs, maxDigits = 64)
@@ -822,14 +822,14 @@ object DifferentialFixtureGenerator {
         rs: RandomSource,
         maxShift: Int,
     ): String {
-        val power = BigIntegers.ONE.shiftLeft(nextInt(rs, 0, maxShift))
+        val power = bigIntegerOf(1L).shiftLeft(nextInt(rs, 0, maxShift))
         return when (nextChoice(rs, 6)) {
             0 -> power.toString()
             1 -> (-power).toString()
-            2 -> (power - BigIntegers.ONE).toString()
-            3 -> (power + BigIntegers.ONE).toString()
-            4 -> (-(power - BigIntegers.ONE)).toString()
-            else -> (-(power + BigIntegers.ONE)).toString()
+            2 -> (power - bigIntegerOf(1L)).toString()
+            3 -> (power + bigIntegerOf(1L)).toString()
+            4 -> (-(power - bigIntegerOf(1L))).toString()
+            else -> (-(power + bigIntegerOf(1L))).toString()
         }
     }
 
@@ -1102,7 +1102,7 @@ object DifferentialFixtureGenerator {
         )
         val square = BigInteger("123456789012345678901234567890").pow(2)
         add(square.toString())
-        add((square + BigIntegers.ONE).toString())
+        add((square + bigIntegerOf(1L)).toString())
     }
 
     private fun powCases(): List<Pair<String, Int>> = listOf(
@@ -1223,13 +1223,13 @@ object DifferentialFixtureGenerator {
         ).forEach(::addCanonical)
 
         listOf(1, 2, 7, 8, 15, 16, 31, 32, 63, 64, 127, 128, 255).forEach { shift ->
-            val power = BigIntegers.ONE.shiftLeft(shift)
+            val power = bigIntegerOf(1L).shiftLeft(shift)
             values += power.toString()
             values += (-power).toString()
-            values += (power - BigIntegers.ONE).toString()
-            values += (power + BigIntegers.ONE).toString()
-            values += (-(power - BigIntegers.ONE)).toString()
-            values += (-(power + BigIntegers.ONE)).toString()
+            values += (power - bigIntegerOf(1L)).toString()
+            values += (power + bigIntegerOf(1L)).toString()
+            values += (-(power - bigIntegerOf(1L))).toString()
+            values += (-(power + bigIntegerOf(1L))).toString()
         }
 
         val random = Random(0xC0FFEE)

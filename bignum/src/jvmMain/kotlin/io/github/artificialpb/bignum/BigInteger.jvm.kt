@@ -2,14 +2,39 @@ package io.github.artificialpb.bignum
 
 actual typealias BigInteger = java.math.BigInteger
 
-actual object BigIntegers {
-    actual val ZERO: BigInteger = java.math.BigInteger.ZERO
-    actual val ONE: BigInteger = java.math.BigInteger.ONE
-    actual val TWO: BigInteger = java.math.BigInteger.TWO
-    actual val TEN: BigInteger = java.math.BigInteger.TEN
+// Cached constants
+private val ZERO = java.math.BigInteger.ZERO
+private val ONE = java.math.BigInteger.ONE
+private val TWO = java.math.BigInteger.TWO
+private val TEN = java.math.BigInteger.TEN
+private val HUNDRED = java.math.BigInteger.valueOf(100)
 
-    actual fun of(value: String): BigInteger = java.math.BigInteger(value)
-    actual fun of(value: Long): BigInteger = java.math.BigInteger.valueOf(value)
+// Top-level factory functions
+actual fun bigIntegerOf(value: String): BigInteger = when (value) {
+    "0" -> ZERO
+    "1" -> ONE
+    "2" -> TWO
+    "10" -> TEN
+    "100" -> HUNDRED
+    else -> java.math.BigInteger(value)
+}
+
+actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
+    0L -> ZERO
+    1L -> ONE
+    2L -> TWO
+    10L -> TEN
+    100L -> HUNDRED
+    else -> java.math.BigInteger.valueOf(value)
+}
+
+actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
+    0 -> ZERO
+    1 -> ONE
+    2 -> TWO
+    10 -> TEN
+    100 -> HUNDRED
+    else -> java.math.BigInteger.valueOf(value.toLong())
 }
 
 // Operators

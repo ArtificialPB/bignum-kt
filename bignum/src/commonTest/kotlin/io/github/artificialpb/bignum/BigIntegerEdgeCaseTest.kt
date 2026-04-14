@@ -42,7 +42,7 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
             BitwiseBinaryCase("-4", "-4", "-4", "and"),
             BitwiseBinaryCase("-3", "5", "5", "and"),              // ...11111101 & 00000101 = 00000101
         ) { (a, b, expected, _) ->
-            BigInteger(a).and(BigInteger(b)) shouldBe BigInteger(expected)
+            bigIntegerOf(a).and(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
     }
 
@@ -55,7 +55,7 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
             BitwiseBinaryCase("-128", "127", "-1", "or"),
             BitwiseBinaryCase("-4", "3", "-1", "or"),              // ...11111100 | 00000011 = -1
         ) { (a, b, expected, _) ->
-            BigInteger(a).or(BigInteger(b)) shouldBe BigInteger(expected)
+            bigIntegerOf(a).or(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
     }
 
@@ -68,7 +68,7 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
             BitwiseBinaryCase("-2", "1", "-1", "xor"),
             BitwiseBinaryCase("-128", "-1", "127", "xor"),
         ) { (a, b, expected, _) ->
-            BigInteger(a).xor(BigInteger(b)) shouldBe BigInteger(expected)
+            bigIntegerOf(a).xor(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
     }
 
@@ -80,7 +80,7 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
             BitwiseBinaryCase("-1", "-256", "255", "andNot"),      // -1 & ~(-256) = -1 & 0xFF = 255
             BitwiseBinaryCase("0", "-1", "0", "andNot"),
         ) { (a, b, expected, _) ->
-            BigInteger(a).andNot(BigInteger(b)) shouldBe BigInteger(expected)
+            bigIntegerOf(a).andNot(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
     }
 
@@ -181,9 +181,9 @@ class NegativeShiftEdgeCaseTest : FunSpec({
 
     test("shiftLeft(Int.MIN_VALUE) — arithmetic right shift by 2^31") {
         // Positive/zero → 0
-        BigIntegers.ZERO.shiftLeft(Int.MIN_VALUE) shouldBe BigIntegers.ZERO
-        BigIntegers.ONE.shiftLeft(Int.MIN_VALUE) shouldBe BigIntegers.ZERO
-        BigInteger("255").shiftLeft(Int.MIN_VALUE) shouldBe BigIntegers.ZERO
+        bigIntegerOf(0L).shiftLeft(Int.MIN_VALUE) shouldBe bigIntegerOf(0L)
+        bigIntegerOf(1L).shiftLeft(Int.MIN_VALUE) shouldBe bigIntegerOf(0L)
+        BigInteger("255").shiftLeft(Int.MIN_VALUE) shouldBe bigIntegerOf(0L)
         // Negative → -1
         BigInteger("-1").shiftLeft(Int.MIN_VALUE) shouldBe BigInteger("-1")
         BigInteger("-2").shiftLeft(Int.MIN_VALUE) shouldBe BigInteger("-1")
@@ -192,10 +192,10 @@ class NegativeShiftEdgeCaseTest : FunSpec({
 
     test("shiftRight(Int.MIN_VALUE) — shiftLeft by 2^31") {
         // Zero is fine
-        BigIntegers.ZERO.shiftRight(Int.MIN_VALUE) shouldBe BigIntegers.ZERO
+        bigIntegerOf(0L).shiftRight(Int.MIN_VALUE) shouldBe bigIntegerOf(0L)
         // Nonzero throws
         shouldThrow<ArithmeticException> {
-            BigIntegers.ONE.shiftRight(Int.MIN_VALUE)
+            bigIntegerOf(1L).shiftRight(Int.MIN_VALUE)
         }
         shouldThrow<ArithmeticException> {
             BigInteger("-1").shiftRight(Int.MIN_VALUE)
@@ -262,7 +262,7 @@ class ByteArrayEdgeCaseTest : FunSpec({
     test("constructor(bytes, off, len) slices correctly") {
         val bytes = byteArrayOf(0x00, 0x01, 0x00, 0xFF.toByte())
         BigInteger(bytes, 1, 2) shouldBe BigInteger("256")  // [0x01, 0x00]
-        BigInteger(bytes, 0, 1) shouldBe BigIntegers.ZERO    // [0x00]
+        BigInteger(bytes, 0, 1) shouldBe bigIntegerOf(0L)    // [0x00]
         BigInteger(bytes, 3, 1) shouldBe BigInteger("-1")   // [0xFF]
     }
 })
@@ -288,7 +288,7 @@ class BitLengthEdgeCaseTest : FunSpec({
             val bi = BigInteger(value)
             if (bi.signum() < 0) {
                 // bitLength of negative = bitLength of (|value| - 1)
-                val absMinusOne = bi.abs() - BigIntegers.ONE
+                val absMinusOne = bi.abs() - bigIntegerOf(1L)
                 bi.bitLength() shouldBeExactly absMinusOne.bitLength()
             }
         }
@@ -307,7 +307,7 @@ class EqualsHashCodeTest : FunSpec({
     }
 
     test("equal values from different factories have same hashCode") {
-        val a = BigIntegers.of(42L)
+        val a = bigIntegerOf(42L)
         val b = BigInteger("42")
         a shouldBe b
         a.hashCode() shouldBeExactly b.hashCode()
@@ -322,7 +322,7 @@ class EqualsHashCodeTest : FunSpec({
 
     test("hashCode is consistent with equals for random values") {
         checkAll(Arb.long()) { n ->
-            val a = BigIntegers.of(n)
+            val a = bigIntegerOf(n)
             val b = BigInteger(n.toString())
             a shouldBe b
             a.hashCode() shouldBeExactly b.hashCode()
@@ -331,26 +331,26 @@ class EqualsHashCodeTest : FunSpec({
 
     test("hashCode matches JVM reference values") {
         // These values were verified against java.math.BigInteger.hashCode()
-        BigIntegers.ZERO.hashCode() shouldBeExactly 0
-        BigIntegers.ONE.hashCode() shouldBeExactly 1
-        BigIntegers.TEN.hashCode() shouldBeExactly 10
+        bigIntegerOf(0L).hashCode() shouldBeExactly 0
+        bigIntegerOf(1L).hashCode() shouldBeExactly 1
+        bigIntegerOf(10L).hashCode() shouldBeExactly 10
         BigInteger("-1").hashCode() shouldBeExactly -1
         BigInteger("256").hashCode() shouldBeExactly 256
         BigInteger("2147483647").hashCode() shouldBeExactly 2147483647
         BigInteger("-2147483648").hashCode() shouldBeExactly -2147483648
         // 2^32: magnitude is [1, 0, 0, 0, 0] as bytes → int[] = {1, 0} → 31*1+0 = 31
-        BigIntegers.ONE.shiftLeft(32).hashCode() shouldBeExactly 31
+        bigIntegerOf(1L).shiftLeft(32).hashCode() shouldBeExactly 31
         // 2^32+1: int[] = {1, 1} → 31*1+1 = 32
-        (BigIntegers.ONE.shiftLeft(32) + BigIntegers.ONE).hashCode() shouldBeExactly 32
+        (bigIntegerOf(1L).shiftLeft(32) + bigIntegerOf(1L)).hashCode() shouldBeExactly 32
     }
 
     test("hashCode matches JVM for 512-bit numbers") {
         // 2^512 - 1 (all ones, 512 bits)
-        val allOnes = BigIntegers.TWO.pow(512) - BigIntegers.ONE
+        val allOnes = bigIntegerOf(2L).pow(512) - bigIntegerOf(1L)
         allOnes.hashCode() shouldBeExactly 813883136
 
         // 2^512
-        val pow512 = BigIntegers.TWO.pow(512)
+        val pow512 = bigIntegerOf(2L).pow(512)
         pow512.hashCode() shouldBeExactly 1353309697
 
         // Large 512-bit prime
@@ -372,7 +372,7 @@ class NegativeBitwiseVsLongTest : FunSpec({
 
     test("testBit matches Long for full range of bit positions") {
         checkAll(Arb.long()) { n ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             for (bit in 0..62) {
                 bi.testBit(bit) shouldBe ((n shr bit) and 1L == 1L)
             }
@@ -381,7 +381,7 @@ class NegativeBitwiseVsLongTest : FunSpec({
 
     test("getLowestSetBit matches Long") {
         checkAll(Arb.long()) { n ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             if (n == 0L) {
                 bi.getLowestSetBit() shouldBeExactly -1
             } else {
@@ -399,14 +399,14 @@ class NegativeBitwiseVsLongTest : FunSpec({
 
     test("bitCount matches Long.countOneBits for positive") {
         checkAll(Arb.long(0L..Long.MAX_VALUE)) { n ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             bi.bitCount() shouldBeExactly n.countOneBits()
         }
     }
 
     test("flipBit matches Long") {
         checkAll(Arb.long(), Arb.long().map { (it.mod(63L)).toInt() }) { n, bit ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             val expected = n xor (1L shl bit)
             bi.flipBit(bit).toLong() shouldBe expected
         }
@@ -414,7 +414,7 @@ class NegativeBitwiseVsLongTest : FunSpec({
 
     test("setBit matches Long") {
         checkAll(Arb.long(), Arb.long().map { (it.mod(63L)).toInt() }) { n, bit ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             val expected = n or (1L shl bit)
             bi.setBit(bit).toLong() shouldBe expected
         }
@@ -422,7 +422,7 @@ class NegativeBitwiseVsLongTest : FunSpec({
 
     test("clearBit matches Long") {
         checkAll(Arb.long(), Arb.long().map { (it.mod(63L)).toInt() }) { n, bit ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             val expected = n and (1L shl bit).inv()
             bi.clearBit(bit).toLong() shouldBe expected
         }
@@ -436,21 +436,21 @@ class ErrorHandlingTest : FunSpec({
     test("div by zero throws ArithmeticException") {
         val a = BigInteger("42")
         shouldThrow<ArithmeticException> {
-            a / BigIntegers.ZERO
+            a / bigIntegerOf(0L)
         }
     }
 
     test("rem by zero throws ArithmeticException") {
         val a = BigInteger("42")
         shouldThrow<ArithmeticException> {
-            a % BigIntegers.ZERO
+            a % bigIntegerOf(0L)
         }
     }
 
     test("divideAndRemainder by zero throws ArithmeticException") {
         val a = BigInteger("42")
         shouldThrow<ArithmeticException> {
-            a.divideAndRemainder(BigIntegers.ZERO)
+            a.divideAndRemainder(bigIntegerOf(0L))
         }
     }
 
@@ -491,9 +491,9 @@ class ErrorHandlingTest : FunSpec({
 
     test("constructor(bytes, off, len) with len=0 returns zero for valid offsets with non-negative leading byte") {
         val bytes = byteArrayOf(0x01, 0x02, 0x03)
-        BigInteger(bytes, 0, 0) shouldBe BigIntegers.ZERO
-        BigInteger(bytes, 1, 0) shouldBe BigIntegers.ZERO
-        BigInteger(bytes, 2, 0) shouldBe BigIntegers.ZERO
+        BigInteger(bytes, 0, 0) shouldBe bigIntegerOf(0L)
+        BigInteger(bytes, 1, 0) shouldBe bigIntegerOf(0L)
+        BigInteger(bytes, 2, 0) shouldBe bigIntegerOf(0L)
     }
 
     test("constructor(bytes, off, len) with len=0 follows JVM's negative-leading-byte edge case") {
@@ -541,7 +541,7 @@ class ErrorHandlingTest : FunSpec({
 
     test("modInverse with non-positive modulus throws ArithmeticException") {
         shouldThrow<ArithmeticException> {
-            BigInteger("3").modInverse(BigIntegers.ZERO)
+            BigInteger("3").modInverse(bigIntegerOf(0L))
         }
         shouldThrow<ArithmeticException> {
             BigInteger("3").modInverse(BigInteger("-5"))
@@ -568,7 +568,7 @@ class ErrorHandlingTest : FunSpec({
 
     test("modPow with non-positive modulus throws ArithmeticException") {
         shouldThrow<ArithmeticException> {
-            BigInteger("2").modPow(BigInteger("3"), BigIntegers.ZERO)
+            BigInteger("2").modPow(BigInteger("3"), bigIntegerOf(0L))
         }
         shouldThrow<ArithmeticException> {
             BigInteger("2").modPow(BigInteger("3"), BigInteger("-5"))
@@ -590,9 +590,9 @@ class ErrorHandlingTest : FunSpec({
     }
 
     test("modPow with modulus == 1 always returns 0") {
-        BigInteger("2").modPow(BigInteger("10"), BigIntegers.ONE) shouldBe BigIntegers.ZERO
-        BigInteger("2").modPow(BigInteger("-1"), BigIntegers.ONE) shouldBe BigIntegers.ZERO
-        BigInteger("0").modPow(BigInteger("0"), BigIntegers.ONE) shouldBe BigIntegers.ZERO
+        BigInteger("2").modPow(BigInteger("10"), bigIntegerOf(1L)) shouldBe bigIntegerOf(0L)
+        BigInteger("2").modPow(BigInteger("-1"), bigIntegerOf(1L)) shouldBe bigIntegerOf(0L)
+        BigInteger("0").modPow(BigInteger("0"), bigIntegerOf(1L)) shouldBe bigIntegerOf(0L)
     }
 
     test("sqrt of negative throws ArithmeticException") {
@@ -609,25 +609,25 @@ class ErrorHandlingTest : FunSpec({
 
     test("mod with zero modulus throws ArithmeticException") {
         shouldThrow<ArithmeticException> {
-            BigInteger("7").mod(BigIntegers.ZERO)
+            BigInteger("7").mod(bigIntegerOf(0L))
         }
     }
 
     test("pow with Int.MAX_VALUE exponent throws ArithmeticException") {
         shouldThrow<ArithmeticException> {
-            BigIntegers.TWO.pow(Int.MAX_VALUE)
+            bigIntegerOf(2L).pow(Int.MAX_VALUE)
         }
     }
 
     test("pow with large-but-accepted exponent does not throw") {
         // 2^1073741824 has bit length 1073741825, within Int.MAX_VALUE
-        val result = BigIntegers.TWO.pow(1073741824)
+        val result = bigIntegerOf(2L).pow(1073741824)
         result.bitLength() shouldBeExactly 1073741825
     }
 
     test("shiftLeft by Int.MAX_VALUE throws ArithmeticException") {
         shouldThrow<ArithmeticException> {
-            BigIntegers.ONE.shiftLeft(Int.MAX_VALUE)
+            bigIntegerOf(1L).shiftLeft(Int.MAX_VALUE)
         }
     }
 })
@@ -699,7 +699,7 @@ class LcmSignTest : FunSpec({
             Triple("0", "5", "0"),
             Triple("5", "0", "0"),
         ) { (a, b, expected) ->
-            BigInteger(a).lcm(BigInteger(b)) shouldBe BigInteger(expected)
+            bigIntegerOf(a).lcm(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
     }
 })
@@ -710,8 +710,8 @@ class ModVsRemEdgeCaseTest : FunSpec({
 
     test("mod always returns non-negative, rem preserves sign of dividend") {
         checkAll(Arb.long(), Arb.long(1L..Long.MAX_VALUE)) { a, b ->
-            val bi = BigIntegers.of(a)
-            val bm = BigIntegers.of(b)
+            val bi = bigIntegerOf(a)
+            val bm = bigIntegerOf(b)
 
             val modResult = bi.mod(bm)
             val remResult = bi % bm
@@ -761,7 +761,7 @@ class BitCountNegativeTest : FunSpec({
         // For negative Long n, bitCount = Long.SIZE_BITS - n.countOneBits()
         // which is the number of 0-bits (= bits differing from sign bit 1)
         checkAll(Arb.long(Long.MIN_VALUE..-1L)) { n ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             // Java BigInteger bitCount for negative = popcount(|n| - 1)
             val absMinusOne = if (n == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(n) - 1
             bi.bitCount() shouldBeExactly absMinusOne.countOneBits()
@@ -775,35 +775,35 @@ class OverflowTruncationTest : FunSpec({
 
     test("toLong truncates large positive to low 64 bits") {
         // 2^64 + 42 should truncate to 42
-        val value = BigIntegers.TWO.pow(64) + BigIntegers.of(42L)
+        val value = bigIntegerOf(2L).pow(64) + bigIntegerOf(42L)
         value.toLong() shouldBeExactly 42L
     }
 
     test("toLong truncates large negative") {
         // -(2^64 + 42) should truncate to -42
-        val value = -(BigIntegers.TWO.pow(64) + BigIntegers.of(42L))
+        val value = -(bigIntegerOf(2L).pow(64) + bigIntegerOf(42L))
         value.toLong() shouldBeExactly -42L
     }
 
     test("toInt truncates values beyond Int range") {
         // 2^32 + 7 should truncate to 7
-        val value = BigIntegers.TWO.pow(32) + BigIntegers.of(7L)
+        val value = bigIntegerOf(2L).pow(32) + bigIntegerOf(7L)
         value.toInt() shouldBeExactly 7
     }
 
     test("toInt truncates large negative values beyond Int range") {
-        val value = -(BigIntegers.TWO.pow(32) + BigIntegers.of(7L))
+        val value = -(bigIntegerOf(2L).pow(32) + bigIntegerOf(7L))
         value.toInt() shouldBeExactly -7
     }
 
     test("toLong of Long.MAX_VALUE + 1") {
-        val value = BigIntegers.of(Long.MAX_VALUE) + BigIntegers.ONE
+        val value = bigIntegerOf(Long.MAX_VALUE) + bigIntegerOf(1L)
         // JVM: Long.MAX_VALUE + 1 wraps to Long.MIN_VALUE
         value.toLong() shouldBeExactly Long.MIN_VALUE
     }
 
     test("toLong of Long.MIN_VALUE - 1") {
-        val value = BigIntegers.of(Long.MIN_VALUE) - BigIntegers.ONE
+        val value = bigIntegerOf(Long.MIN_VALUE) - bigIntegerOf(1L)
         // JVM: Long.MIN_VALUE - 1 wraps to Long.MAX_VALUE
         value.toLong() shouldBeExactly Long.MAX_VALUE
     }
@@ -842,7 +842,7 @@ class ModInverseNegativeBaseTest : FunSpec({
             Triple("-1", "2", "1"),
             Triple("-1", "3", "2"),
         ) { (a, m, expected) ->
-            val result = BigInteger(a).modInverse(BigInteger(m))
+            val result = bigIntegerOf(a).modInverse(BigInteger(m))
             result shouldBe BigInteger(expected)
             // Result should always be in [0, modulus)
             (result.signum() >= 0) shouldBe true
@@ -856,11 +856,11 @@ class ModInverseNegativeBaseTest : FunSpec({
 class ModPowEdgeCaseTest : FunSpec({
 
     test("modPow with exponent 0 returns 1 mod m") {
-        BigInteger("5").modPow(BigIntegers.ZERO, BigInteger("3")) shouldBe BigIntegers.ONE
-        BigInteger("0").modPow(BigIntegers.ZERO, BigInteger("3")) shouldBe BigIntegers.ONE
-        BigInteger("100").modPow(BigIntegers.ZERO, BigInteger("7")) shouldBe BigIntegers.ONE
+        BigInteger("5").modPow(bigIntegerOf(0L), BigInteger("3")) shouldBe bigIntegerOf(1L)
+        BigInteger("0").modPow(bigIntegerOf(0L), BigInteger("3")) shouldBe bigIntegerOf(1L)
+        BigInteger("100").modPow(bigIntegerOf(0L), BigInteger("7")) shouldBe bigIntegerOf(1L)
         // modPow(0, 1) = 0 (since 1 mod 1 = 0) — already tested but included for completeness
-        BigInteger("5").modPow(BigIntegers.ZERO, BigIntegers.ONE) shouldBe BigIntegers.ZERO
+        BigInteger("5").modPow(bigIntegerOf(0L), bigIntegerOf(1L)) shouldBe bigIntegerOf(0L)
     }
 
     test("modPow with negative base") {
@@ -869,19 +869,19 @@ class ModPowEdgeCaseTest : FunSpec({
         // (-3)^2 mod 7 = 9 mod 7 = 2
         BigInteger("-3").modPow(BigInteger("2"), BigInteger("7")) shouldBe BigInteger("2")
         // (-1)^large mod m = ±1 mod m depending on parity
-        BigInteger("-1").modPow(BigInteger("100"), BigInteger("7")) shouldBe BigIntegers.ONE
+        BigInteger("-1").modPow(BigInteger("100"), BigInteger("7")) shouldBe bigIntegerOf(1L)
         BigInteger("-1").modPow(BigInteger("101"), BigInteger("7")) shouldBe BigInteger("6")
     }
 
     test("modPow with base 0") {
         // 0^e mod m = 0 for e > 0
-        BigInteger("0").modPow(BigInteger("1"), BigInteger("5")) shouldBe BigIntegers.ZERO
-        BigInteger("0").modPow(BigInteger("100"), BigInteger("7")) shouldBe BigIntegers.ZERO
+        BigInteger("0").modPow(BigInteger("1"), BigInteger("5")) shouldBe bigIntegerOf(0L)
+        BigInteger("0").modPow(BigInteger("100"), BigInteger("7")) shouldBe bigIntegerOf(0L)
     }
 
     test("modPow with exponent 1") {
-        BigInteger("7").modPow(BigIntegers.ONE, BigInteger("5")) shouldBe BigInteger("2")
-        BigInteger("-3").modPow(BigIntegers.ONE, BigInteger("5")) shouldBe BigInteger("2")
+        BigInteger("7").modPow(bigIntegerOf(1L), BigInteger("5")) shouldBe BigInteger("2")
+        BigInteger("-3").modPow(bigIntegerOf(1L), BigInteger("5")) shouldBe BigInteger("2")
     }
 })
 
@@ -890,7 +890,7 @@ class ModPowEdgeCaseTest : FunSpec({
 class GcdEdgeCaseTest : FunSpec({
 
     test("gcd(0, 0) == 0") {
-        BigIntegers.ZERO.gcd(BigIntegers.ZERO) shouldBe BigIntegers.ZERO
+        bigIntegerOf(0L).gcd(bigIntegerOf(0L)) shouldBe bigIntegerOf(0L)
     }
 
     test("gcd with very large numbers") {
@@ -898,13 +898,13 @@ class GcdEdgeCaseTest : FunSpec({
         val b = BigInteger("987654321098765432109876543210")
         val g = a.gcd(b)
         // g should divide both
-        (a % g) shouldBe BigIntegers.ZERO
-        (b % g) shouldBe BigIntegers.ZERO
+        (a % g) shouldBe bigIntegerOf(0L)
+        (b % g) shouldBe bigIntegerOf(0L)
     }
 
     test("gcd of negative numbers is always positive") {
         BigInteger("-12").gcd(BigInteger("-8")) shouldBe BigInteger("4")
-        BigInteger("-12").gcd(BigIntegers.ZERO) shouldBe BigInteger("12")
+        BigInteger("-12").gcd(bigIntegerOf(0L)) shouldBe BigInteger("12")
     }
 })
 
@@ -913,27 +913,27 @@ class GcdEdgeCaseTest : FunSpec({
 class ToDoubleEdgeCaseTest : FunSpec({
 
     test("toDouble for very large positive returns Infinity") {
-        val huge = BigIntegers.TWO.pow(1024)
+        val huge = bigIntegerOf(2L).pow(1024)
         huge.toDouble() shouldBeExactly Double.POSITIVE_INFINITY
     }
 
     test("toDouble for very large negative returns -Infinity") {
-        val huge = -(BigIntegers.TWO.pow(1024))
+        val huge = -(bigIntegerOf(2L).pow(1024))
         huge.toDouble() shouldBeExactly Double.NEGATIVE_INFINITY
     }
 
     test("toDouble loses precision for large-but-representable values") {
         // 2^53 is exactly representable, 2^53 + 1 loses the +1
-        val exact = BigIntegers.TWO.pow(53)
+        val exact = bigIntegerOf(2L).pow(53)
         exact.toDouble() shouldBeExactly 9007199254740992.0
     }
 
     test("toDouble for Long.MAX_VALUE") {
-        BigIntegers.of(Long.MAX_VALUE).toDouble() shouldBeExactly Long.MAX_VALUE.toDouble()
+        bigIntegerOf(Long.MAX_VALUE).toDouble() shouldBeExactly Long.MAX_VALUE.toDouble()
     }
 
     test("toDouble for Long.MIN_VALUE") {
-        BigIntegers.of(Long.MIN_VALUE).toDouble() shouldBeExactly Long.MIN_VALUE.toDouble()
+        bigIntegerOf(Long.MIN_VALUE).toDouble() shouldBeExactly Long.MIN_VALUE.toDouble()
     }
 
     test("toDouble rounds huge finite integers the same way as JVM") {
@@ -948,7 +948,7 @@ class StringConstructorEdgeCaseTest : FunSpec({
 
     test("leading zeros are stripped") {
         BigInteger("00042") shouldBe BigInteger("42")
-        BigInteger("000") shouldBe BigIntegers.ZERO
+        BigInteger("000") shouldBe bigIntegerOf(0L)
         BigInteger("-00042") shouldBe BigInteger("-42")
         BigInteger("+00042") shouldBe BigInteger("42")
     }
@@ -966,7 +966,7 @@ class StringConstructorEdgeCaseTest : FunSpec({
 
     test("single zero in various radixes") {
         for (radix in 2..36) {
-            BigInteger("0", radix) shouldBe BigIntegers.ZERO
+            BigInteger("0", radix) shouldBe bigIntegerOf(0L)
         }
     }
 })
@@ -976,11 +976,11 @@ class StringConstructorEdgeCaseTest : FunSpec({
 class ByteArrayAdditionalEdgeCaseTest : FunSpec({
 
     test("all-zero byte array of various lengths is zero") {
-        BigInteger(byteArrayOf(0)) shouldBe BigIntegers.ZERO
-        BigInteger(byteArrayOf(0, 0)) shouldBe BigIntegers.ZERO
-        BigInteger(byteArrayOf(0, 0, 0)) shouldBe BigIntegers.ZERO
-        BigInteger(byteArrayOf(0, 0, 0, 0)) shouldBe BigIntegers.ZERO
-        BigInteger(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)) shouldBe BigIntegers.ZERO
+        BigInteger(byteArrayOf(0)) shouldBe bigIntegerOf(0L)
+        BigInteger(byteArrayOf(0, 0)) shouldBe bigIntegerOf(0L)
+        BigInteger(byteArrayOf(0, 0, 0)) shouldBe bigIntegerOf(0L)
+        BigInteger(byteArrayOf(0, 0, 0, 0)) shouldBe bigIntegerOf(0L)
+        BigInteger(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0)) shouldBe bigIntegerOf(0L)
     }
 
     test("single-byte values round-trip") {
@@ -995,7 +995,7 @@ class ByteArrayAdditionalEdgeCaseTest : FunSpec({
         // -(2^128) as bytes: 0xFF followed by 16 zero bytes... actually:
         // -(2^128) in two's complement (17 bytes): [0xFF, 0x00 x16] → no, that's -(2^128 - 2^128 + 256^16)
         // Let me just verify round-trip with a known large negative
-        val value = -(BigIntegers.TWO.pow(128))
+        val value = -(bigIntegerOf(2L).pow(128))
         val bytes = value.toByteArray()
         BigInteger(bytes) shouldBe value
     }
@@ -1023,7 +1023,7 @@ class ToStringRadixNegativeTest : FunSpec({
 
     test("toString radix round-trip property for negative values") {
         checkAll(Arb.long(Long.MIN_VALUE..-1L)) { n ->
-            val bi = BigIntegers.of(n)
+            val bi = bigIntegerOf(n)
             for (radix in listOf(2, 8, 10, 16, 36)) {
                 BigInteger(bi.toString(radix), radix) shouldBe bi
             }
@@ -1081,7 +1081,7 @@ class BitLengthNegativePowersOfTwoTest : FunSpec({
             nameFn = { "bitLength(-2^${it}) = ${it}" },
             1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64, 100, 128
         ) { n ->
-            val value = -(BigIntegers.TWO.pow(n))
+            val value = -(bigIntegerOf(2L).pow(n))
             value.bitLength() shouldBeExactly n
         }
     }
@@ -1092,7 +1092,7 @@ class BitLengthNegativePowersOfTwoTest : FunSpec({
             nameFn = { "bitLength(-(2^${it}+1)) = ${it + 1}" },
             1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64
         ) { n ->
-            val value = -(BigIntegers.TWO.pow(n) + BigIntegers.ONE)
+            val value = -(bigIntegerOf(2L).pow(n) + bigIntegerOf(1L))
             value.bitLength() shouldBeExactly (n + 1)
         }
     }
@@ -1104,18 +1104,18 @@ class GetLowestSetBitEdgeCaseTest : FunSpec({
 
     test("getLowestSetBit for powers of two") {
         for (n in listOf(0, 1, 2, 7, 8, 15, 16, 31, 32, 63, 64, 100)) {
-            BigIntegers.TWO.pow(n).getLowestSetBit() shouldBeExactly n
+            bigIntegerOf(2L).pow(n).getLowestSetBit() shouldBeExactly n
         }
     }
 
     test("getLowestSetBit for negative powers of two") {
         for (n in listOf(1, 2, 7, 8, 15, 16, 31, 32, 63, 64)) {
-            (-(BigIntegers.TWO.pow(n))).getLowestSetBit() shouldBeExactly n
+            (-(bigIntegerOf(2L).pow(n))).getLowestSetBit() shouldBeExactly n
         }
     }
 
     test("getLowestSetBit for large negative odd number is 0") {
-        val v = -(BigIntegers.TWO.pow(100) + BigIntegers.ONE)
+        val v = -(bigIntegerOf(2L).pow(100) + bigIntegerOf(1L))
         v.getLowestSetBit() shouldBeExactly 0
     }
 })
@@ -1141,11 +1141,11 @@ class LargeNumberArithmeticTest : FunSpec({
         val a = BigInteger("1219326311370217952237463801111263526900")
         val b = BigInteger("12345678901234567890")
         (a / b) shouldBe BigInteger("98765432109876543210")
-        (a % b) shouldBe BigIntegers.ZERO
+        (a % b) shouldBe bigIntegerOf(0L)
     }
 
     test("pow with very large result") {
-        val result = BigIntegers.TWO.pow(256)
+        val result = bigIntegerOf(2L).pow(256)
         result shouldBe BigInteger("115792089237316195423570985008687907853269984665640564039457584007913129639936")
     }
 })
@@ -1155,11 +1155,11 @@ class LargeNumberArithmeticTest : FunSpec({
 class SqrtEdgeCaseTest : FunSpec({
 
     test("sqrt(2) = 1") {
-        BigInteger("2").sqrt() shouldBe BigIntegers.ONE
+        BigInteger("2").sqrt() shouldBe bigIntegerOf(1L)
     }
 
     test("sqrt(3) = 1") {
-        BigInteger("3").sqrt() shouldBe BigIntegers.ONE
+        BigInteger("3").sqrt() shouldBe bigIntegerOf(1L)
     }
 
     test("sqrt of very large perfect square") {
@@ -1169,7 +1169,7 @@ class SqrtEdgeCaseTest : FunSpec({
     }
 
     test("sqrt of 2^256") {
-        val value = BigIntegers.TWO.pow(256)
-        value.sqrt() shouldBe BigIntegers.TWO.pow(128)
+        val value = bigIntegerOf(2L).pow(256)
+        value.sqrt() shouldBe bigIntegerOf(2L).pow(128)
     }
 })

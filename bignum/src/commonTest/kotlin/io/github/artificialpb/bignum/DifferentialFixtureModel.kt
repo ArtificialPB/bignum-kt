@@ -434,7 +434,7 @@ object DifferentialExecutor {
     ): DifferentialExpected = try {
         when (operation) {
             DifferentialOperation.CONSTRUCTOR_STRING ->
-                normalizeBigInt(BigInteger(args.string(0)))
+                normalizeBigInt(bigIntegerOf(args.string(0)))
 
             DifferentialOperation.CONSTRUCTOR_STRING_RADIX ->
                 normalizeBigInt(BigInteger(args.string(0), args.int(1)))
@@ -446,22 +446,22 @@ object DifferentialExecutor {
                 normalizeBigInt(BigInteger(args.byteArray(0), args.int(1), args.int(2)))
 
             DifferentialOperation.CONSTANT_ZERO ->
-                normalizeBigInt(BigIntegers.ZERO)
+                normalizeBigInt(bigIntegerOf(0L))
 
             DifferentialOperation.CONSTANT_ONE ->
-                normalizeBigInt(BigIntegers.ONE)
+                normalizeBigInt(bigIntegerOf(1L))
 
             DifferentialOperation.CONSTANT_TWO ->
-                normalizeBigInt(BigIntegers.TWO)
+                normalizeBigInt(bigIntegerOf(2L))
 
             DifferentialOperation.CONSTANT_TEN ->
-                normalizeBigInt(BigIntegers.TEN)
+                normalizeBigInt(bigIntegerOf(10L))
 
             DifferentialOperation.FACTORY_OF_STRING ->
-                normalizeBigInt(BigIntegers.of(args.string(0)))
+                normalizeBigInt(bigIntegerOf(args.string(0)))
 
             DifferentialOperation.FACTORY_OF_LONG ->
-                normalizeBigInt(BigIntegers.of(args.long(0)))
+                normalizeBigInt(bigIntegerOf(args.long(0)))
 
             DifferentialOperation.ADD ->
                 normalizeBigInt(args.bigInt(0) + args.bigInt(1))
