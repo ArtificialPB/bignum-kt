@@ -66,17 +66,31 @@ actual class BigInteger internal constructor(
         if (signum() == 0) return if (exponent == 0) BigIntegers.ONE else BigIntegers.ZERO
 
         // Match JVM overflow checks (java.math.BigInteger.pow):
-        // 1. The trailing-zero shift must fit in an Int.
-        val powersOfTwo = abs().getLowestSetBit().toLong()
+        // Factor out trailing zeros, check the shift, then check the odd part.
+        val partToSquare = abs()
+        val powersOfTwo = partToSquare.getLowestSetBit().toLong()
         val bitsToShift = powersOfTwo * exponent.toLong()
         if (bitsToShift > MAX_BIT_LENGTH) {
             throw ArithmeticException("BigInteger would overflow supported range")
         }
 
-        // 2. Estimated result magnitude must not exceed MAX_MAG_LENGTH int[] slots.
-        //    JVM: (long)bitLength() * exponent / Integer.SIZE > MAX_MAG_LENGTH
-        val scaleFactor = bitLength().toLong() * exponent.toLong()
-        if (scaleFactor / 32 > MAX_MAG_LENGTH) {
+        // Bit length of the base after stripping trailing zeros.
+        val oddPart = if (powersOfTwo > 0) partToSquare.shiftRight(powersOfTwo.toInt()) else partToSquare
+        val remainingBits = oddPart.bitLength().toLong()
+
+        // JVM early-return: if the odd part is 1 (i.e. base is ±2^k),
+        // the result is just a shift — delegate to shiftLeft which has
+        // its own overflow guard.
+        if (remainingBits == 1L) {
+            return if (signum() < 0 && exponent % 2 == 1) {
+                BigIntegers.of(-1L).shiftLeft(bitsToShift.toInt())
+            } else {
+                BigIntegers.ONE.shiftLeft(bitsToShift.toInt())
+            }
+        }
+
+        // JVM: (long)remainingBits * exponent / Integer.SIZE > MAX_MAG_LENGTH
+        if (remainingBits * exponent.toLong() / 32 > MAX_MAG_LENGTH) {
             throw ArithmeticException("BigInteger would overflow supported range")
         }
 
@@ -359,11 +373,11 @@ actual class BigInteger internal constructor(
         if (signum() < 0) throw ArithmeticException("start < 0: $this")
         val result = allocMp()
         checkMp(mp_copy(handle, result), result)
-        // Use LibTomMath's recommended trial count based on bit size,
-        // but enforce a minimum matching JVM's default certainty of 100.
-        val trials = mp_prime_rabin_miller_trials(mp_count_bits(handle))
-            .coerceAtLeast(100)
-        checkMp(mp_prime_next_prime(result, trials, 0), result)
+        // JVM uses DEFAULT_PRIME_CERTAINTY = 100, which maps to
+        // ceil(100/2) = 50 MR rounds via the same certainty→rounds
+        // conversion as isProbablePrime.
+        val defaultRounds = (DEFAULT_PRIME_CERTAINTY + 1) / 2
+        checkMp(mp_prime_next_prime(result, defaultRounds, 0), result)
         return BigInteger(result)
     }
 
@@ -509,6 +523,9 @@ private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
 
 /** Matches JVM's BigInteger.MAX_MAG_LENGTH: Integer.MAX_VALUE / Integer.SIZE + 1 */
 private const val MAX_MAG_LENGTH = Int.MAX_VALUE / 32 + 1L
+
+/** Matches JVM's BigInteger.DEFAULT_PRIME_CERTAINTY used by nextProbablePrime(). */
+private const val DEFAULT_PRIME_CERTAINTY = 100
 
 @OptIn(ExperimentalForeignApi::class)
 internal fun allocMp(): CPointer<mp_int> {

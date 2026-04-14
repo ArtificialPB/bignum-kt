@@ -627,6 +627,57 @@ class ErrorHandlingTest : FunSpec({
     }
 })
 
+// -- additional primality stress cases --
+
+class PrimalityStressEdgeCaseTest : FunSpec({
+
+    val mersenne127 = "170141183460469231731687303715884105727" // 2^127 - 1
+    val mersenne127Squared = "28948022309329048855892746252171976962977213799489202546401021394546514198529"
+
+    context("isProbablePrime rejects pseudoprimes and handles large values") {
+        withData(
+            BoolCase("341", false),             // Fermat pseudoprime to base 2
+            BoolCase("561", false),             // Carmichael
+            BoolCase("645", false),             // Carmichael
+            BoolCase("1105", false),            // Carmichael
+            BoolCase("1729", false),            // Carmichael
+            BoolCase("2465", false),            // Carmichael
+            BoolCase("2821", false),            // Carmichael
+            BoolCase("6601", false),            // Carmichael
+            BoolCase("41041", false),           // Carmichael
+            BoolCase("825265", false),          // Carmichael
+            BoolCase("3215031751", false),      // strong pseudoprime to several small bases
+            BoolCase("2152302898747", false),   // strong pseudoprime to first primes 2,3,5,7,11
+            BoolCase(mersenne127, true),
+            BoolCase("-$mersenne127", true),    // JVM tests absolute value
+            BoolCase(mersenne127Squared, false),
+            BoolCase("-$mersenne127Squared", false),
+        ) { (input, expected) ->
+            BigInteger(input).isProbablePrime(100) shouldBe expected
+        }
+    }
+
+    test("large known prime stays prime across certainty ladder") {
+        val prime = BigInteger(mersenne127)
+        for (certainty in listOf(1, 2, 10, 50, 100)) {
+            prime.isProbablePrime(certainty) shouldBe true
+        }
+    }
+
+    context("nextProbablePrime matches JVM for pseudoprimes and large prime boundaries") {
+        withData(
+            PrimeCase("561", "563"),
+            PrimeCase("1105", "1109"),
+            PrimeCase("1729", "1733"),
+            PrimeCase("2047", "2053"), // 23 * 89, Mersenne composite
+            PrimeCase("2147483647", "2147483659"),
+            PrimeCase(mersenne127, "170141183460469231731687303715884105757"),
+        ) { (input, expected) ->
+            BigInteger(input).nextProbablePrime() shouldBe BigInteger(expected)
+        }
+    }
+})
+
 // -- lcm sign semantics (JVM: preserves sign of (this/gcd)*other) --
 
 class LcmSignTest : FunSpec({
