@@ -61,9 +61,12 @@ kotlin {
     }
 }
 
+tasks.withType<Test>().configureEach {
+    systemProperty("bignum.differential.fixtureDir", differentialFixtureDir.absolutePath)
+}
+
 tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
-    systemProperty("bignum.differential.fixtureDir", differentialFixtureDir.absolutePath)
 }
 
 tasks.withType<KotlinNativeTest>().configureEach {
