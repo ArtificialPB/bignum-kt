@@ -489,11 +489,16 @@ class ErrorHandlingTest : FunSpec({
         shouldThrow<IndexOutOfBoundsException> { BigInteger(bytes, 1, Int.MAX_VALUE) }
     }
 
-    test("constructor(bytes, off, len) with len=0 returns zero for valid offsets") {
+    test("constructor(bytes, off, len) with len=0 returns zero for valid offsets with non-negative leading byte") {
         val bytes = byteArrayOf(0x01, 0x02, 0x03)
         BigInteger(bytes, 0, 0) shouldBe BigIntegers.ZERO
         BigInteger(bytes, 1, 0) shouldBe BigIntegers.ZERO
         BigInteger(bytes, 2, 0) shouldBe BigIntegers.ZERO
+    }
+
+    test("constructor(bytes, off, len) with len=0 follows JVM's negative-leading-byte edge case") {
+        val bytes = byteArrayOf(0x79, 0xFC.toByte())
+        BigInteger(bytes, 1, 0) shouldBe BigInteger("-135")
     }
 
     test("constructor(bytes, off, len) with len=0 at off==size throws IndexOutOfBoundsException") {
@@ -929,6 +934,11 @@ class ToDoubleEdgeCaseTest : FunSpec({
 
     test("toDouble for Long.MIN_VALUE") {
         BigIntegers.of(Long.MIN_VALUE).toDouble() shouldBeExactly Long.MIN_VALUE.toDouble()
+    }
+
+    test("toDouble rounds huge finite integers the same way as JVM") {
+        val value = BigInteger("27865336992809917105112130163450434437862611569769059293869481755328202537322377354046844")
+        value.toDouble().toBits() shouldBeExactly 5930119120905647391L
     }
 })
 

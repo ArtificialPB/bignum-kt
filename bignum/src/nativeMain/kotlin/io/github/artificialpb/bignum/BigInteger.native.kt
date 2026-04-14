@@ -433,7 +433,7 @@ actual class BigInteger internal constructor(
 
     actual fun toLong(): Long = mp_get_i64(handle)
 
-    actual fun toDouble(): Double = mp_get_double(handle)
+    actual fun toDouble(): Double = toString().toDouble()
 
     actual fun signum(): Int {
         if (handle.pointed.used == 0) return 0
@@ -568,15 +568,23 @@ internal fun validateAndSliceBytes(bytes: ByteArray, off: Int, len: Int): CPoint
     if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
         throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
     }
+    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
+
+    // Match JDK 21 exactly. For len == 0, the constructor still reads bytes[off]
+    // before delegating into its positive/negative parsing helpers.
+    val leadingByte = bytes[off]
     if (len == 0) {
-        // JVM: zero-length on empty array throws NumberFormatException
-        // JVM: zero-length at off == size throws ArrayIndexOutOfBoundsException
-        // JVM: zero-length at off < size returns 0
-        if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
-        if (off >= bytes.size) throw IndexOutOfBoundsException("Range [$off, $off) out of bounds for length ${bytes.size}")
+        if (leadingByte >= 0) {
+            return allocMp()
+        }
+
+        val magnitude = ((bytes[off - 1].toInt().inv()) and 0xFF) + 1
         val mp = allocMp()
+        mp_set_i64(mp, magnitude.toLong())
+        mp_neg(mp, mp)
         return mp
     }
+
     return fromTwosComplement(bytes.copyOfRange(off, off + len))
 }
 

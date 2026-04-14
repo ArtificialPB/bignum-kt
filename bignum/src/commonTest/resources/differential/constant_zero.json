@@ -1,0 +1,8014 @@
+{
+    "operation": "CONSTANT_ZERO",
+    "group": "FACTORY",
+    "cases": [
+        {
+            "id": "constant_zero_0000",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0001",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0002",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0003",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0004",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0005",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0006",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0007",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0008",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0009",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0010",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0011",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0012",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0013",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0014",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0015",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0016",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0017",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0018",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0019",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0020",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0021",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0022",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0023",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0024",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0025",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0026",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0027",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0028",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0029",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0030",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0031",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0032",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0033",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0034",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0035",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0036",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0037",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0038",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0039",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0040",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0041",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0042",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0043",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0044",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0045",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0046",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0047",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0048",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0049",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0050",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0051",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0052",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0053",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0054",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0055",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0056",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0057",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0058",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0059",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0060",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0061",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0062",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0063",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0064",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0065",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0066",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0067",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0068",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0069",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0070",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0071",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0072",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0073",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0074",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0075",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0076",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0077",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0078",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0079",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0080",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0081",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0082",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0083",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0084",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0085",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0086",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0087",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0088",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0089",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0090",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0091",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0092",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0093",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0094",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0095",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0096",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0097",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0098",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0099",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0100",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0101",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0102",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0103",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0104",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0105",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0106",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0107",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0108",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0109",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0110",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0111",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0112",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0113",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0114",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0115",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0116",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0117",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0118",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0119",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0120",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0121",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0122",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0123",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0124",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0125",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0126",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0127",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0128",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0129",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0130",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0131",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0132",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0133",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0134",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0135",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0136",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0137",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0138",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0139",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0140",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0141",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0142",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0143",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0144",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0145",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0146",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0147",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0148",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0149",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0150",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0151",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0152",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0153",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0154",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0155",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0156",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0157",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0158",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0159",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0160",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0161",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0162",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0163",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0164",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0165",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0166",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0167",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0168",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0169",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0170",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0171",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0172",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0173",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0174",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0175",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0176",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0177",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0178",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0179",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0180",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0181",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0182",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0183",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0184",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0185",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0186",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0187",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0188",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0189",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0190",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0191",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0192",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0193",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0194",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0195",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0196",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0197",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0198",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0199",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0200",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0201",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0202",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0203",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0204",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0205",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0206",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0207",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0208",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0209",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0210",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0211",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0212",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0213",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0214",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0215",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0216",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0217",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0218",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0219",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0220",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0221",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0222",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0223",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0224",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0225",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0226",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0227",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0228",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0229",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0230",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0231",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0232",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0233",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0234",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0235",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0236",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0237",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0238",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0239",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0240",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0241",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0242",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0243",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0244",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0245",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0246",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0247",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0248",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0249",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0250",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0251",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0252",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0253",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0254",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0255",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0256",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0257",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0258",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0259",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0260",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0261",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0262",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0263",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0264",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0265",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0266",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0267",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0268",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0269",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0270",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0271",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0272",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0273",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0274",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0275",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0276",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0277",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0278",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0279",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0280",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0281",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0282",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0283",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0284",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0285",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0286",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0287",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0288",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0289",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0290",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0291",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0292",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0293",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0294",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0295",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0296",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0297",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0298",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0299",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0300",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0301",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0302",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0303",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0304",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0305",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0306",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0307",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0308",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0309",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0310",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0311",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0312",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0313",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0314",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0315",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0316",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0317",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0318",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0319",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0320",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0321",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0322",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0323",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0324",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0325",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0326",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0327",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0328",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0329",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0330",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0331",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0332",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0333",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0334",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0335",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0336",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0337",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0338",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0339",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0340",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0341",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0342",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0343",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0344",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0345",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0346",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0347",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0348",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0349",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0350",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0351",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0352",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0353",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0354",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0355",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0356",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0357",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0358",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0359",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0360",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0361",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0362",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0363",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0364",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0365",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0366",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0367",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0368",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0369",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0370",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0371",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0372",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0373",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0374",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0375",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0376",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0377",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0378",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0379",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0380",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0381",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0382",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0383",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0384",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0385",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0386",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0387",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0388",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0389",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0390",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0391",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0392",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0393",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0394",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0395",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0396",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0397",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0398",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0399",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0400",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0401",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0402",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0403",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0404",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0405",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0406",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0407",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0408",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0409",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0410",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0411",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0412",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0413",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0414",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0415",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0416",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0417",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0418",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0419",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0420",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0421",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0422",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0423",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0424",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0425",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0426",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0427",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0428",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0429",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0430",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0431",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0432",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0433",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0434",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0435",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0436",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0437",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0438",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0439",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0440",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0441",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0442",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0443",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0444",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0445",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0446",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0447",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0448",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0449",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0450",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0451",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0452",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0453",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0454",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0455",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0456",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0457",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0458",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0459",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0460",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0461",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0462",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0463",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0464",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0465",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0466",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0467",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0468",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0469",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0470",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0471",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0472",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0473",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0474",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0475",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0476",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0477",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0478",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0479",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0480",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0481",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0482",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0483",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0484",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0485",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0486",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0487",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0488",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0489",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0490",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0491",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0492",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0493",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0494",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0495",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0496",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0497",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0498",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0499",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0500",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0501",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0502",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0503",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0504",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0505",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0506",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0507",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0508",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0509",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0510",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0511",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0512",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0513",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0514",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0515",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0516",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0517",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0518",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0519",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0520",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0521",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0522",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0523",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0524",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0525",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0526",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0527",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0528",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0529",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0530",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0531",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0532",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0533",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0534",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0535",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0536",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0537",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0538",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0539",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0540",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0541",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0542",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0543",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0544",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0545",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0546",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0547",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0548",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0549",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0550",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0551",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0552",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0553",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0554",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0555",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0556",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0557",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0558",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0559",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0560",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0561",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0562",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0563",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0564",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0565",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0566",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0567",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0568",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0569",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0570",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0571",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0572",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0573",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0574",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0575",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0576",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0577",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0578",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0579",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0580",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0581",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0582",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0583",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0584",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0585",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0586",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0587",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0588",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0589",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0590",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0591",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0592",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0593",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0594",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0595",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0596",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0597",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0598",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0599",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0600",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0601",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0602",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0603",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0604",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0605",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0606",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0607",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0608",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0609",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0610",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0611",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0612",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0613",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0614",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0615",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0616",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0617",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0618",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0619",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0620",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0621",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0622",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0623",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0624",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0625",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0626",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0627",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0628",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0629",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0630",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0631",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0632",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0633",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0634",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0635",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0636",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0637",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0638",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0639",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0640",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0641",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0642",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0643",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0644",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0645",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0646",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0647",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0648",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0649",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0650",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0651",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0652",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0653",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0654",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0655",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0656",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0657",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0658",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0659",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0660",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0661",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0662",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0663",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0664",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0665",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0666",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0667",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0668",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0669",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0670",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0671",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0672",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0673",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0674",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0675",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0676",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0677",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0678",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0679",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0680",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0681",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0682",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0683",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0684",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0685",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0686",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0687",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0688",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0689",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0690",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0691",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0692",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0693",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0694",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0695",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0696",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0697",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0698",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0699",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0700",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0701",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0702",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0703",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0704",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0705",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0706",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0707",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0708",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0709",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0710",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0711",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0712",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0713",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0714",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0715",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0716",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0717",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0718",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0719",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0720",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0721",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0722",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0723",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0724",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0725",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0726",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0727",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0728",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0729",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0730",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0731",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0732",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0733",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0734",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0735",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0736",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0737",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0738",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0739",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0740",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0741",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0742",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0743",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0744",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0745",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0746",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0747",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0748",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0749",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0750",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0751",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0752",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0753",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0754",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0755",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0756",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0757",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0758",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0759",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0760",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0761",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0762",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0763",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0764",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0765",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0766",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0767",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0768",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0769",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0770",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0771",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0772",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0773",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0774",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0775",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0776",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0777",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0778",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0779",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0780",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0781",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0782",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0783",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0784",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0785",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0786",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0787",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0788",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0789",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0790",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0791",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0792",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0793",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0794",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0795",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0796",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0797",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0798",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0799",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0800",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0801",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0802",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0803",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0804",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0805",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0806",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0807",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0808",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0809",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0810",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0811",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0812",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0813",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0814",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0815",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0816",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0817",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0818",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0819",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0820",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0821",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0822",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0823",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0824",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0825",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0826",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0827",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0828",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0829",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0830",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0831",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0832",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0833",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0834",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0835",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0836",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0837",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0838",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0839",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0840",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0841",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0842",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0843",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0844",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0845",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0846",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0847",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0848",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0849",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0850",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0851",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0852",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0853",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0854",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0855",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0856",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0857",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0858",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0859",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0860",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0861",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0862",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0863",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0864",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0865",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0866",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0867",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0868",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0869",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0870",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0871",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0872",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0873",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0874",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0875",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0876",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0877",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0878",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0879",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0880",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0881",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0882",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0883",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0884",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0885",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0886",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0887",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0888",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0889",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0890",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0891",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0892",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0893",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0894",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0895",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0896",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0897",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0898",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0899",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0900",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0901",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0902",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0903",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0904",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0905",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0906",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0907",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0908",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0909",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0910",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0911",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0912",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0913",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0914",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0915",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0916",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0917",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0918",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0919",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0920",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0921",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0922",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0923",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0924",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0925",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0926",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0927",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0928",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0929",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0930",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0931",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0932",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0933",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0934",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0935",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0936",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0937",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0938",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0939",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0940",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0941",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0942",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0943",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0944",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0945",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0946",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0947",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0948",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0949",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0950",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0951",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0952",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0953",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0954",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0955",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0956",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0957",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0958",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0959",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0960",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0961",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0962",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0963",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0964",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0965",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0966",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0967",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0968",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0969",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0970",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0971",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0972",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0973",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0974",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0975",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0976",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0977",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0978",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0979",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0980",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0981",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0982",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0983",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0984",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0985",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0986",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0987",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0988",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0989",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0990",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0991",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0992",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0993",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0994",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0995",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0996",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0997",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0998",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_0999",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        },
+        {
+            "id": "constant_zero_1000",
+            "args": [],
+            "expected": {
+                "type": "big_int",
+                "decimal": "0"
+            }
+        }
+    ]
+}

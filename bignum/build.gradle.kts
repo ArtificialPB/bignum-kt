@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 
 plugins {
@@ -9,6 +10,7 @@ plugins {
 }
 
 val libtommathDir = projectDir.resolve("src/nativeInterop/libtommath")
+val differentialFixtureDir = projectDir.resolve("src/commonTest/resources/differential")
 
 kotlin {
     compilerOptions {
@@ -43,6 +45,7 @@ kotlin {
             implementation(libs.kotest.framework.engine)
             implementation(libs.kotest.assertions.core)
             implementation(libs.kotest.property)
+            implementation(libs.kotlinx.serialization.json)
         }
 
         jvmTest.dependencies {
@@ -60,6 +63,27 @@ kotlin {
 
 tasks.named<Test>("jvmTest") {
     useJUnitPlatform()
+    systemProperty("bignum.differential.fixtureDir", differentialFixtureDir.absolutePath)
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    environment("BIGNUM_DIFFERENTIAL_FIXTURE_DIR", differentialFixtureDir.absolutePath)
+}
+
+tasks.register<JavaExec>("generateDifferentialFixtures") {
+    group = "verification"
+    description = "Generates the checked-in JVM differential fuzz corpus."
+    dependsOn("jvmTestClasses")
+    classpath(
+        configurations.getByName("jvmTestRuntimeClasspath"),
+        files(
+            layout.buildDirectory.dir("classes/kotlin/jvm/test"),
+            layout.buildDirectory.dir("processedResources/jvm/test"),
+            layout.buildDirectory.dir("resources/test"),
+        ),
+    )
+    mainClass.set("io.github.artificialpb.bignum.DifferentialFixtureGeneratorMainKt")
+    workingDir = projectDir
 }
 
 android {
