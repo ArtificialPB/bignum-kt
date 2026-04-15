@@ -1,0 +1,120 @@
+import org.gradle.api.tasks.testing.Test
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
+
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinAllOpen)
+    alias(libs.plugins.kotlinxBenchmark)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotest)
+}
+
+data class BenchmarkSuite(
+    val name: String,
+    val includePattern: String,
+)
+
+val benchmarkSuites = listOf(
+    BenchmarkSuite("arithmetic", "io.github.artificialpb.bignum.benchmark.ArithmeticBenchmark.*"),
+    BenchmarkSuite("bitwise", "io.github.artificialpb.bignum.benchmark.BitwiseBenchmark.*"),
+    BenchmarkSuite("comparison", "io.github.artificialpb.bignum.benchmark.ComparisonBenchmark.*"),
+    BenchmarkSuite("construction", "io.github.artificialpb.bignum.benchmark.ConstructionBenchmark.*"),
+    BenchmarkSuite("conversion", "io.github.artificialpb.bignum.benchmark.ConversionBenchmark.*"),
+    BenchmarkSuite("numberTheory", "io.github.artificialpb.bignum.benchmark.NumberTheoryBenchmark.*"),
+    BenchmarkSuite("range", "io.github.artificialpb.bignum.benchmark.RangeBenchmark.*"),
+)
+
+val mainWarmups = 2
+val mainIterations = 3
+val mainIterationTimeMs = 1000L
+val smokeWarmups = 1
+val smokeIterations = 1
+val smokeIterationTimeMs = 2000L
+
+kotlin {
+    applyDefaultHierarchyTemplate()
+
+    jvm()
+    macosArm64()
+    iosArm64()
+    iosX64()
+    iosSimulatorArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.bignum)
+            implementation(libs.kotlinx.benchmark.runtime)
+        }
+
+        commonTest.dependencies {
+            implementation(libs.kotest.framework.engine)
+            implementation(libs.kotest.assertions.core)
+        }
+
+        jvmTest.dependencies {
+            implementation(libs.kotest.runner.junit5)
+        }
+    }
+}
+
+allOpen {
+    annotation("org.openjdk.jmh.annotations.State")
+}
+
+benchmark {
+    targets {
+        register("jvm")
+        register("macosArm64")
+    }
+
+    configurations {
+        named("main") {
+            warmups = mainWarmups
+            iterations = mainIterations
+            iterationTime = mainIterationTimeMs
+            iterationTimeUnit = "ms"
+        }
+        register("smoke") {
+            warmups = smokeWarmups
+            iterations = smokeIterations
+            iterationTime = smokeIterationTimeMs
+            iterationTimeUnit = "ms"
+        }
+        benchmarkSuites.forEach { suite ->
+            register(suite.name) {
+                include(suite.includePattern)
+                warmups = mainWarmups
+                iterations = mainIterations
+                iterationTime = mainIterationTimeMs
+                iterationTimeUnit = "ms"
+            }
+            register("${suite.name}Smoke") {
+                include(suite.includePattern)
+                warmups = smokeWarmups
+                iterations = smokeIterations
+                iterationTime = smokeIterationTimeMs
+                iterationTimeUnit = "ms"
+            }
+        }
+    }
+}
+
+tasks.named<Test>("jvmTest") {
+    useJUnitPlatform()
+}
+
+tasks.withType<KotlinNativeTest>().configureEach {
+    enabled = false
+}
+
+tasks.register("compileAllBenchmarks") {
+    group = "verification"
+    description = "Compiles benchmark sources for every multiplatform benchmark target."
+    dependsOn(
+        "compileKotlinJvm",
+        "compileKotlinMacosArm64",
+        "compileKotlinIosArm64",
+        "compileKotlinIosX64",
+        "compileKotlinIosSimulatorArm64",
+    )
+}

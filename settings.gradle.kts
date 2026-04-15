@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 }
 
 include(":bignum")
+include(":benchmarks")

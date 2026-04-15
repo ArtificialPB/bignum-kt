@@ -16,6 +16,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
+    applyDefaultHierarchyTemplate()
 
     jvm()
     androidTarget()
@@ -25,7 +26,7 @@ kotlin {
     iosX64()
     iosSimulatorArm64()
 
-    targets.withType<KotlinNativeTarget> {
+    targets.withType<KotlinNativeTarget>().configureEach {
         compilations.getByName("main") {
             cinterops {
                 val tommath by creating {

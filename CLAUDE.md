@@ -13,6 +13,7 @@ Kotlin Multiplatform library providing a common BigInteger abstraction that dele
 ```
 bignum-kt/
 ├── bignum/                    # Library module
+├── benchmarks/                # Multiplatform benchmark module
 │   ├── src/
 │   │   ├── commonMain/        # expect declarations + common API
 │   │   ├── commonTest/        # shared tests
@@ -40,7 +41,33 @@ bignum-kt/
 
 # Native only (LibTomMath built from submodule automatically)
 ./gradlew macosArm64Test
+
+# Compile benchmark sources for every benchmark target
+./gradlew :benchmarks:compileAllBenchmarks
+
+# Run benchmark smoke profiles
+./gradlew :benchmarks:jvmSmokeBenchmark
+./gradlew :benchmarks:macosArm64SmokeBenchmark
+
+# Run full benchmark profiles
+./gradlew :benchmarks:jvmBenchmark
+./gradlew :benchmarks:macosArm64Benchmark
+
+# Run only one benchmark suite/file during optimization work
+./gradlew :benchmarks:jvmArithmeticSmokeBenchmark
+./gradlew :benchmarks:jvmArithmeticBenchmark
+./gradlew :benchmarks:macosArm64ArithmeticSmokeBenchmark
+./gradlew :benchmarks:macosArm64ArithmeticBenchmark
+
 ```
+
+## Benchmarking
+
+- Benchmarks live in the `:benchmarks` module and are implemented in `benchmarks/src/commonMain`
+- The benchmark module depends on `:bignum`, so shared benchmark code is compiled against every library target
+- Runnable benchmark targets are `jvm` and `macosArm64`
+- iOS benchmark targets are compile-checked via `:benchmarks:compileAllBenchmarks`, but not executed as part of the benchmark plugin task set on this host
+- Each benchmark file has dedicated Gradle configurations/tasks: `arithmetic`, `bitwise`, `comparison`, `construction`, `conversion`, `numberTheory`, and `range`, each with both full and `Smoke` variants
 
 ## API Pattern
 
