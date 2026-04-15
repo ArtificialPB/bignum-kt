@@ -29,18 +29,23 @@ actual class BigInteger internal constructor(
     // Arithmetic
 
     actual fun add(other: BigInteger): BigInteger {
+        if (other.handle.pointed.used == 0) return this
+        if (handle.pointed.used == 0) return other
         val result = allocMp()
         checkMp(mp_add(handle, other.handle, result), result)
         return BigInteger(result)
     }
 
     actual fun subtract(other: BigInteger): BigInteger {
+        if (other.handle.pointed.used == 0) return this
         val result = allocMp()
         checkMp(mp_sub(handle, other.handle, result), result)
         return BigInteger(result)
     }
 
     actual fun multiply(other: BigInteger): BigInteger {
+        if (handle.pointed.used == 0) return ZERO
+        if (other.handle.pointed.used == 0) return ZERO
         val result = allocMp()
         checkMp(mp_mul(handle, other.handle, result), result)
         return BigInteger(result)
@@ -62,8 +67,12 @@ actual class BigInteger internal constructor(
     }
 
     actual fun pow(exponent: Int): BigInteger {
-        if (exponent < 0) throw ArithmeticException("Negative exponent")
-        if (signum() == 0) return if (exponent == 0) ONE else ZERO
+        when {
+            exponent < 0 -> throw ArithmeticException("Negative exponent")
+            exponent == 0 -> return ONE
+            exponent == 1 -> return this
+            signum() == 0 -> return ZERO
+        }
 
         // Match JVM overflow checks (java.math.BigInteger.pow):
         // Factor out trailing zeros, check the shift, then check the odd part.
@@ -707,6 +716,7 @@ actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.unaryMinus(): BigInteger {
+    if (this.signum() == 0) return this
     val result = allocMp()
     checkMp(mp_neg(this.handle, result), result)
     return BigInteger(result)
@@ -716,18 +726,15 @@ actual operator fun BigInteger.unaryMinus(): BigInteger {
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.inc(): BigInteger {
-    this + ONE
     val result = allocMp()
-    checkMp(mp_copy(this.handle, result), result)
-    checkMp(mp_incr(result), result)
+    checkMp(mp_add_d(this.handle, 1u, result), result)
     return BigInteger(result)
 }
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.dec(): BigInteger {
     val result = allocMp()
-    checkMp(mp_copy(this.handle, result), result)
-    checkMp(mp_decr(result), result)
+    checkMp(mp_sub_d(this.handle, 1u, result), result)
     return BigInteger(result)
 }
 
@@ -736,22 +743,11 @@ actual operator fun BigInteger.dec(): BigInteger {
 @OptIn(ExperimentalForeignApi::class)
 actual fun BigInteger.lcm(other: BigInteger): BigInteger {
     if (this.signum() == 0 || other.signum() == 0) return ZERO
-    // Match JVM semantics: result = (this / gcd) * other (preserves sign)
-    val g = allocMp()
-    checkMp(mp_gcd(this.handle, other.handle, g), g)
-    val quot = allocMp()
-    val err1 = mp_div(this.handle, g, quot, null)
-    freeMp(g)
-    if (err1 != MP_OKAY) {
-        freeMp(quot)
-        throw ArithmeticException("LibTomMath error: $err1")
-    }
     val result = allocMp()
-    val err2 = mp_mul(quot, other.handle, result)
-    freeMp(quot)
-    if (err2 != MP_OKAY) {
-        freeMp(result)
-        throw ArithmeticException("LibTomMath error: $err2")
+    checkMp(mp_lcm(this.handle, other.handle, result), result)
+    // mp_lcm always returns positive; JVM semantics: (this / gcd) * other preserves sign
+    if (this.signum() * other.signum() < 0) {
+        mp_neg(result, result)
     }
     return BigInteger(result)
 }
