@@ -247,26 +247,40 @@ actual class BigInteger internal constructor(
 
     // Bitwise
 
-    actual fun and(other: BigInteger): BigInteger =
-        withBorrowedHandles(this, other) { handle, otherHandle ->
+    actual fun and(other: BigInteger): BigInteger {
+        if (sign == 0 || other.sign == 0) return ZERO
+        if (this === other) return this
+        if (sign > 0 && other.sign > 0) return andPositive(this, other)
+        return withBorrowedHandles(this, other) { handle, otherHandle ->
             val result = allocMp()
             checkMp(mp_and(handle, otherHandle, result), result)
             result.toBigInteger()
         }
+    }
 
-    actual fun or(other: BigInteger): BigInteger =
-        withBorrowedHandles(this, other) { handle, otherHandle ->
+    actual fun or(other: BigInteger): BigInteger {
+        if (sign == 0) return other
+        if (other.sign == 0) return this
+        if (this === other) return this
+        if (sign > 0 && other.sign > 0) return orPositive(this, other)
+        return withBorrowedHandles(this, other) { handle, otherHandle ->
             val result = allocMp()
             checkMp(mp_or(handle, otherHandle, result), result)
             result.toBigInteger()
         }
+    }
 
-    actual fun xor(other: BigInteger): BigInteger =
-        withBorrowedHandles(this, other) { handle, otherHandle ->
+    actual fun xor(other: BigInteger): BigInteger {
+        if (sign == 0) return other
+        if (other.sign == 0) return this
+        if (this === other) return ZERO
+        if (sign > 0 && other.sign > 0) return xorPositive(this, other)
+        return withBorrowedHandles(this, other) { handle, otherHandle ->
             val result = allocMp()
             checkMp(mp_xor(handle, otherHandle, result), result)
             result.toBigInteger()
         }
+    }
 
     actual fun not(): BigInteger =
         withBorrowedHandle { handle ->
@@ -746,6 +760,79 @@ private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger)
         }
     }
     return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
+}
+
+private fun andPositive(left: BigInteger, right: BigInteger): BigInteger {
+    val resultSize = minOf(left.size, right.size)
+    val result = ULongArray(resultSize)
+    var lastNonZero = 0
+    var index = 0
+    while (index < resultSize) {
+        val digit = left.limbs[index] and right.limbs[index]
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
+}
+
+private fun orPositive(left: BigInteger, right: BigInteger): BigInteger {
+    val smaller: BigInteger
+    val larger: BigInteger
+    if (left.size < right.size) {
+        smaller = left
+        larger = right
+    } else {
+        smaller = right
+        larger = left
+    }
+
+    val result = ULongArray(larger.size)
+    var index = 0
+    while (index < smaller.size) {
+        result[index] = larger.limbs[index] or smaller.limbs[index]
+        index++
+    }
+    while (index < larger.size) {
+        result[index] = larger.limbs[index]
+        index++
+    }
+    return BigInteger(1, larger.size, result)
+}
+
+private fun xorPositive(left: BigInteger, right: BigInteger): BigInteger {
+    val smaller: BigInteger
+    val larger: BigInteger
+    if (left.size < right.size) {
+        smaller = left
+        larger = right
+    } else {
+        smaller = right
+        larger = left
+    }
+
+    val result = ULongArray(larger.size)
+    var lastNonZero = 0
+    var index = 0
+    while (index < smaller.size) {
+        val digit = larger.limbs[index] xor smaller.limbs[index]
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    while (index < larger.size) {
+        val digit = larger.limbs[index]
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
 }
 
 /** Schoolbook multiply when total result limbs (left.size + right.size) is at or below this. */

@@ -1,0 +1,36 @@
+=== BASELINE — 2026-04-16 16:10 ===
+Source: benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-04-16T16.10.51.286186/macosArm64.json
+
+Benchmark                               small  / medium / large   us/op
+-----------------------------------------------------------------------
+andMethod                               0.238 / 0.224 / 0.258
+andNotMethod                            0.294 / 0.311 / 0.353
+bitCountMethod                          0.022 / 0.081 / 0.273
+bitLengthMethod                         0.013 / 0.026 / 0.030
+clearBitMethod                          0.245 / 0.252 / 0.291
+flipBitMethod                           0.235 / 0.245 / 0.276
+getLowestSetBitMethod                   0.008 / 0.014 / 0.022
+notMethod                               0.167 / 0.172 / 0.207
+orMethod                                0.221 / 0.229 / 0.274
+setBitMethod                            0.246 / 0.253 / 0.285
+shiftLeftMethod                         0.167 / 0.180 / 0.208
+shiftRightMethod                        0.167 / 0.175 / 0.208
+testBitMethod                           0.013 / 0.013 / 0.013
+xorMethod                               0.217 / 0.223 / 0.258
+
+Initial target: positive-operand `and`/`or`/`xor`, because the smoke fixtures build
+positive inputs and the current implementation still pays full borrowed-handle setup
++ LibTomMath dispatch for those operations.
+
+=== RUN 2 — 2026-04-16 ===
+Change: Added pure Kotlin limb fast paths for positive `and` / `or` / `xor`, plus
+cheap zero/self short-circuits before falling back to LibTomMath for negative cases.
+
+andMethod: 0.238/0.224/0.258 → 0.033/0.037/0.059 us/op
+orMethod:  0.221/0.229/0.274 → 0.036/0.044/0.074 us/op
+xorMethod: 0.217/0.223/0.258 → 0.035/0.044/0.072 us/op
+
+Observed effect:
+- positive binary bitwise ops are now roughly 4x to 7x faster across the smoke profiles
+- the rest of the suite stayed essentially flat, which means the new fast path is narrowly
+  targeted instead of globally perturbing the bitwise code
