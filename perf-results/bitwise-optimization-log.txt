@@ -164,3 +164,44 @@ Key confirmed wins versus the negative smoke baseline:
 Notes:
 - a few unrelated positive full-benchmark samples showed scheduler noise on reruns; the
   negative measurements above were stable on the forced rerun and match the smoke trend
+
+=== RUN 8 — 2026-04-16 ===
+Change: Removed the remaining `abs(x) - 1` temporary allocations from negative bitwise
+ops. Negative `and` / `or` / `xor` / `andNot` now stream the two's-complement payload
+digits directly and fuse the final `+1` for negative results. Negative `flipBit`,
+`setBit`, and `clearBit` now update the magnitude by directly adding or subtracting the
+single target bit instead of routing through payload reconstruction.
+
+Validation source:
+- benchmarks/build/reports/benchmarks/bitwise/2026-04-16T16.24.33.223833/macosArm64.json
+- `./gradlew macosArm64Test :benchmarks:macosArm64BitwiseSmokeBenchmark --rerun-tasks`
+- `./gradlew :benchmarks:macosArm64BitwiseBenchmark --rerun-tasks`
+
+Negative final (macosArm64 full) — small / medium / large us/op:
+- and:      0.097 / 0.067 / 0.091
+- andNot:   0.056 / 0.064 / 0.091
+- bitCount: 0.036 / 0.100 / 0.313
+- bitLength:0.025 / 0.035 / 0.039
+- clearBit: 0.051 / 0.054 / 0.058
+- flipBit:  0.053 / 0.057 / 0.061
+- not:      0.042 / 0.044 / 0.048
+- or:       0.057 / 0.064 / 0.091
+- setBit:   0.056 / 0.060 / 0.064
+- testBit:  0.024 / 0.023 / 0.023
+- xor:      0.058 / 0.067 / 0.092
+
+Key confirmed wins versus RUN 7:
+- and:      0.124/0.140/0.181 → 0.097/0.067/0.091
+- andNot:   0.103/0.114/0.142 → 0.056/0.064/0.091
+- clearBit: 0.128/0.126/0.153 → 0.051/0.054/0.058
+- flipBit:  0.108/0.118/0.144 → 0.053/0.057/0.061
+- or:       0.127/0.140/0.173 → 0.057/0.064/0.091
+- setBit:   0.116/0.127/0.153 → 0.056/0.060/0.064
+- xor:      0.105/0.117/0.152 → 0.058/0.067/0.092
+
+Observed effect:
+- the remaining negative-path gap to positive is now small for the binary bitwise ops
+  and the mutators
+- versus the IonSpin numbers from the benchmark expansion, the native implementation is
+  now competitive on negative `and` / `or` / `xor`, while the negative mutators are
+  now close to the native positive-path timings

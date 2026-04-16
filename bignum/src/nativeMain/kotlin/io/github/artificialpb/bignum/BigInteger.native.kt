@@ -252,11 +252,9 @@ actual class BigInteger internal constructor(
         if (this === other) return this
         return when {
             sign > 0 && other.sign > 0 -> andPositive(this, other)
-            sign > 0 -> andNotPositive(this, negativeBitwisePayload(other))
-            other.sign > 0 -> andNotPositive(other, negativeBitwisePayload(this))
-            else -> negativeFromBitwisePayload(
-                orPositive(negativeBitwisePayload(this), negativeBitwisePayload(other))
-            )
+            sign > 0 -> andPositiveNegative(this, other)
+            other.sign > 0 -> andPositiveNegative(other, this)
+            else -> andNegativeNegative(this, other)
         }
     }
 
@@ -266,15 +264,9 @@ actual class BigInteger internal constructor(
         if (this === other) return this
         return when {
             sign > 0 && other.sign > 0 -> orPositive(this, other)
-            sign > 0 -> negativeFromBitwisePayload(
-                andNotPositive(negativeBitwisePayload(other), this)
-            )
-            other.sign > 0 -> negativeFromBitwisePayload(
-                andNotPositive(negativeBitwisePayload(this), other)
-            )
-            else -> negativeFromBitwisePayload(
-                andPositive(negativeBitwisePayload(this), negativeBitwisePayload(other))
-            )
+            sign > 0 -> orPositiveNegative(this, other)
+            other.sign > 0 -> orPositiveNegative(other, this)
+            else -> orNegativeNegative(this, other)
         }
     }
 
@@ -284,9 +276,9 @@ actual class BigInteger internal constructor(
         if (this === other) return ZERO
         return when {
             sign > 0 && other.sign > 0 -> xorPositive(this, other)
-            sign > 0 -> negativeFromBitwisePayload(xorPositive(this, negativeBitwisePayload(other)))
-            other.sign > 0 -> negativeFromBitwisePayload(xorPositive(negativeBitwisePayload(this), other))
-            else -> xorPositive(negativeBitwisePayload(this), negativeBitwisePayload(other))
+            sign > 0 -> xorPositiveNegative(this, other)
+            other.sign > 0 -> xorPositiveNegative(other, this)
+            else -> xorNegativeNegative(this, other)
         }
     }
 
@@ -302,11 +294,9 @@ actual class BigInteger internal constructor(
         if (this === other) return ZERO
         return when {
             sign > 0 && other.sign > 0 -> andNotPositive(this, other)
-            sign > 0 -> andPositive(this, negativeBitwisePayload(other))
-            other.sign > 0 -> negativeFromBitwisePayload(
-                orPositive(negativeBitwisePayload(this), other)
-            )
-            else -> andNotPositive(negativeBitwisePayload(other), negativeBitwisePayload(this))
+            sign > 0 -> andNotPositiveNegative(this, other)
+            other.sign > 0 -> andNotNegativePositive(this, other)
+            else -> andNotNegativeNegative(this, other)
         }
     }
 
@@ -366,20 +356,32 @@ actual class BigInteger internal constructor(
 
     actual fun setBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
+        if (sign >= 0) {
+            if (testBit(n)) return this
+            return flipBitNonNegative(this, n)
+        }
         if (testBit(n)) return this
-        return flipBit(n)
+        return subtractSingleBitMagnitude(-1, this, n)
     }
 
     actual fun clearBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
+        if (sign >= 0) {
+            if (!testBit(n)) return this
+            return flipBitNonNegative(this, n)
+        }
         if (!testBit(n)) return this
-        return flipBit(n)
+        return addSingleBitMagnitude(-1, this, n)
     }
 
     actual fun flipBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) return flipBitNonNegative(this, n)
-        return flipBitNegative(this, n)
+        return if (testBit(n)) {
+            addSingleBitMagnitude(-1, this, n)
+        } else {
+            subtractSingleBitMagnitude(-1, this, n)
+        }
     }
 
     actual fun getLowestSetBit(): Int {
@@ -861,18 +863,277 @@ private fun flipBitNonNegative(value: BigInteger, n: Int): BigInteger {
     return bigIntegerFromLimbs(1, resultSize, result)
 }
 
-private fun flipBitNegative(value: BigInteger, n: Int): BigInteger =
-    negativeFromBitwisePayload(xorPositive(negativeBitwisePayload(value), singleBitPositive(n)))
+private inline fun combineNegativePayloadsToPositive(
+    left: BigInteger,
+    right: BigInteger,
+    combine: (ULong, ULong) -> ULong,
+): BigInteger {
+    val resultSize = maxOf(left.size, right.size)
+    val result = ULongArray(resultSize)
+    var leftBorrowPending = true
+    var rightBorrowPending = true
+    var lastNonZero = 0
+    var index = 0
+    while (index < resultSize) {
+        val leftRaw = if (index < left.size) left.limbs[index] else 0UL
+        val leftPayload = if (leftBorrowPending) {
+            if (leftRaw == 0UL) {
+                CANONICAL_LIMB_MASK
+            } else {
+                leftBorrowPending = false
+                leftRaw - 1UL
+            }
+        } else {
+            leftRaw
+        }
+        val rightRaw = if (index < right.size) right.limbs[index] else 0UL
+        val rightPayload = if (rightBorrowPending) {
+            if (rightRaw == 0UL) {
+                CANONICAL_LIMB_MASK
+            } else {
+                rightBorrowPending = false
+                rightRaw - 1UL
+            }
+        } else {
+            rightRaw
+        }
+        val digit = combine(leftPayload, rightPayload)
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
+}
 
-private fun negativeBitwisePayload(value: BigInteger): BigInteger = subtractMagnitudeOne(1, value)
+private inline fun combineNegativePayloadsToNegative(
+    left: BigInteger,
+    right: BigInteger,
+    combine: (ULong, ULong) -> ULong,
+): BigInteger {
+    val payloadSize = maxOf(left.size, right.size)
+    val result = ULongArray(payloadSize + 1)
+    var leftBorrowPending = true
+    var rightBorrowPending = true
+    var carry = 1UL
+    var lastNonZero = 0
+    var index = 0
+    while (index < payloadSize) {
+        val leftRaw = if (index < left.size) left.limbs[index] else 0UL
+        val leftPayload = if (leftBorrowPending) {
+            if (leftRaw == 0UL) {
+                CANONICAL_LIMB_MASK
+            } else {
+                leftBorrowPending = false
+                leftRaw - 1UL
+            }
+        } else {
+            leftRaw
+        }
+        val rightRaw = if (index < right.size) right.limbs[index] else 0UL
+        val rightPayload = if (rightBorrowPending) {
+            if (rightRaw == 0UL) {
+                CANONICAL_LIMB_MASK
+            } else {
+                rightBorrowPending = false
+                rightRaw - 1UL
+            }
+        } else {
+            rightRaw
+        }
+        val sum = combine(leftPayload, rightPayload) + carry
+        val digit = sum and CANONICAL_LIMB_MASK
+        result[index] = digit
+        carry = sum shr CANONICAL_LIMB_BITS
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    if (carry != 0UL) {
+        result[payloadSize] = carry
+        lastNonZero = payloadSize + 1
+    }
+    return BigInteger(-1, lastNonZero, result)
+}
 
-private fun negativeFromBitwisePayload(payload: BigInteger): BigInteger = addMagnitudeOne(-1, payload)
+private inline fun combinePositiveWithNegativePayloadToPositive(
+    positive: BigInteger,
+    negative: BigInteger,
+    combine: (ULong, ULong) -> ULong,
+): BigInteger {
+    val result = ULongArray(positive.size)
+    var negativeBorrowPending = true
+    var lastNonZero = 0
+    var index = 0
+    while (index < positive.size) {
+        val negativeRaw = if (index < negative.size) negative.limbs[index] else 0UL
+        val negativePayload = if (negativeBorrowPending) {
+            if (negativeRaw == 0UL) {
+                CANONICAL_LIMB_MASK
+            } else {
+                negativeBorrowPending = false
+                negativeRaw - 1UL
+            }
+        } else {
+            negativeRaw
+        }
+        val digit = combine(positive.limbs[index], negativePayload)
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
+}
 
-private fun singleBitPositive(n: Int): BigInteger {
+private inline fun combinePositiveWithNegativePayloadToNegative(
+    positive: BigInteger,
+    negative: BigInteger,
+    combine: (ULong, ULong) -> ULong,
+): BigInteger {
+    val payloadSize = maxOf(positive.size, negative.size)
+    val result = ULongArray(payloadSize + 1)
+    var negativeBorrowPending = true
+    var carry = 1UL
+    var lastNonZero = 0
+    var index = 0
+    while (index < payloadSize) {
+        val positiveDigit = if (index < positive.size) positive.limbs[index] else 0UL
+        val negativeRaw = if (index < negative.size) negative.limbs[index] else 0UL
+        val negativePayload = if (negativeBorrowPending) {
+            if (negativeRaw == 0UL) {
+                CANONICAL_LIMB_MASK
+            } else {
+                negativeBorrowPending = false
+                negativeRaw - 1UL
+            }
+        } else {
+            negativeRaw
+        }
+        val sum = combine(positiveDigit, negativePayload) + carry
+        val digit = sum and CANONICAL_LIMB_MASK
+        result[index] = digit
+        carry = sum shr CANONICAL_LIMB_BITS
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    if (carry != 0UL) {
+        result[payloadSize] = carry
+        lastNonZero = payloadSize + 1
+    }
+    return BigInteger(-1, lastNonZero, result)
+}
+
+private fun andPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
+    combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
+        positiveDigit and (negativePayload.inv() and CANONICAL_LIMB_MASK)
+    }
+
+private fun andNotPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
+    combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
+        positiveDigit and negativePayload
+    }
+
+private fun xorPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
+    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
+        positiveDigit xor negativePayload
+    }
+
+private fun orPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
+    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
+        negativePayload and (positiveDigit.inv() and CANONICAL_LIMB_MASK)
+    }
+
+private fun andNotNegativePositive(negative: BigInteger, positive: BigInteger): BigInteger =
+    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
+        positiveDigit or negativePayload
+    }
+
+private fun andNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
+    combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
+        leftPayload or rightPayload
+    }
+
+private fun orNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
+    combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
+        leftPayload and rightPayload
+    }
+
+private fun xorNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
+    combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
+        leftPayload xor rightPayload
+    }
+
+private fun andNotNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
+    combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
+        rightPayload and (leftPayload.inv() and CANONICAL_LIMB_MASK)
+    }
+
+private fun addSingleBitMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
     val digitIndex = n / CANONICAL_LIMB_BITS
-    val limbs = ULongArray(digitIndex + 1)
-    limbs[digitIndex] = 1UL shl (n % CANONICAL_LIMB_BITS)
-    return BigInteger(1, digitIndex + 1, limbs)
+    val bitMask = 1UL shl (n % CANONICAL_LIMB_BITS)
+    if (digitIndex >= value.size) {
+        val resultSize = digitIndex + 1
+        val result = ULongArray(resultSize)
+        if (value.size > 0) {
+            value.limbs.copyInto(result, endIndex = value.size)
+        }
+        result[digitIndex] = bitMask
+        return BigInteger(sign, resultSize, result)
+    }
+
+    val result = ULongArray(value.size + 1)
+    if (digitIndex > 0) {
+        value.limbs.copyInto(result, endIndex = digitIndex)
+    }
+    var carry = bitMask
+    var index = digitIndex
+    while (index < value.size && carry != 0UL) {
+        val sum = value.limbs[index] + carry
+        result[index] = sum and CANONICAL_LIMB_MASK
+        carry = sum shr CANONICAL_LIMB_BITS
+        index++
+    }
+    if (index < value.size) {
+        value.limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = value.size)
+        return BigInteger(sign, value.size, result)
+    }
+    return if (carry != 0UL) {
+        result[value.size] = carry
+        BigInteger(sign, value.size + 1, result)
+    } else {
+        BigInteger(sign, value.size, result)
+    }
+}
+
+private fun subtractSingleBitMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
+    val digitIndex = n / CANONICAL_LIMB_BITS
+    val bitMask = 1UL shl (n % CANONICAL_LIMB_BITS)
+    val result = ULongArray(value.size)
+    if (digitIndex > 0) {
+        value.limbs.copyInto(result, endIndex = digitIndex)
+    }
+    var borrow = bitMask
+    var index = digitIndex
+    while (true) {
+        val digit = value.limbs[index]
+        if (digit >= borrow) {
+            result[index] = digit - borrow
+            index++
+            if (index < value.size) {
+                value.limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = value.size)
+            }
+            return bigIntegerFromLimbs(sign, value.size, result)
+        }
+        result[index] = CANONICAL_LIMB_BASE + digit - borrow
+        borrow = 1UL
+        index++
+    }
 }
 
 private fun negativePayloadDigitAt(value: BigInteger, digitIndex: Int): ULong {
