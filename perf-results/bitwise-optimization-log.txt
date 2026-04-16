@@ -68,3 +68,31 @@ Observed effect:
 - `flipBit()` is now about 5x to 6x faster
 - `setBit()` and `clearBit()` are now about 4x to 5x faster because the hot work moved
   out of LibTomMath and onto the existing Kotlin limb representation
+
+=== FINAL — 2026-04-16 (macosArm64 full bitwise benchmark) ===
+Benchmark                               small  / medium / large   us/op
+-----------------------------------------------------------------------
+andMethod                               0.034 / 0.038 / 0.057
+andNotMethod                            0.034 / 0.039 / 0.059
+bitCountMethod                          0.022 / 0.081 / 0.273
+bitLengthMethod                         0.013 / 0.026 / 0.030
+clearBitMethod                          0.046 / 0.049 / 0.056
+flipBitMethod                           0.038 / 0.040 / 0.046
+getLowestSetBitMethod                   0.008 / 0.014 / 0.022
+notMethod                               0.028 / 0.031 / 0.040
+orMethod                                0.036 / 0.045 / 0.071
+setBitMethod                            0.046 / 0.049 / 0.054
+shiftLeftMethod                         0.167 / 0.180 / 0.206
+shiftRightMethod                        0.169 / 0.176 / 0.189
+testBitMethod                           0.013 / 0.013 / 0.013
+xorMethod                               0.035 / 0.043 / 0.070
+
+Key confirmed wins versus the original smoke baseline:
+- and:      0.238/0.224/0.258 → 0.034/0.038/0.057
+- or:       0.221/0.229/0.274 → 0.036/0.045/0.071
+- xor:      0.217/0.223/0.258 → 0.035/0.043/0.070
+- andNot:   0.294/0.311/0.353 → 0.034/0.039/0.059
+- not:      0.167/0.172/0.207 → 0.028/0.031/0.040
+- flipBit:  0.235/0.245/0.276 → 0.038/0.040/0.046
+- setBit:   0.246/0.253/0.285 → 0.046/0.049/0.054
+- clearBit: 0.245/0.252/0.291 → 0.046/0.049/0.056
