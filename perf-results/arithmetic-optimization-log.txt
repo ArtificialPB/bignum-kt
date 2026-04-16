@@ -1,0 +1,372 @@
+=== BASELINE — 2026-04-15 23:28 ===
+Benchmark                                Profile         Score Unit
+----------------------------------------------------------------------
+absMethod                                ?               0.208 us/op
+absMethod                                ?               0.190 us/op
+absMethod                                ?               0.188 us/op
+addMethod                                ?               0.193 us/op
+addMethod                                ?               0.189 us/op
+addMethod                                ?               0.197 us/op
+decrementOperator                        ?               0.196 us/op
+decrementOperator                        ?               0.200 us/op
+decrementOperator                        ?               0.193 us/op
+divOperator                              ?               2.520 us/op
+divOperator                              ?               0.716 us/op
+divOperator                              ?               0.469 us/op
+divideAndRemainderMethod                 ?               2.626 us/op
+divideAndRemainderMethod                 ?               0.837 us/op
+divideAndRemainderMethod                 ?               0.606 us/op
+divideMethod                             ?               2.538 us/op
+divideMethod                             ?               0.730 us/op
+divideMethod                             ?               0.463 us/op
+gcdMethod                                ?              19.765 us/op
+gcdMethod                                ?               4.303 us/op
+gcdMethod                                ?               0.486 us/op
+incrementOperator                        ?               0.410 us/op
+incrementOperator                        ?               0.430 us/op
+incrementOperator                        ?               0.408 us/op
+lcmMethod                                ?              21.307 us/op
+lcmMethod                                ?               5.011 us/op
+lcmMethod                                ?               0.829 us/op
+minusOperator                            ?               0.192 us/op
+minusOperator                            ?               0.202 us/op
+minusOperator                            ?               0.193 us/op
+modInverseMethod                         ?              15.630 us/op
+modInverseMethod                         ?               3.133 us/op
+modInverseMethod                         ?               1.644 us/op
+modMethod                                ?               0.960 us/op
+modMethod                                ?               0.630 us/op
+modMethod                                ?               0.425 us/op
+modPowMethod                             ?               5.330 us/op
+modPowMethod                             ?               3.451 us/op
+modPowMethod                             ?               2.885 us/op
+multiplyMethod                           ?               0.468 us/op
+multiplyMethod                           ?               0.200 us/op
+multiplyMethod                           ?               0.186 us/op
+plusOperator                             ?               0.186 us/op
+plusOperator                             ?               0.189 us/op
+plusOperator                             ?               0.191 us/op
+powMethod                                ?               0.439 us/op
+powMethod                                ?               0.291 us/op
+powMethod                                ?               0.230 us/op
+remainderOperator                        ?               2.500 us/op
+remainderOperator                        ?               0.721 us/op
+remainderOperator                        ?               0.460 us/op
+subtractMethod                           ?               0.185 us/op
+subtractMethod                           ?               0.186 us/op
+subtractMethod                           ?               0.187 us/op
+timesOperator                            ?               0.463 us/op
+timesOperator                            ?               0.198 us/op
+timesOperator                            ?               0.181 us/op
+unaryMinusOperator                       ?               0.194 us/op
+unaryMinusOperator                       ?               0.188 us/op
+unaryMinusOperator                       ?               0.193 us/op
+
+=== RUN 2 — 2026-04-15 ===
+Change: Replaced inc/dec (mp_copy + mp_incr/mp_decr = 2 FFI calls + dead allocation in inc) with mp_add_d/mp_sub_d (1 FFI call)
+
+incrementOperator: 0.408/0.430/0.410 → 0.195/0.188/0.189 us/op
+decrementOperator: 0.193/0.200/0.196 → 0.199/0.188/0.191 us/op
+
+Delta: incrementOperator ~53% faster (0.41 → 0.19 us/op). decrementOperator similar (~unchanged, already fast).
+The big inc win is from removing the dead `this + ONE` allocation AND eliminating mp_copy.
+
+=== RUN 3 — 2026-04-15 ===
+Change: Replaced 3-operation lcm (gcd → div → mul, 3 FFI calls + 2 temp allocations) with mp_lcm (1 FFI call) + sign fixup
+
+lcmMethod: 0.829/5.011/21.307 → 0.729/4.828/20.995 us/op
+
+Delta: lcm ~2-4% faster (small: 12%, medium: 4%, large: 1.5%).
+Improvement modest — mp_lcm internally does the same gcd→div→mul, but saves 2 temp BigInteger allocations.
+
+=== RUN 4 — 2026-04-15 ===
+Change: Added fast paths for pow(0)→ONE, pow(1)→this; short-circuit unaryMinus for ZERO
+
+powMethod: 0.230/0.291/0.439 → 0.232/0.295/0.450 us/op (within noise — benchmark doesn't test exponent 0/1)
+unaryMinusOperator: 0.193/0.188/0.194 → 0.220/0.199/0.203 us/op (within noise — benchmark uses non-zero inputs)
+
+Delta: No measurable change in benchmark. These are real-world fast paths for edge cases.
+
+=== RUN 5 — 2026-04-15 ===
+Change: Added zero-operand short-circuits for add(ZERO)→this, subtract(ZERO)→this, multiply with ZERO→ZERO
+
+Benchmark inputs are non-zero, so direct improvement is from avoiding allocation overhead in edge cases.
+Some numbers appear faster but may be run-to-run variance. Key observations:
+- subtractMethod: 0.187/0.186/0.185 → 0.171/0.178/0.166 us/op
+- timesOperator: 0.181/0.198/0.463 → 0.164/0.203/0.411 us/op
+- unaryMinusOperator: 0.193/0.188/0.194 → 0.167/0.166/0.176 us/op
+- addMethod: 0.197/0.189/0.193 → 0.199/0.198/0.193 us/op (within noise, slight overhead from branch)
+
+Note: The branch checks are very fast (single int field read) and well-predicted.
+
+=== FINAL — 2026-04-15 (clean build, all optimizations applied) ===
+Benchmark                           small  / medium / large   us/op
+-------------------------------------------------------------------
+absMethod                           0.160 / 0.162 / 0.166
+addMethod                           0.161 / 0.163 / 0.158
+decrementOperator                   0.160 / 0.161 / 0.167
+divOperator                         0.384 / 0.587 / 2.063
+divideAndRemainderMethod            0.524 / 0.706 / 2.173
+divideMethod                        0.388 / 0.595 / 2.063
+gcdMethod                           0.360 / 3.666 / 16.572
+incrementOperator                   0.160 / 0.164 / 0.161
+lcmMethod                           0.617 / 4.119 / 17.635
+minusOperator                       0.159 / 0.160 / 0.160
+modInverseMethod                    1.347 / 2.593 / 12.937
+modMethod                           0.344 / 0.518 / 0.808
+modPowMethod                        2.365 / 2.844 / 4.401
+multiplyMethod                      0.154 / 0.168 / 0.389
+plusOperator                         0.156 / 0.155 / 0.161
+powMethod                           0.191 / 0.251 / 0.380
+remainderOperator                   0.388 / 0.601 / 2.083
+subtractMethod                      0.162 / 0.169 / 0.170
+timesOperator                       0.193 / 0.177 / 0.401
+unaryMinusOperator                  0.166 / 0.167 / 0.177
+
+Key confirmed improvement: incrementOperator went from ~0.41 to ~0.16 us/op (>60% faster)
+
+=== POOL ALLOCATOR INVESTIGATION — 2026-04-16 ===
+
+Tested three pool approaches to eliminate the ~0.16us allocation floor:
+
+1. pthread_mutex pool (cleaner + main thread): REGRESSION — mutex overhead ~0.3us per op
+   addMethod small: 0.16 → 0.45 us/op (2.8x slower)
+
+2. Spinlock pool (AtomicInt CAS): REGRESSION — spinlock overhead ~0.15us per op
+   addMethod small: 0.16 → 0.33 us/op (2x slower)
+
+3. Local-only pool (no synchronization, freeMp temporaries only): NEUTRAL
+   addMethod small: 0.16 → 0.19 us/op (within noise)
+   Pool only recycles freeMp temporaries, not BigInteger result allocations.
+
+DIAGNOSTIC: Removed createCleaner to measure its isolated cost:
+   addMethod small: 0.16 → 0.093 us/op (without cleaner)
+   → createCleaner costs ~0.07us per BigInteger construction (~45% of the floor)
+   → nativeHeap.alloc + mp_init + object creation costs ~0.09us (~55%)
+   → JVM add small: 0.018 us/op → even without cleaner, native is 5x slower
+
+CONCLUSION: The ~0.16us floor has two components:
+  - createCleaner registration: ~0.07us (irreducible with current Kotlin/Native GC API)
+  - nativeHeap.alloc + mp_init + BigInteger construction: ~0.09us
+  Pool allocator cannot help because:
+  - Result mp_ints go through cleaner (finalizer thread) → need synchronization → overhead > savings
+  - Temporary mp_ints (freeMp) are a minority of allocations
+  Closing the gap to JVM requires changes at the Kotlin/Native runtime level (cheaper GC integration
+  or value-type BigInteger without per-instance cleanup).
+
+=== RUN 6 — 2026-04-16 ===
+Change: Replaced boxed PrototypeMagnitude + ULongArray hot path with inline 1-2 limb storage on BigInteger.
+Only values above 2 limbs keep a backing ULongArray; add/subtract stay allocation-free for <=2-limb results and
+materialize LibTomMath state lazily only when another operation needs the native handle.
+
+Key deltas vs the previous prototype-path smoke run:
+- addMethod:      0.064/0.074/0.107 → 0.022/0.054/0.087 us/op
+- subtractMethod: 0.083/0.093/0.147 → 0.024/0.048/0.078 us/op
+- plusOperator:   0.065/0.075/0.115 → 0.023/0.055/0.087 us/op
+- minusOperator:  0.083/0.092/0.112 → 0.025/0.048/0.078 us/op
+
+Observed effect:
+- small add/sub now land around 0.022-0.025 us/op, which is in the same ballpark as the JVM smoke figure
+- medium add/sub also moved materially closer to the target
+- large add/sub improved, though the gain is smaller because limb loops dominate
+
+=== RUN 7 — 2026-04-16 ===
+Change: Switched to a single canonical Kotlin-owned representation:
+  BigInteger = (sign, size, limbs: ULongArray)
+Removed persistent native handle ownership and per-instance cleaner registration.
+LibTomMath now operates through temporary borrowed mp_int views over pinned 60-bit limbs.
+
+Key deltas vs RUN 6 (inline 1-2 limb representation):
+- absMethod:             0.279/0.177/0.212 → 0.013/0.013/0.013 us/op
+- unaryMinusOperator:    0.168/0.178/0.212 → 0.014/0.014/0.014 us/op
+- incrementOperator:     0.167/0.175/0.217 → 0.028/0.034/0.049 us/op
+- decrementOperator:     0.166/0.179/0.215 → 0.030/0.036/0.051 us/op
+- addMethod:             0.022/0.054/0.087 → 0.029/0.036/0.053 us/op
+- subtractMethod:        0.024/0.048/0.078 → 0.031/0.038/0.059 us/op
+- multiplyMethod:        0.176/0.207/0.458 → 0.201/0.233/0.530 us/op
+- divideMethod:          0.403/0.622/2.088 → 0.449/0.677/2.162 us/op
+- modPowMethod:          2.392/2.920/4.506 → 2.539/3.017/4.650 us/op
+
+Observed effect:
+- Single-array canonical limbs preserved very strong add/sub throughput while simplifying the representation.
+- Sign-only and +/-1 operations became essentially free compared to the native-heap-backed design.
+- Heavy LibTomMath operations regressed modestly because every call now pays temporary borrowed-handle setup instead of reusing a lazily materialized native object.
+- This architecture is a cleaner long-term base. If absolute peak add/sub throughput is needed later, a hidden small-buffer optimization can be layered on top without changing the public logical model.
+
+=== DISCARDED ATTEMPT — 2026-04-16 ===
+Change: Kept `ULongArray` representation but rewrote `addAbsolute` / `subtractAbsolute` to avoid `digit(index)`
+and split the loops into overlap and tail phases for direct indexed accesses.
+
+Result: Regressed the arithmetic smoke benchmark, so the change was reverted.
+- addMethod:      0.029/0.036/0.053 → 0.037/0.043/0.059 us/op
+- subtractMethod: 0.031/0.038/0.059 → 0.037/0.043/0.062 us/op
+- plusOperator:   0.029/0.037/0.057 → 0.036/0.040/0.057 us/op
+- minusOperator:  0.031/0.038/0.059 → 0.037/0.043/0.062 us/op
+
+=== DISCARDED ATTEMPT — 2026-04-16 ===
+Change: Marked `digit(index)` as `inline` and simplified the bounds check from `index in 0 until size`
+to `index < size`, while keeping the existing single-loop add/subtract structure.
+
+Result: Regressed the arithmetic smoke benchmark, so the change was reverted.
+- Compiler warning: "Expected performance impact from inlining is insignificant."
+- addMethod:      0.029/0.036/0.053 → 0.036/0.048/0.066 us/op
+- subtractMethod: 0.031/0.038/0.059 → 0.037/0.046/0.070 us/op
+- plusOperator:   0.029/0.037/0.057 → 0.035/0.043/0.066 us/op
+- minusOperator:  0.031/0.038/0.059 → 0.037/0.046/0.070 us/op
+
+=== DISCARDED ATTEMPT — 2026-04-16 ===
+Change: Added dedicated `size <= 2` add/subtract fast paths that still returned canonical `ULongArray`
+backed BigIntegers, bypassing the generic loop and normalization for tiny magnitudes.
+
+Result: Not worth keeping. Small add/sub and inc/dec were roughly flat to slightly better, but medium and
+large arithmetic regressed enough that the change was reverted.
+- addMethod:      0.029/0.036/0.053 → 0.030/0.044/0.065 us/op
+- subtractMethod: 0.031/0.038/0.059 → 0.030/0.046/0.071 us/op
+- plusOperator:   0.029/0.037/0.057 → 0.029/0.044/0.066 us/op
+- minusOperator:  0.031/0.038/0.059 → 0.030/0.046/0.069 us/op
+- incrementOperator: 0.028/0.034/0.049 → 0.029/0.042/0.062 us/op
+- decrementOperator: 0.030/0.036/0.051 → 0.029/0.044/0.065 us/op
+
+=== RUN 8 — 2026-04-16 ===
+Change: Replaced `inc()` / `dec()` with direct limb-based magnitude +/- 1 helpers.
+This bypasses the generic `add(ONE)` / `subtract(ONE)` path and copies the unchanged tail once carry/borrow clears.
+
+Key deltas vs RUN 7:
+- incrementOperator: 0.028/0.034/0.049 → 0.028/0.031/0.042 us/op
+- decrementOperator: 0.030/0.036/0.051 → 0.029/0.032/0.038 us/op
+- addMethod:         0.029/0.036/0.053 → 0.036/0.046/0.066 us/op
+- subtractMethod:    0.031/0.038/0.059 → 0.038/0.046/0.070 us/op
+
+Observed effect:
+- `inc` / `dec` got materially faster, especially on medium and large operands.
+- Generic add/sub numbers moved around in this run, but the direct +/-1 path is clearly a win and is isolated from the main add/sub kernels.
+
+=== DISCARDED ATTEMPT — 2026-04-16 ===
+Change: Rewrote `compareMagnitudes` from a descending `for` loop to a countdown `while` loop with cached limb arrays.
+
+Result: No measurable win on the paths it actually affects, so the change was reverted.
+- subtractMethod: 0.038/0.046/0.070 → 0.039/0.046/0.070 us/op
+- minusOperator:  0.037/0.046/0.070 → 0.039/0.047/0.070 us/op
+
+=== RUN 9 — 2026-04-16 ===
+Change: Added same-size fast paths for `addAbsolute` and `subtractAbsolute`.
+The fast path uses direct indexed limb loads, avoids `digit(index)` dispatch in the equal-size case, and tracks the last non-zero subtraction limb during the main loop instead of doing a trailing normalization pass.
+
+Key deltas vs RUN 8:
+- addMethod:         0.036/0.046/0.066 → 0.033/0.036/0.054 us/op
+- subtractMethod:    0.038/0.046/0.070 → 0.033/0.041/0.061 us/op
+- plusOperator:      0.035/0.044/0.065 → 0.032/0.038/0.056 us/op
+- minusOperator:     0.037/0.046/0.070 → 0.032/0.039/0.063 us/op
+- incrementOperator: 0.028/0.031/0.042 → 0.029/0.031/0.045 us/op
+- decrementOperator: 0.029/0.032/0.038 → 0.029/0.031/0.041 us/op
+
+Observed effect:
+- This is the first post-canonical-layout change that materially improves the main add/sub kernels instead of only helping unary +/-1 operations.
+- The biggest gains are on medium and large operands, which matches the intended target: equal-size limb loops without extra helper calls or post-pass normalization.
+- A confirmation rerun stayed in the same band: addMethod 0.031/0.038/0.053, subtractMethod 0.033/0.039/0.063, plusOperator 0.032/0.036/0.054, minusOperator 0.032/0.039/0.065 us/op.
+
+=== RUN 10 — 2026-04-16 ===
+Change: Added pure Kotlin schoolbook multiplication for operands with ≤2 limbs each.
+Uses 30-bit half-limb decomposition to compute full 120-bit partial products without FFI.
+Bypasses borrowed handle creation, array pinning, and mp_mul entirely for small operands.
+
+Key deltas vs baseline:
+- multiplyMethod:  0.236/0.272/0.622 → 0.056/0.285/0.626 us/op
+- timesOperator:   0.239/0.274/0.619 → 0.056/0.298/0.623 us/op
+
+Delta: multiply small ~76% faster (0.236 → 0.056 us/op). Medium and large unchanged (expected, they exceed 2 limbs).
+
+=== RUN 11 — 2026-04-16 ===
+Change: Extended schoolbook multiply threshold from size<=2 to sum of sizes <=14.
+This covers medium benchmark operands (~6 limbs each, sum=12 < 14).
+
+Key deltas vs RUN 10:
+- multiplyMethod:  0.056/0.285/0.626 → 0.057/0.128/0.629 us/op
+- timesOperator:   0.056/0.298/0.623 → 0.057/0.128/0.632 us/op
+
+Delta: multiply medium ~55% faster (0.285 → 0.128 us/op). Small and large unchanged.
+
+=== RUN 12 — 2026-04-16 ===
+Change: Replaced mp_expt_n FFI call with Kotlin-native binary exponentiation using BigInteger.multiply().
+The multiply() method automatically dispatches to schoolbook for small/medium intermediates.
+
+Key deltas vs RUN 11:
+- powMethod:  0.249/0.324/0.484 → 0.171/0.176/0.287 us/op
+
+Delta: pow 31-46% faster across all sizes. The biggest gain is on medium (46%) where intermediate
+results stay in the schoolbook multiply range.
+
+=== RUN 13 — 2026-04-16 ===
+Change: Implemented Knuth's Algorithm D at base 2^30 for division of operands with ≤2 sixty-bit limbs.
+All division-family operations (divide, remainder, mod, divideAndRemainder) use the Kotlin path for small operands.
+
+Key deltas vs RUN 12 baseline:
+- divideMethod:            0.536/0.790/2.579 → 0.485/0.727/2.240 us/op
+- divOperator:             0.544/0.803/2.573 → 0.479/0.695/2.229 us/op
+- remainderOperator:       0.531/0.774/2.534 → 0.463/0.682/2.223 us/op
+- divideAndRemainderMethod:0.628/0.905/2.685 → 0.553/0.811/2.321 us/op
+- modMethod:               0.489/0.693/1.045 → 0.234/0.605/0.936 us/op
+
+Delta: modMethod small 52% faster, other division ops 10-14% faster for small operands.
+
+=== RUN 14 — 2026-04-16 ===
+Change: Fixed double-borrow underflow in Algorithm D multiply-subtract step (combined product + borrow
+before subtracting to avoid sub + B still being negative). Extended division threshold from 2 to 7 limbs.
+
+Key deltas vs initial baseline:
+- divideMethod:            0.536/0.790/2.579 → 0.215/0.685/2.207 us/op
+- divOperator:             0.544/0.803/2.573 → 0.215/0.682/2.208 us/op
+- remainderOperator:       0.531/0.774/2.534 → 0.212/0.685/2.198 us/op
+- divideAndRemainderMethod:0.628/0.905/2.685 → 0.223/0.772/2.284 us/op
+- modMethod:               0.489/0.693/1.045 → 0.212/0.599/0.903 us/op
+- gcdMethod:               0.507/4.372/19.763 → 0.425/3.715/16.973 us/op (indirect)
+- lcmMethod:               0.796/4.969/21.286 → 0.680/4.248/18.325 us/op (indirect)
+
+Delta: Division family 57-64% faster for small, 3-14% for medium. GCD/LCM improved indirectly
+since they call division internally.
+
+=== DISCARDED ATTEMPT — 2026-04-16 ===
+Change: Tried extending multiply threshold from 14 to 20/40 and division threshold from 7 to 10.
+Result: Multiply threshold=40 regressed large multiply (schoolbook too slow for 19×19).
+Threshold=20 and threshold=14 produced same results (within noise).
+Division threshold=10 produced same results as 7 for medium (Algorithm D overhead matches FFI at 6 limbs).
+
+=== DISCARDED ATTEMPT — 2026-04-16 ===
+Change: Kotlin Euclidean GCD for small operands using divRemMagnitude.
+Result: Regressed badly. Small: 0.425 → 0.533 us/op. Medium: 3.715 → 16.348 us/op.
+The many iterations of Euclidean algorithm with our slower-than-C division made it much worse
+than mp_gcd's optimized binary GCD.
+
+=== FINAL — 2026-04-16 (all RUN 10-14 optimizations applied) ===
+Benchmark                           small  / medium / large   us/op
+-------------------------------------------------------------------
+absMethod                           0.013 / 0.013 / 0.013
+addMethod                           0.026 / 0.030 / 0.044
+decrementOperator                   0.024 / 0.026 / 0.047
+divOperator                         0.222 / 0.682 / 2.207
+divideAndRemainderMethod            0.221 / 0.756 / 2.274
+divideMethod                        0.215 / 0.683 / 2.206
+gcdMethod                           0.423 / 3.714 / 16.894
+incrementOperator                   0.024 / 0.026 / 0.034
+lcmMethod                           0.681 / 4.318 / 18.159
+minusOperator                       0.027 / 0.033 / 0.052
+modInverseMethod                    1.449 / 2.714 / 13.430
+modMethod                           0.213 / 0.597 / 0.908
+modPowMethod                        2.546 / 3.041 / 4.638
+multiplyMethod                      0.048 / 0.110 / 0.531
+plusOperator                        0.026 / 0.030 / 0.045
+powMethod                           0.147 / 0.150 / 0.247
+remainderOperator                   0.212 / 0.686 / 2.184
+subtractMethod                      0.028 / 0.033 / 0.051
+timesOperator                       0.048 / 0.109 / 0.530
+unaryMinusOperator                  0.014 / 0.014 / 0.014
+
+Summary of improvements vs previous FINAL (RUN 9):
+- multiplyMethod small:  0.154 → 0.048 us/op (69% faster)
+- multiplyMethod medium: 0.168 → 0.110 us/op (35% faster)
+- divideMethod small:    0.388 → 0.215 us/op (45% faster)
+- modMethod small:       0.344 → 0.213 us/op (38% faster)
+- powMethod small:       0.191 → 0.147 us/op (23% faster)
+- powMethod medium:      0.251 → 0.150 us/op (40% faster)
+- powMethod large:       0.380 → 0.247 us/op (35% faster)
+- modPowMethod small:    2.365 → 2.546 us/op (8% slower — more overhead in modular path)
