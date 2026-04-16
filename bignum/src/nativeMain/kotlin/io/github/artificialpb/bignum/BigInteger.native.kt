@@ -385,6 +385,7 @@ actual class BigInteger internal constructor(
 
     actual fun flipBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
+        if (sign >= 0) return flipBitNonNegative(this, n)
         return withBorrowedHandle { handle ->
             val bitMask = allocMp()
             checkMp(mp_2expt(bitMask, n), bitMask)
@@ -861,6 +862,18 @@ private fun andNotPositive(left: BigInteger, right: BigInteger): BigInteger {
         index++
     }
     return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
+}
+
+private fun flipBitNonNegative(value: BigInteger, n: Int): BigInteger {
+    val digitIndex = n / CANONICAL_LIMB_BITS
+    val bitMask = 1UL shl (n % CANONICAL_LIMB_BITS)
+    val resultSize = maxOf(value.size, digitIndex + 1)
+    val result = ULongArray(resultSize)
+    if (value.size > 0) {
+        value.limbs.copyInto(result, endIndex = value.size)
+    }
+    result[digitIndex] = result[digitIndex] xor bitMask
+    return bigIntegerFromLimbs(1, resultSize, result)
 }
 
 /** Schoolbook multiply when total result limbs (left.size + right.size) is at or below this. */

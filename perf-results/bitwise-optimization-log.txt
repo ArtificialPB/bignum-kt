@@ -55,3 +55,16 @@ andNotMethod: 0.291/0.309/0.350 → 0.034/0.039/0.059 us/op
 Observed effect:
 - `andNot()` is now roughly 6x to 9x faster on the smoke profiles
 - the rest of the suite stayed flat, so this is another isolated bitwise win
+
+=== RUN 5 — 2026-04-16 ===
+Change: Added a non-negative limb fast path for `flipBit`; `setBit` and `clearBit` now
+benefit automatically because they already route through `testBit` + `flipBit`.
+
+flipBitMethod:  0.235/0.245/0.280 → 0.041/0.044/0.047 us/op
+setBitMethod:   0.245/0.253/0.288 → 0.049/0.053/0.057 us/op
+clearBitMethod: 0.244/0.253/0.291 → 0.047/0.051/0.060 us/op
+
+Observed effect:
+- `flipBit()` is now about 5x to 6x faster
+- `setBit()` and `clearBit()` are now about 4x to 5x faster because the hot work moved
+  out of LibTomMath and onto the existing Kotlin limb representation
