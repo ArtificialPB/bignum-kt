@@ -11,6 +11,21 @@ plugins {
 
 val libtommathDir = projectDir.resolve("src/nativeInterop/libtommath")
 val differentialFixtureDir = projectDir.resolve("src/commonTest/resources/differential")
+val tommathPinnedDefines = listOf(
+    "MP_NO_FILE",
+    "MP_USE_ENUMS",
+    "MP_64BIT",
+)
+val tommathPinnedCompilerOpts = tommathPinnedDefines.map { "-D$it" }
+
+data class TommathAppleTarget(val sdk: String, val clangTarget: String)
+
+val pinnedTommathTargets = mapOf(
+    "macos_arm64" to TommathAppleTarget("macosx", "arm64-apple-macos"),
+    "ios_arm64" to TommathAppleTarget("iphoneos", "arm64-apple-ios"),
+    "ios_x64" to TommathAppleTarget("iphonesimulator", "x86_64-apple-ios-simulator"),
+    "ios_simulator_arm64" to TommathAppleTarget("iphonesimulator", "arm64-apple-ios-simulator"),
+)
 
 kotlin {
     compilerOptions {
@@ -27,11 +42,19 @@ kotlin {
     iosSimulatorArm64()
 
     targets.withType<KotlinNativeTarget>().configureEach {
+        check(konanTarget.name in pinnedTommathTargets) {
+            "Native target '${name}' (${konanTarget.name}) is not pinned for LibTomMath. " +
+                "Add an explicit entry to pinnedTommathTargets before enabling it."
+        }
         compilations.getByName("main") {
             cinterops {
                 val tommath by creating {
                     defFile(project.file("src/nativeMain/cinterop/tommath.def"))
-                    includeDirs.allHeaders(libtommathDir)
+                    includeDirs.allHeaders(
+                        projectDir.resolve("src/nativeMain/cinterop"),
+                        libtommathDir,
+                    )
+                    compilerOpts(*tommathPinnedCompilerOpts.toTypedArray())
                     extraOpts("-libraryPath", layout.buildDirectory.get().dir("tmp/libs/${konanTarget.name}"))
                 }
             }
@@ -107,6 +130,7 @@ android {
 abstract class BuildTommathTask : DefaultTask() {
     @get:Input abstract val sdk: Property<String>
     @get:Input abstract val clangTarget: Property<String>
+    @get:Input abstract val compilerOpts: ListProperty<String>
     @get:InputDirectory abstract val sourceDir: DirectoryProperty
     @get:OutputFile abstract val outputLib: RegularFileProperty
     @get:Internal abstract val buildDir: DirectoryProperty
@@ -133,8 +157,14 @@ abstract class BuildTommathTask : DefaultTask() {
             workingDir = workDir
             args("libtommath.a")
             environment["ARFLAGS"] = "rcs"
-            environment["CFLAGS"] = "-O2 -DMP_NO_FILE -DMP_USE_ENUMS" +
-                " --target=${clangTarget.get()} -isysroot $sysroot -Wno-unused-but-set-variable"
+            environment["CFLAGS"] = buildList {
+                add("-O2")
+                addAll(compilerOpts.get())
+                add("--target=${clangTarget.get()}")
+                add("-isysroot")
+                add(sysroot)
+                add("-Wno-unused-but-set-variable")
+            }.joinToString(" ")
             environment["CC"] = "clang"
         }
 
@@ -144,21 +174,13 @@ abstract class BuildTommathTask : DefaultTask() {
     }
 }
 
-data class AppleTarget(val sdk: String, val clangTarget: String)
-
-val appleTargets = mapOf(
-    "macos_arm64" to AppleTarget("macosx", "arm64-apple-macos"),
-    "ios_arm64" to AppleTarget("iphoneos", "arm64-apple-ios"),
-    "ios_x64" to AppleTarget("iphonesimulator", "x86_64-apple-ios-simulator"),
-    "ios_simulator_arm64" to AppleTarget("iphonesimulator", "arm64-apple-ios-simulator"),
-)
-
-appleTargets.forEach { (konanName, appleTarget) ->
+pinnedTommathTargets.forEach { (konanName, appleTarget) ->
     val capitalized = konanName.split("_").joinToString("") { it.replaceFirstChar(Char::uppercase) }
 
     val buildTask = tasks.register<BuildTommathTask>("buildTommath$capitalized") {
         sdk.set(appleTarget.sdk)
         clangTarget.set(appleTarget.clangTarget)
+        compilerOpts.set(tommathPinnedCompilerOpts)
         sourceDir.set(libtommathDir)
         buildDir.set(layout.buildDirectory.dir("tmp/tommath-build/$konanName"))
         outputLib.set(layout.buildDirectory.file("tmp/libs/$konanName/libtommath.a"))
