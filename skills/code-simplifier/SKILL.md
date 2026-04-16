@@ -1,6 +1,6 @@
 ---
-name: code-optimizer
-description: Use when simplifying, cleaning up, or restructuring code without changing behavior — when asked to "simplify", "clean up", "refactor", "reduce duplication", or "optimize code structure"
+name: code-simplifier
+description: Use when simplifying, cleaning up, or restructuring code without changing behavior — when asked to "simplify", "clean up", "refactor", "reduce duplication", or "tidy up"
 ---
 
 # Code Optimizer
