@@ -25,11 +25,16 @@ data class IonspinBenchmarkFixture(
     val inverseBase: BigInteger,
     val powBase: BigInteger,
     val powExponent: Int,
-    val bitwiseLeft: BigInteger,
-    val bitwiseRight: BigInteger,
+    val positiveBitwise: IonspinBitwiseFixture,
+    val negativeBitwise: IonspinBitwiseFixture,
     val shiftAmount: Int,
     val bitLength: Int,
     val sqrtInput: BigInteger,
+)
+
+data class IonspinBitwiseFixture(
+    val left: BigInteger,
+    val right: BigInteger,
 )
 
 internal object IonspinBenchmarkFixtures {
@@ -56,8 +61,16 @@ internal object IonspinBenchmarkFixtures {
         val powBase = BigInteger.parseString(profile.powBase, 10)
 
         val shiftedOdd = left.abs().or(ONE).shl((profile.shiftAmount / 2).coerceAtLeast(1))
-        val bitwiseLeft = shiftedOdd.or(ONE.shl(profile.bitIndex))
-        val bitwiseRight = right.abs().or(THREE)
+        val positiveBitwiseLeft = shiftedOdd.or(ONE.shl(profile.bitIndex))
+        val positiveBitwiseRight = right.abs().or(THREE)
+        val positiveBitwise = IonspinBitwiseFixture(
+            left = positiveBitwiseLeft,
+            right = positiveBitwiseRight,
+        )
+        val negativeBitwise = IonspinBitwiseFixture(
+            left = positiveBitwiseLeft.negate(),
+            right = positiveBitwiseRight.negate(),
+        )
 
         val sqrtInput = (left.abs().add(ONE)).multiply(right.abs().add(ONE))
 
@@ -81,8 +94,8 @@ internal object IonspinBenchmarkFixtures {
             inverseBase = inverseBase,
             powBase = powBase,
             powExponent = profile.powExponent,
-            bitwiseLeft = bitwiseLeft,
-            bitwiseRight = bitwiseRight,
+            positiveBitwise = positiveBitwise,
+            negativeBitwise = negativeBitwise,
             shiftAmount = profile.shiftAmount,
             bitLength = profile.bitIndex,
             sqrtInput = sqrtInput,

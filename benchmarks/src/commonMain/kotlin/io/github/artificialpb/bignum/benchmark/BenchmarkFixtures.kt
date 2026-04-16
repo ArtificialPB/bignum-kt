@@ -28,6 +28,16 @@ data class BenchmarkProfile(
     val mersenneExponent: Int,
 )
 
+data class BitwiseBenchmarkFixture(
+    val left: BigInteger,
+    val right: BigInteger,
+    val testBitInput: BigInteger,
+    val setBitInput: BigInteger,
+    val clearBitInput: BigInteger,
+    val flipBitInput: BigInteger,
+    val lowestSetBitInput: BigInteger,
+)
+
 data class BenchmarkFixture(
     val constructorString: String,
     val constructorRadixString: String,
@@ -51,13 +61,8 @@ data class BenchmarkFixture(
     val modExponent: BigInteger,
     val powBase: BigInteger,
     val powExponent: Int,
-    val bitwiseLeft: BigInteger,
-    val bitwiseRight: BigInteger,
-    val testBitInput: BigInteger,
-    val setBitInput: BigInteger,
-    val clearBitInput: BigInteger,
-    val flipBitInput: BigInteger,
-    val lowestSetBitInput: BigInteger,
+    val positiveBitwise: BitwiseBenchmarkFixture,
+    val negativeBitwise: BitwiseBenchmarkFixture,
     val bitIndex: Int,
     val shiftAmount: Int,
     val probablePrime: BigInteger,
@@ -141,13 +146,28 @@ internal object BenchmarkFixtures {
         val powBase = BigInteger(profile.powBase)
 
         val shiftedOdd = left.abs().or(one).shiftLeft((profile.shiftAmount / 2).coerceAtLeast(1))
-        val bitwiseLeft = shiftedOdd.or(one.shiftLeft(profile.bitIndex))
-        val bitwiseRight = right.abs().or(three)
-        val testBitInput = bitwiseLeft.setBit(profile.bitIndex)
-        val setBitInput = bitwiseLeft.clearBit(profile.bitIndex)
-        val clearBitInput = bitwiseLeft.setBit(profile.bitIndex)
-        val flipBitInput = bitwiseLeft
-        val lowestSetBitInput = three.shiftLeft((profile.bitIndex / 2).coerceAtLeast(1))
+        val positiveBitwiseLeft = shiftedOdd.or(one.shiftLeft(profile.bitIndex))
+        val positiveBitwiseRight = right.abs().or(three)
+        val positiveBitwise = BitwiseBenchmarkFixture(
+            left = positiveBitwiseLeft,
+            right = positiveBitwiseRight,
+            testBitInput = positiveBitwiseLeft.setBit(profile.bitIndex),
+            setBitInput = positiveBitwiseLeft.clearBit(profile.bitIndex),
+            clearBitInput = positiveBitwiseLeft.setBit(profile.bitIndex),
+            flipBitInput = positiveBitwiseLeft,
+            lowestSetBitInput = three.shiftLeft((profile.bitIndex / 2).coerceAtLeast(1)),
+        )
+        val negativeBitwiseLeft = -positiveBitwiseLeft
+        val negativeBitwiseRight = -positiveBitwiseRight
+        val negativeBitwise = BitwiseBenchmarkFixture(
+            left = negativeBitwiseLeft,
+            right = negativeBitwiseRight,
+            testBitInput = negativeBitwiseLeft.setBit(profile.bitIndex),
+            setBitInput = negativeBitwiseLeft.clearBit(profile.bitIndex),
+            clearBitInput = negativeBitwiseLeft.setBit(profile.bitIndex),
+            flipBitInput = negativeBitwiseLeft,
+            lowestSetBitInput = -three.shiftLeft((profile.bitIndex / 2).coerceAtLeast(1)),
+        )
 
         val probablePrime = modulus
         val nextPrimeStart = probablePrime - hundred
@@ -178,13 +198,8 @@ internal object BenchmarkFixtures {
             modExponent = modExponent,
             powBase = powBase,
             powExponent = profile.powExponent,
-            bitwiseLeft = bitwiseLeft,
-            bitwiseRight = bitwiseRight,
-            testBitInput = testBitInput,
-            setBitInput = setBitInput,
-            clearBitInput = clearBitInput,
-            flipBitInput = flipBitInput,
-            lowestSetBitInput = lowestSetBitInput,
+            positiveBitwise = positiveBitwise,
+            negativeBitwise = negativeBitwise,
             bitIndex = profile.bitIndex,
             shiftAmount = profile.shiftAmount,
             probablePrime = probablePrime,
