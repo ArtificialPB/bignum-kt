@@ -74,6 +74,10 @@ actual class BigInteger internal constructor(
         if (other == ONE) return this
         if (this == MINUS_ONE) return -other
         if (other == MINUS_ONE) return -this
+        val resultSign = sign * other.sign
+        if (size <= 2 && other.size <= 2) {
+            return multiplySmall(resultSign, this, other)
+        }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
             val result = allocMp()
             checkMp(mp_mul(leftHandle, rightHandle, result), result)
@@ -718,6 +722,39 @@ private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger)
         }
     }
     return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
+}
+
+private const val HALF_LIMB_BITS = 30
+private const val HALF_LIMB_MASK = 0x3FFFFFFFUL
+
+private fun multiplySmall(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
+    val resultCapacity = left.size + right.size
+    val result = ULongArray(resultCapacity)
+    for (i in 0 until left.size) {
+        val aLimb = left.limbs[i]
+        val aL = aLimb and HALF_LIMB_MASK
+        val aH = aLimb shr HALF_LIMB_BITS
+        var carry = 0UL
+        for (j in 0 until right.size) {
+            val bLimb = right.limbs[j]
+            val bL = bLimb and HALF_LIMB_MASK
+            val bH = bLimb shr HALF_LIMB_BITS
+            // Full 120-bit product of two 60-bit limbs, split via 30-bit halves
+            val p0 = aL * bL
+            val mid = aH * bL + aL * bH
+            val p3 = aH * bH
+            val lowSum = p0 + ((mid and HALF_LIMB_MASK) shl HALF_LIMB_BITS)
+            val prodLow = lowSum and CANONICAL_LIMB_MASK
+            val prodHigh = p3 + (lowSum shr CANONICAL_LIMB_BITS) + (mid shr HALF_LIMB_BITS)
+            val acc = prodLow + result[i + j] + carry
+            result[i + j] = acc and CANONICAL_LIMB_MASK
+            carry = prodHigh + (acc shr CANONICAL_LIMB_BITS)
+        }
+        if (carry != 0UL) {
+            result[i + right.size] = carry
+        }
+    }
+    return bigIntegerFromLimbs(sign, resultCapacity, result)
 }
 
 private fun digitBitLength(value: ULong): Int {
