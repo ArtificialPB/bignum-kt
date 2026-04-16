@@ -235,3 +235,31 @@ Observed effect:
   matrix instead of being flat around the old LibTomMath FFI cost
 - the native implementation now beats the expanded IonSpin shift numbers across every
   positive and negative profile in the current bitwise suite
+
+=== RUN 10 — 2026-04-16 ===
+Change: Replaced the manual per-bit loops in the limb helpers with Kotlin's word-size
+bit intrinsics and simplified negative `bitCount` to the identity
+`bitCount(-m) = popcount(m) + trailingZeroes(m) - 1`. That keeps the method as a
+single popcount scan of the stored magnitude instead of simulating `abs(x) - 1`
+digit-by-digit.
+
+Validation source:
+- benchmarks/build/reports/benchmarks/bitwise/2026-04-16T16.24.33.223833/macosArm64.json
+- `./gradlew macosArm64Test :benchmarks:macosArm64BitwiseSmokeBenchmark --rerun-tasks`
+- `./gradlew :benchmarks:macosArm64BitwiseBenchmark --rerun-tasks`
+
+bitCount results (macosArm64 full) — small / medium / large us/op:
+- positive: 0.015 / 0.023 / 0.040
+- negative: 0.022 / 0.030 / 0.044
+
+Key confirmed wins versus RUN 9:
+- bitCount positive: 0.027/0.086/0.285 → 0.015/0.023/0.040
+- bitCount negative: 0.051/0.166/0.492 → 0.022/0.030/0.044
+
+Observed effect:
+- the linear scan is still expected, because `bitCount` must inspect the full magnitude,
+  but the old constant factor was not; the intrinsic path cut most of that overhead
+- `bitCount` is now in the same general cost range as `bitLength` / `getLowestSetBit`
+  instead of standing out as a much slower bitwise query
+- the full-suite rerun showed one unrelated `xor` large positive outlier, but the
+  `bitCount` measurements themselves were stable across all three iterations

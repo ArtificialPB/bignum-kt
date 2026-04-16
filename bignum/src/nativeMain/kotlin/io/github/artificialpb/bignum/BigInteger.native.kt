@@ -400,30 +400,11 @@ actual class BigInteger internal constructor(
 
     actual fun bitCount(): Int {
         if (size == 0) return 0
-        if (sign > 0) {
-            var count = 0
-            for (index in 0 until size) {
-                count += digitBitCount(limbs[index])
-            }
-            return count
-        }
         var count = 0
-        var borrowPending = true
         for (index in 0 until size) {
-            val digit = limbs[index]
-            val adjusted = if (borrowPending) {
-                if (digit == 0UL) {
-                    CANONICAL_LIMB_MASK
-                } else {
-                    borrowPending = false
-                    digit - 1UL
-                }
-            } else {
-                digit
-            }
-            count += digitBitCount(adjusted)
+            count += digitBitCount(limbs[index])
         }
-        return count
+        return if (sign > 0) count else count + getLowestSetBit() - 1
     }
 
     // Predicates
@@ -1460,33 +1441,15 @@ private fun multiplySmall(sign: Int, left: BigInteger, right: BigInteger): BigIn
 }
 
 private fun digitBitLength(value: ULong): Int {
-    var current = value
-    var bits = 0
-    while (current != 0UL) {
-        current = current shr 1
-        bits++
-    }
-    return bits
+    return if (value == 0UL) 0 else ULong.SIZE_BITS - value.countLeadingZeroBits()
 }
 
 private fun trailingZeroBits(value: ULong): Int {
-    var current = value
-    var zeros = 0
-    while ((current and 1UL) == 0UL) {
-        current = current shr 1
-        zeros++
-    }
-    return zeros
+    return value.countTrailingZeroBits()
 }
 
 private fun digitBitCount(value: ULong): Int {
-    var current = value
-    var count = 0
-    while (current != 0UL) {
-        current = current and (current - 1UL)
-        count++
-    }
-    return count
+    return value.countOneBits()
 }
 
 @OptIn(ExperimentalForeignApi::class)
