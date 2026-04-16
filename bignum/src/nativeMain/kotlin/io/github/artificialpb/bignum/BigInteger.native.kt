@@ -75,7 +75,7 @@ actual class BigInteger internal constructor(
         if (this == MINUS_ONE) return -other
         if (other == MINUS_ONE) return -this
         val resultSign = sign * other.sign
-        if (size <= 2 && other.size <= 2) {
+        if (size + other.size <= SCHOOLBOOK_MUL_THRESHOLD) {
             return multiplySmall(resultSign, this, other)
         }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
@@ -723,6 +723,9 @@ private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger)
     }
     return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
 }
+
+/** Schoolbook multiply when total result limbs (left.size + right.size) is at or below this. */
+private const val SCHOOLBOOK_MUL_THRESHOLD = 14
 
 private const val HALF_LIMB_BITS = 30
 private const val HALF_LIMB_MASK = 0x3FFFFFFFUL
