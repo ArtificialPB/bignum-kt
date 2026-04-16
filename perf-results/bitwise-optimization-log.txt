@@ -205,3 +205,33 @@ Observed effect:
 - versus the IonSpin numbers from the benchmark expansion, the native implementation is
   now competitive on negative `and` / `or` / `xor`, while the negative mutators are
   now close to the native positive-path timings
+
+=== RUN 9 — 2026-04-16 ===
+Change: Replaced the LibTomMath-backed `shiftLeft` / `shiftRight` paths with direct
+60-bit limb shifts on the native Kotlin representation. Left shifts now move whole
+limbs plus the intra-limb carry in one pass, while arithmetic right shifts detect
+discarded bits so negative values round toward negative infinity without building
+temporary two's-complement intermediates.
+
+Validation source:
+- benchmarks/build/reports/benchmarks/bitwise/2026-04-16T16.24.33.223833/macosArm64.json
+- `./gradlew macosArm64Test :benchmarks:macosArm64BitwiseSmokeBenchmark --rerun-tasks`
+- `./gradlew :benchmarks:macosArm64BitwiseBenchmark --rerun-tasks`
+
+Shift results (macosArm64 full) — small / medium / large us/op:
+- shiftLeft positive: 0.045 / 0.058 / 0.078
+- shiftLeft negative: 0.052 / 0.065 / 0.085
+- shiftRight positive: 0.039 / 0.044 / 0.061
+- shiftRight negative: 0.054 / 0.059 / 0.075
+
+Key confirmed wins versus the previous full benchmark:
+- shiftLeft positive: 0.168/0.179/0.205 → 0.045/0.058/0.078
+- shiftLeft negative: 0.175/0.187/0.212 → 0.052/0.065/0.085
+- shiftRight positive: 0.173/0.178/0.191 → 0.039/0.044/0.061
+- shiftRight negative: 0.187/0.199/0.222 → 0.054/0.059/0.075
+
+Observed effect:
+- both native shift directions are now roughly 2x to 4x faster across the benchmark
+  matrix instead of being flat around the old LibTomMath FFI cost
+- the native implementation now beats the expanded IonSpin shift numbers across every
+  positive and negative profile in the current bitwise suite

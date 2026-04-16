@@ -309,18 +309,11 @@ actual class BigInteger internal constructor(
             }
             return shiftRight(-n)
         }
-        if (sign != 0 && n.toLong() + bitLength().toLong() > MAX_BIT_LENGTH) {
+        if (sign == 0 || n == 0) return this
+        if (n.toLong() + bitLength().toLong() > MAX_BIT_LENGTH) {
             throw ArithmeticException("BigInteger would overflow supported range")
         }
-        return withBorrowedHandle { handle ->
-            val result = allocMp()
-            val err = mp_mul_2d(handle, n, result)
-            if (err != MP_OKAY) {
-                freeMp(result)
-                throw ArithmeticException("BigInteger would overflow supported range")
-            }
-            result.toBigInteger()
-        }
+        return shiftLeftMagnitude(sign, this, n)
     }
 
     actual fun shiftRight(n: Int): BigInteger {
@@ -332,12 +325,16 @@ actual class BigInteger internal constructor(
             }
             return shiftLeft(-n)
         }
-        if (sign == 0) return ZERO
-        return withBorrowedHandle { handle ->
-            val result = allocMp()
-            checkMp(mp_signed_rsh(handle, n, result), result)
-            result.toBigInteger()
+        if (sign == 0 || n == 0) return this
+        val digitShift = n / CANONICAL_LIMB_BITS
+        if (digitShift >= size) return if (sign < 0) MINUS_ONE else ZERO
+        val bitShift = n % CANONICAL_LIMB_BITS
+        val shiftedMagnitude = shiftRightMagnitude(this, digitShift, bitShift)
+        if (sign > 0) return shiftedMagnitude
+        if (!hasDiscardedShiftBits(this, digitShift, bitShift)) {
+            return BigInteger(-1, shiftedMagnitude.size, shiftedMagnitude.limbs)
         }
+        return addMagnitudeOne(-1, shiftedMagnitude)
     }
 
     actual fun testBit(n: Int): Boolean {
@@ -643,6 +640,67 @@ private fun bigIntegerFromLimbs(sign: Int, size: Int, limbs: ULongArray): BigInt
     val normalizedSize = normalizeMagnitudeSize(size, limbs)
     if (normalizedSize == 0 || sign == 0) return ZERO
     return BigInteger(sign, normalizedSize, limbs)
+}
+
+private fun shiftLeftMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
+    val digitShift = n / CANONICAL_LIMB_BITS
+    val bitShift = n % CANONICAL_LIMB_BITS
+    if (bitShift == 0) {
+        val resultSize = value.size + digitShift
+        val result = ULongArray(resultSize)
+        value.limbs.copyInto(result, destinationOffset = digitShift, endIndex = value.size)
+        return BigInteger(sign, resultSize, result)
+    }
+
+    val result = ULongArray(value.size + digitShift + 1)
+    val carryShift = CANONICAL_LIMB_BITS - bitShift
+    var carry = 0UL
+    var sourceIndex = 0
+    while (sourceIndex < value.size) {
+        val limb = value.limbs[sourceIndex]
+        result[sourceIndex + digitShift] = ((limb shl bitShift) and CANONICAL_LIMB_MASK) or carry
+        carry = limb shr carryShift
+        sourceIndex++
+    }
+    return if (carry != 0UL) {
+        result[value.size + digitShift] = carry
+        BigInteger(sign, value.size + digitShift + 1, result)
+    } else {
+        BigInteger(sign, value.size + digitShift, result)
+    }
+}
+
+private fun shiftRightMagnitude(value: BigInteger, digitShift: Int, bitShift: Int): BigInteger {
+    val resultSize = value.size - digitShift
+    val result = ULongArray(resultSize)
+    if (bitShift == 0) {
+        value.limbs.copyInto(result, startIndex = digitShift, endIndex = value.size)
+        return BigInteger(1, resultSize, result)
+    }
+
+    val lowMask = (1UL shl bitShift) - 1UL
+    val carryShift = CANONICAL_LIMB_BITS - bitShift
+    var carry = 0UL
+    var sourceIndex = value.size - 1
+    while (sourceIndex >= digitShift) {
+        val limb = value.limbs[sourceIndex]
+        result[sourceIndex - digitShift] = (limb shr bitShift) or carry
+        carry = (limb and lowMask) shl carryShift
+        sourceIndex--
+    }
+    val normalizedSize = if (result[resultSize - 1] != 0UL) resultSize else resultSize - 1
+    return if (normalizedSize == 0) ZERO else BigInteger(1, normalizedSize, result)
+}
+
+private fun hasDiscardedShiftBits(value: BigInteger, digitShift: Int, bitShift: Int): Boolean {
+    var index = 0
+    while (index < digitShift) {
+        if (value.limbs[index] != 0UL) return true
+        index++
+    }
+    if (bitShift == 0) return false
+    val lowMask = (1UL shl bitShift) - 1UL
+    return (value.limbs[digitShift] and lowMask) != 0UL
 }
 
 private fun compareMagnitudes(left: BigInteger, right: BigInteger): Int {
