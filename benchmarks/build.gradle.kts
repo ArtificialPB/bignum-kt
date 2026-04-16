@@ -24,12 +24,21 @@ val benchmarkSuites = listOf(
     BenchmarkSuite("range", "io.github.artificialpb.bignum.benchmark.RangeBenchmark.*"),
 )
 
+val ionspinBenchmarkSuites = listOf(
+    BenchmarkSuite("ionspinArithmetic", "io.github.artificialpb.bignum.benchmark.IonspinArithmeticBenchmark.*"),
+    BenchmarkSuite("ionspinBitwise", "io.github.artificialpb.bignum.benchmark.IonspinBitwiseBenchmark.*"),
+    BenchmarkSuite("ionspinComparison", "io.github.artificialpb.bignum.benchmark.IonspinComparisonBenchmark.*"),
+    BenchmarkSuite("ionspinConstruction", "io.github.artificialpb.bignum.benchmark.IonspinConstructionBenchmark.*"),
+    BenchmarkSuite("ionspinConversion", "io.github.artificialpb.bignum.benchmark.IonspinConversionBenchmark.*"),
+    BenchmarkSuite("ionspinNumberTheory", "io.github.artificialpb.bignum.benchmark.IonspinNumberTheoryBenchmark.*"),
+)
+
 val mainWarmups = 2
 val mainIterations = 3
 val mainIterationTimeMs = 1000L
 val smokeWarmups = 1
 val smokeIterations = 1
-val smokeIterationTimeMs = 2000L
+val smokeIterationTimeMs = 1000L
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -44,6 +53,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.bignum)
             implementation(libs.kotlinx.benchmark.runtime)
+            implementation(libs.ionspin.bignum)
         }
 
         commonTest.dependencies {
@@ -81,6 +91,22 @@ benchmark {
             iterationTimeUnit = "ms"
         }
         benchmarkSuites.forEach { suite ->
+            register(suite.name) {
+                include(suite.includePattern)
+                warmups = mainWarmups
+                iterations = mainIterations
+                iterationTime = mainIterationTimeMs
+                iterationTimeUnit = "ms"
+            }
+            register("${suite.name}Smoke") {
+                include(suite.includePattern)
+                warmups = smokeWarmups
+                iterations = smokeIterations
+                iterationTime = smokeIterationTimeMs
+                iterationTimeUnit = "ms"
+            }
+        }
+        ionspinBenchmarkSuites.forEach { suite ->
             register(suite.name) {
                 include(suite.includePattern)
                 warmups = mainWarmups

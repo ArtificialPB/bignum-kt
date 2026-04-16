@@ -15,7 +15,7 @@ import kotlinx.benchmark.Scope
 import kotlinx.benchmark.Setup
 import kotlinx.benchmark.State
 
-internal data class BenchmarkProfile(
+data class BenchmarkProfile(
     val operandA: String,
     val operandB: String,
     val powBase: String,
@@ -67,53 +67,60 @@ data class BenchmarkFixture(
     val rangeEnd: BigInteger,
 )
 
+internal fun decimalPattern(pattern: String, repeats: Int, suffix: String): String =
+    buildString {
+        repeat(repeats) { append(pattern) }
+        append(suffix)
+    }
+
+val benchmarkProfiles = mapOf(
+    "small" to BenchmarkProfile(
+        operandA = "12345678901234567890",
+        operandB = "9876543210987654321",
+        powBase = "123456789",
+        powExponent = 5,
+        shiftAmount = 13,
+        bitIndex = 11,
+        rangeWidth = 32,
+        intValue = 123456789,
+        longValue = 1234567890123456789L,
+        mersenneExponent = 61,
+    ),
+    "medium" to BenchmarkProfile(
+        operandA = decimalPattern("12345678901234567890", 4, "3141592653589793"),
+        operandB = decimalPattern("99887766554433221100", 4, "2718281828459045"),
+        powBase = decimalPattern("12345678901234567890", 2, "12345"),
+        powExponent = 3,
+        shiftAmount = 29,
+        bitIndex = 47,
+        rangeWidth = 64,
+        intValue = 987654321,
+        longValue = 876543210987654321L,
+        mersenneExponent = 127,
+    ),
+    "large" to BenchmarkProfile(
+        operandA = decimalPattern("12345678901234567890", 16, "246813579"),
+        operandB = decimalPattern("98765432100123456789", 16, "135792468"),
+        powBase = decimalPattern("31415926535897932384", 3, "6264338"),
+        powExponent = 2,
+        shiftAmount = 61,
+        bitIndex = 89,
+        rangeWidth = 96,
+        intValue = 2_000_000_123,
+        longValue = 8_070_450_532_247_928_83L,
+        mersenneExponent = 521,
+    ),
+)
+
 internal object BenchmarkFixtures {
     private val zero = bigIntegerOf(0)
     private val one = bigIntegerOf(1)
     private val two = bigIntegerOf(2)
     private val three = bigIntegerOf(3)
     private val hundred = bigIntegerOf(100)
-    private val profiles = mapOf(
-        "small" to BenchmarkProfile(
-            operandA = "12345678901234567890",
-            operandB = "9876543210987654321",
-            powBase = "123456789",
-            powExponent = 5,
-            shiftAmount = 13,
-            bitIndex = 11,
-            rangeWidth = 32,
-            intValue = 123456789,
-            longValue = 1234567890123456789L,
-            mersenneExponent = 61,
-        ),
-        "medium" to BenchmarkProfile(
-            operandA = decimal("12345678901234567890", 4, "3141592653589793"),
-            operandB = decimal("99887766554433221100", 4, "2718281828459045"),
-            powBase = decimal("12345678901234567890", 2, "12345"),
-            powExponent = 3,
-            shiftAmount = 29,
-            bitIndex = 47,
-            rangeWidth = 64,
-            intValue = 987654321,
-            longValue = 876543210987654321L,
-            mersenneExponent = 127,
-        ),
-        "large" to BenchmarkProfile(
-            operandA = decimal("12345678901234567890", 16, "246813579"),
-            operandB = decimal("98765432100123456789", 16, "135792468"),
-            powBase = decimal("31415926535897932384", 3, "6264338"),
-            powExponent = 2,
-            shiftAmount = 61,
-            bitIndex = 89,
-            rangeWidth = 96,
-            intValue = 2_000_000_123,
-            longValue = 8_070_450_532_247_928_83L,
-            mersenneExponent = 521,
-        ),
-    )
 
     fun create(profileName: String): BenchmarkFixture {
-        val profile = profiles[profileName]
+        val profile = benchmarkProfiles[profileName]
             ?: error("Unknown benchmark profile: $profileName")
         val left = BigInteger(profile.operandA)
         val right = BigInteger(profile.operandB)
@@ -187,14 +194,6 @@ internal object BenchmarkFixtures {
             rangeEnd = rangeEnd,
         )
     }
-
-    private fun decimal(pattern: String, repeats: Int, suffix: String): String =
-        buildString {
-            repeat(repeats) {
-                append(pattern)
-            }
-            append(suffix)
-        }
 
     private fun mersennePrime(exponent: Int): BigInteger = two.pow(exponent) - one
 
