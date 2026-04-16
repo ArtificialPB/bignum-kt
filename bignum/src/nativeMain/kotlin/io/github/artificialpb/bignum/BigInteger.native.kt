@@ -90,6 +90,9 @@ actual class BigInteger internal constructor(
         if (sign == 0) return ZERO
         if (other == ONE) return this
         if (other == MINUS_ONE) return -this
+        if (size <= 2 && other.size <= 2) {
+            return divideSmall(sign * other.sign, this, other)
+        }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
             val result = allocMp()
             checkMp(mp_div(leftHandle, rightHandle, result, null), result)
@@ -158,6 +161,11 @@ actual class BigInteger internal constructor(
     actual fun mod(modulus: BigInteger): BigInteger {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         if (sign == 0) return ZERO
+        if (size <= 2 && modulus.size <= 2) {
+            val r = remainderSmall(sign, this, modulus)
+            // mod returns non-negative: if remainder is negative, add modulus
+            return if (r.sign < 0) r.add(modulus) else r
+        }
         return withBorrowedHandles(this, modulus) { handle, modulusHandle ->
             val result = allocMp()
             checkMp(mp_mod(handle, modulusHandle, result), result)
@@ -210,6 +218,15 @@ actual class BigInteger internal constructor(
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return arrayOf(ZERO, ZERO)
+        if (size <= 2 && other.size <= 2) {
+            val (q, r) = divRemMagnitude(this, other)
+            val qSign = if (q.sign == 0) 0 else sign * other.sign
+            val rSign = if (r.sign == 0) 0 else sign
+            return arrayOf(
+                if (qSign == 0) ZERO else BigInteger(qSign, q.size, q.limbs),
+                if (rSign == 0) ZERO else BigInteger(rSign, r.size, r.limbs),
+            )
+        }
         return withBorrowedHandles(this, other) { handle, otherHandle ->
             val quotient = allocMp()
             val remainder = allocMp()
@@ -737,6 +754,208 @@ private const val SCHOOLBOOK_MUL_THRESHOLD = 14
 private const val HALF_LIMB_BITS = 30
 private const val HALF_LIMB_MASK = 0x3FFFFFFFUL
 
+/**
+ * Divides two magnitudes where both have size <= 2.
+ * Returns (quotient, remainder) as positive-magnitude BigIntegers.
+ * Caller applies signs. Uses Knuth's Algorithm D at base 2^30.
+ */
+private fun divRemMagnitude(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
+    val cmp = compareMagnitudes(dividend, divisor)
+    if (cmp < 0) return Pair(ZERO, BigInteger(1, dividend.size, dividend.limbs))
+    if (cmp == 0) return Pair(ONE, ZERO)
+
+    if (divisor.size == 1 && dividend.size == 1) {
+        val a = dividend.limbs[0]
+        val d = divisor.limbs[0]
+        val q = a / d
+        val r = a % d
+        return Pair(
+            if (q == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(q)),
+            if (r == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(r)),
+        )
+    }
+
+    // Convert to base 2^30 half-limbs and use long division
+    return divRemHalfLimbs(dividend, divisor)
+}
+
+/**
+ * Long division at base 2^30 using Knuth's Algorithm D (TAOCP 4.3.1).
+ * All arrays are MSB-first (index 0 is the most significant digit).
+ */
+private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
+    val B: ULong = 1UL shl HALF_LIMB_BITS
+    val MASK: ULong = B - 1UL
+
+    val uOrig = toHalfLimbs(dividend) // MSB first, leading zeros stripped
+    val vOrig = toHalfLimbs(divisor)  // MSB first, leading zeros stripped
+    val n = vOrig.size
+    val m = uOrig.size - n
+
+    if (n == 1) {
+        // Single-digit divisor: simple long division
+        val d = vOrig[0]
+        var rem = 0UL
+        val q = ULongArray(uOrig.size)
+        for (i in uOrig.indices) {
+            val cur = rem * B + uOrig[i]
+            q[i] = cur / d
+            rem = cur % d
+        }
+        return Pair(halfLimbsToBigInteger(q), halfLimbRemainderToBigInteger(rem))
+    }
+
+    // Step D1: Normalize — left-shift so vOrig[0] has its high bit set (bit 29)
+    val s = countLeadingZeroBits30(vOrig[0])
+
+    val v = ULongArray(n)
+    val u = ULongArray(uOrig.size + 1) // one extra leading digit
+
+    if (s > 0) {
+        // Left-shift divisor
+        for (i in 0 until n - 1) {
+            v[i] = ((vOrig[i] shl s) or (vOrig[i + 1] shr (HALF_LIMB_BITS - s))) and MASK
+        }
+        v[n - 1] = (vOrig[n - 1] shl s) and MASK
+
+        // Left-shift dividend
+        u[0] = uOrig[0] shr (HALF_LIMB_BITS - s)
+        for (i in 0 until uOrig.size - 1) {
+            u[i + 1] = ((uOrig[i] shl s) or (uOrig[i + 1] shr (HALF_LIMB_BITS - s))) and MASK
+        }
+        u[uOrig.size] = (uOrig[uOrig.size - 1] shl s) and MASK
+    } else {
+        vOrig.copyInto(v)
+        u[0] = 0UL
+        uOrig.copyInto(u, 1)
+    }
+
+    val q = ULongArray(m + 1)
+
+    // Steps D2–D7: main loop — compute one quotient digit per iteration
+    for (j in 0..m) {
+        // D3: estimate qhat from top two dividend digits / top divisor digit
+        val twoDigit = u[j] * B + u[j + 1]
+        var qhat = twoDigit / v[0]
+        var rhat = twoDigit % v[0]
+
+        // Refine: decrease qhat while it would produce too large a product
+        while (qhat >= B || qhat * v[1] > B * rhat + u[j + 2]) {
+            qhat--
+            rhat += v[0]
+            if (rhat >= B) break
+        }
+
+        // D4: multiply v by qhat and subtract from u[j..j+n]
+        // Process from LSB (i = n-1) to MSB (i = 0)
+        var borrow = 0L
+        for (i in n - 1 downTo 0) {
+            val prod = qhat * v[i]
+            val sub = u[j + 1 + i].toLong() - (prod and MASK).toLong() - borrow
+            borrow = (prod shr HALF_LIMB_BITS).toLong()
+            if (sub < 0) {
+                u[j + 1 + i] = (sub + B.toLong()).toULong()
+                borrow++
+            } else {
+                u[j + 1 + i] = sub.toULong()
+            }
+        }
+        val topSub = u[j].toLong() - borrow
+        u[j] = if (topSub < 0) (topSub + B.toLong()).toULong() else topSub.toULong()
+
+        q[j] = qhat
+
+        // D6: add back if we subtracted too much
+        if (topSub < 0) {
+            q[j]--
+            var carry = 0UL
+            for (i in n - 1 downTo 0) {
+                val sum = u[j + 1 + i] + v[i] + carry
+                u[j + 1 + i] = sum and MASK
+                carry = sum shr HALF_LIMB_BITS
+            }
+            u[j] = (u[j] + carry) and MASK
+        }
+    }
+
+    // D8: un-normalize remainder — right-shift u[m+1..m+n] by s bits
+    val rem = ULongArray(n)
+    if (s > 0) {
+        // Right-shift: bits flow from MSB (lower index) to LSB (higher index)
+        rem[0] = u[m + 1] shr s
+        for (i in 1 until n) {
+            rem[i] = ((u[m + i] shl (HALF_LIMB_BITS - s)) or (u[m + 1 + i] shr s)) and MASK
+        }
+    } else {
+        for (i in 0 until n) {
+            rem[i] = u[m + 1 + i]
+        }
+    }
+
+    return Pair(halfLimbsToBigInteger(q), halfLimbsToBigInteger(rem))
+}
+
+/** Convert BigInteger magnitude to MSB-first array of 30-bit half-limbs, stripping leading zeros. */
+private fun toHalfLimbs(value: BigInteger): ULongArray {
+    val raw = ULongArray(value.size * 2)
+    for (i in 0 until value.size) {
+        raw[raw.size - 1 - 2 * i] = value.limbs[i] and HALF_LIMB_MASK
+        raw[raw.size - 2 - 2 * i] = value.limbs[i] shr HALF_LIMB_BITS
+    }
+    // Strip leading zeros
+    var start = 0
+    while (start < raw.size - 1 && raw[start] == 0UL) start++
+    return if (start == 0) raw else raw.copyOfRange(start, raw.size)
+}
+
+/** Convert MSB-first 30-bit half-limb array to BigInteger (positive magnitude). */
+private fun halfLimbsToBigInteger(halfLimbs: ULongArray): BigInteger {
+    // Strip leading zeros
+    var start = 0
+    while (start < halfLimbs.size && halfLimbs[start] == 0UL) start++
+    if (start == halfLimbs.size) return ZERO
+
+    val significantCount = halfLimbs.size - start
+    val limbCount = (significantCount + 1) / 2
+    val limbs = ULongArray(limbCount)
+
+    // Fill from LSB
+    var halfIdx = halfLimbs.size - 1
+    for (i in 0 until limbCount) {
+        val low = halfLimbs[halfIdx--]
+        val high = if (halfIdx >= start) halfLimbs[halfIdx--] else 0UL
+        limbs[i] = low or (high shl HALF_LIMB_BITS)
+    }
+
+    val normalizedSize = normalizeMagnitudeSize(limbCount, limbs)
+    return if (normalizedSize == 0) ZERO else BigInteger(1, normalizedSize, limbs)
+}
+
+private fun halfLimbRemainderToBigInteger(value: ULong): BigInteger =
+    if (value == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(value))
+
+/** Count leading zero bits within a 30-bit value. */
+private fun countLeadingZeroBits30(value: ULong): Int {
+    if (value == 0UL) return HALF_LIMB_BITS
+    var count = 0
+    var bit = HALF_LIMB_BITS - 1 // bit 29
+    while ((value and (1UL shl bit)) == 0UL) {
+        count++
+        bit--
+    }
+    return count
+}
+
+private fun divideSmall(resultSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
+    val (q, _) = divRemMagnitude(dividend, divisor)
+    return if (q.sign == 0) ZERO else BigInteger(resultSign, q.size, q.limbs)
+}
+
+private fun remainderSmall(dividendSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
+    val (_, r) = divRemMagnitude(dividend, divisor)
+    return if (r.sign == 0) ZERO else BigInteger(dividendSign, r.size, r.limbs)
+}
+
 private fun multiplySmall(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
     val resultCapacity = left.size + right.size
     val result = ULongArray(resultCapacity)
@@ -1053,6 +1272,9 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
     if (sign == 0) return ZERO
+    if (size <= 2 && other.size <= 2) {
+        return remainderSmall(sign, this, other)
+    }
     return withBorrowedHandles(this, other) { handle, otherHandle ->
         val result = allocMp()
         checkMp(mp_div(handle, otherHandle, null, result), result)
