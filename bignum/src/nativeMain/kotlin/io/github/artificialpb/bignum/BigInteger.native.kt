@@ -90,7 +90,7 @@ actual class BigInteger internal constructor(
         if (sign == 0) return ZERO
         if (other == ONE) return this
         if (other == MINUS_ONE) return -this
-        if (size <= 2 && other.size <= 2) {
+        if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
             return divideSmall(sign * other.sign, this, other)
         }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
@@ -218,7 +218,7 @@ actual class BigInteger internal constructor(
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return arrayOf(ZERO, ZERO)
-        if (size <= 2 && other.size <= 2) {
+        if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
             val (q, r) = divRemMagnitude(this, other)
             val qSign = if (q.sign == 0) 0 else sign * other.sign
             val rSign = if (r.sign == 0) 0 else sign
@@ -751,13 +751,16 @@ private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger)
 /** Schoolbook multiply when total result limbs (left.size + right.size) is at or below this. */
 private const val SCHOOLBOOK_MUL_THRESHOLD = 14
 
+/** Use Kotlin division (Algorithm D) when both operands have at most this many 60-bit limbs. */
+private const val SCHOOLBOOK_DIV_THRESHOLD = 7
+
 private const val HALF_LIMB_BITS = 30
 private const val HALF_LIMB_MASK = 0x3FFFFFFFUL
 
 /**
- * Divides two magnitudes where both have size <= 2.
+ * Divides two magnitudes in pure Kotlin using Knuth's Algorithm D at base 2^30.
  * Returns (quotient, remainder) as positive-magnitude BigIntegers.
- * Caller applies signs. Uses Knuth's Algorithm D at base 2^30.
+ * Caller applies signs.
  */
 private fun divRemMagnitude(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
     val cmp = compareMagnitudes(dividend, divisor)
@@ -847,12 +850,12 @@ private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<Big
         }
 
         // D4: multiply v by qhat and subtract from u[j..j+n]
-        // Process from LSB (i = n-1) to MSB (i = 0)
-        var borrow = 0L
+        // Combine product + incoming borrow before subtracting to avoid double-borrow underflow
+        var borrow = 0UL
         for (i in n - 1 downTo 0) {
-            val prod = qhat * v[i]
-            val sub = u[j + 1 + i].toLong() - (prod and MASK).toLong() - borrow
-            borrow = (prod shr HALF_LIMB_BITS).toLong()
+            val t = qhat * v[i] + borrow // product + carry, fits in ULong (< B^2)
+            val sub = u[j + 1 + i].toLong() - (t and MASK).toLong()
+            borrow = t shr HALF_LIMB_BITS
             if (sub < 0) {
                 u[j + 1 + i] = (sub + B.toLong()).toULong()
                 borrow++
@@ -860,7 +863,7 @@ private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<Big
                 u[j + 1 + i] = sub.toULong()
             }
         }
-        val topSub = u[j].toLong() - borrow
+        val topSub = u[j].toLong() - borrow.toLong()
         u[j] = if (topSub < 0) (topSub + B.toLong()).toULong() else topSub.toULong()
 
         q[j] = qhat
@@ -1272,7 +1275,7 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
     if (sign == 0) return ZERO
-    if (size <= 2 && other.size <= 2) {
+    if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
         return remainderSmall(sign, this, other)
     }
     return withBorrowedHandles(this, other) { handle, otherHandle ->
