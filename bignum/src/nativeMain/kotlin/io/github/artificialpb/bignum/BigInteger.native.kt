@@ -250,11 +250,13 @@ actual class BigInteger internal constructor(
     actual fun and(other: BigInteger): BigInteger {
         if (sign == 0 || other.sign == 0) return ZERO
         if (this === other) return this
-        if (sign > 0 && other.sign > 0) return andPositive(this, other)
-        return withBorrowedHandles(this, other) { handle, otherHandle ->
-            val result = allocMp()
-            checkMp(mp_and(handle, otherHandle, result), result)
-            result.toBigInteger()
+        return when {
+            sign > 0 && other.sign > 0 -> andPositive(this, other)
+            sign > 0 -> andNotPositive(this, negativeBitwisePayload(other))
+            other.sign > 0 -> andNotPositive(other, negativeBitwisePayload(this))
+            else -> negativeFromBitwisePayload(
+                orPositive(negativeBitwisePayload(this), negativeBitwisePayload(other))
+            )
         }
     }
 
@@ -262,11 +264,17 @@ actual class BigInteger internal constructor(
         if (sign == 0) return other
         if (other.sign == 0) return this
         if (this === other) return this
-        if (sign > 0 && other.sign > 0) return orPositive(this, other)
-        return withBorrowedHandles(this, other) { handle, otherHandle ->
-            val result = allocMp()
-            checkMp(mp_or(handle, otherHandle, result), result)
-            result.toBigInteger()
+        return when {
+            sign > 0 && other.sign > 0 -> orPositive(this, other)
+            sign > 0 -> negativeFromBitwisePayload(
+                andNotPositive(negativeBitwisePayload(other), this)
+            )
+            other.sign > 0 -> negativeFromBitwisePayload(
+                andNotPositive(negativeBitwisePayload(this), other)
+            )
+            else -> negativeFromBitwisePayload(
+                andPositive(negativeBitwisePayload(this), negativeBitwisePayload(other))
+            )
         }
     }
 
@@ -274,11 +282,11 @@ actual class BigInteger internal constructor(
         if (sign == 0) return other
         if (other.sign == 0) return this
         if (this === other) return ZERO
-        if (sign > 0 && other.sign > 0) return xorPositive(this, other)
-        return withBorrowedHandles(this, other) { handle, otherHandle ->
-            val result = allocMp()
-            checkMp(mp_xor(handle, otherHandle, result), result)
-            result.toBigInteger()
+        return when {
+            sign > 0 && other.sign > 0 -> xorPositive(this, other)
+            sign > 0 -> negativeFromBitwisePayload(xorPositive(this, negativeBitwisePayload(other)))
+            other.sign > 0 -> negativeFromBitwisePayload(xorPositive(negativeBitwisePayload(this), other))
+            else -> xorPositive(negativeBitwisePayload(this), negativeBitwisePayload(other))
         }
     }
 
@@ -292,18 +300,13 @@ actual class BigInteger internal constructor(
         if (sign == 0) return ZERO
         if (other.sign == 0) return this
         if (this === other) return ZERO
-        if (sign > 0 && other.sign > 0) return andNotPositive(this, other)
-        return withBorrowedHandles(this, other) { handle, otherHandle ->
-            val notOther = allocMp()
-            checkMp(mp_complement(otherHandle, notOther), notOther)
-            val result = allocMp()
-            val err = mp_and(handle, notOther, result)
-            freeMp(notOther)
-            if (err != MP_OKAY) {
-                freeMp(result)
-                throw ArithmeticException("LibTomMath error: $err")
-            }
-            result.toBigInteger()
+        return when {
+            sign > 0 && other.sign > 0 -> andNotPositive(this, other)
+            sign > 0 -> andPositive(this, negativeBitwisePayload(other))
+            other.sign > 0 -> negativeFromBitwisePayload(
+                orPositive(negativeBitwisePayload(this), other)
+            )
+            else -> andNotPositive(negativeBitwisePayload(other), negativeBitwisePayload(this))
         }
     }
 
@@ -355,20 +358,10 @@ actual class BigInteger internal constructor(
             if (digitIndex >= size) return false
             return ((limbs[digitIndex] shr bitIndex) and 1UL) == 1UL
         }
-        return withBorrowedHandle { handle ->
-            val absMinusOne = allocMp()
-            checkMp(mp_abs(handle, absMinusOne), absMinusOne)
-            checkMp(mp_decr(absMinusOne), absMinusOne)
-            val digitIndex = n / CANONICAL_LIMB_BITS
-            val bitIndex = n % CANONICAL_LIMB_BITS
-            val isSet = if (digitIndex >= absMinusOne.pointed.used) {
-                true
-            } else {
-                (absMinusOne.pointed.dp!![digitIndex].toLong() ushr bitIndex) and 1L == 0L
-            }
-            freeMp(absMinusOne)
-            isSet
-        }
+        val digitIndex = n / CANONICAL_LIMB_BITS
+        val bitIndex = n % CANONICAL_LIMB_BITS
+        if (digitIndex >= size) return true
+        return ((negativePayloadDigitAt(this, digitIndex) shr bitIndex) and 1UL) == 0UL
     }
 
     actual fun setBit(n: Int): BigInteger {
@@ -386,18 +379,7 @@ actual class BigInteger internal constructor(
     actual fun flipBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) return flipBitNonNegative(this, n)
-        return withBorrowedHandle { handle ->
-            val bitMask = allocMp()
-            checkMp(mp_2expt(bitMask, n), bitMask)
-            val result = allocMp()
-            val err = mp_xor(handle, bitMask, result)
-            freeMp(bitMask)
-            if (err != MP_OKAY) {
-                freeMp(result)
-                throw ArithmeticException("LibTomMath error: $err")
-            }
-            result.toBigInteger()
-        }
+        return flipBitNegative(this, n)
     }
 
     actual fun getLowestSetBit(): Int {
@@ -413,15 +395,8 @@ actual class BigInteger internal constructor(
 
     actual fun bitLength(): Int {
         if (size == 0) return 0
-        if (sign > 0) return (size - 1) * CANONICAL_LIMB_BITS + digitBitLength(limbs[size - 1])
-        return withBorrowedHandle { handle ->
-            val absMinusOne = allocMp()
-            checkMp(mp_abs(handle, absMinusOne), absMinusOne)
-            checkMp(mp_decr(absMinusOne), absMinusOne)
-            val bits = if (absMinusOne.pointed.used == 0) 0 else mp_count_bits(absMinusOne)
-            freeMp(absMinusOne)
-            bits
-        }
+        val positiveBits = (size - 1) * CANONICAL_LIMB_BITS + digitBitLength(limbs[size - 1])
+        return if (sign > 0) positiveBits else if (isPowerOfTwoMagnitude(this)) positiveBits - 1 else positiveBits
     }
 
     actual fun bitCount(): Int {
@@ -433,22 +408,23 @@ actual class BigInteger internal constructor(
             }
             return count
         }
-        return withBorrowedHandle { handle ->
-            val target = allocMp()
-            checkMp(mp_abs(handle, target), target)
-            checkMp(mp_decr(target), target)
-            var count = 0
-            val dp = target.pointed.dp!!
-            for (index in 0 until target.pointed.used) {
-                var digit = dp[index]
-                while (digit != 0uL) {
-                    digit = digit and (digit - 1uL)
-                    count++
+        var count = 0
+        var borrowPending = true
+        for (index in 0 until size) {
+            val digit = limbs[index]
+            val adjusted = if (borrowPending) {
+                if (digit == 0UL) {
+                    CANONICAL_LIMB_MASK
+                } else {
+                    borrowPending = false
+                    digit - 1UL
                 }
+            } else {
+                digit
             }
-            freeMp(target)
-            count
+            count += digitBitCount(adjusted)
         }
+        return count
     }
 
     // Predicates
@@ -768,6 +744,7 @@ private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger)
 }
 
 private fun andPositive(left: BigInteger, right: BigInteger): BigInteger {
+    if (left.sign == 0 || right.sign == 0) return ZERO
     val resultSize = minOf(left.size, right.size)
     val result = ULongArray(resultSize)
     var lastNonZero = 0
@@ -784,6 +761,8 @@ private fun andPositive(left: BigInteger, right: BigInteger): BigInteger {
 }
 
 private fun orPositive(left: BigInteger, right: BigInteger): BigInteger {
+    if (left.sign == 0) return right
+    if (right.sign == 0) return left
     val smaller: BigInteger
     val larger: BigInteger
     if (left.size < right.size) {
@@ -808,6 +787,9 @@ private fun orPositive(left: BigInteger, right: BigInteger): BigInteger {
 }
 
 private fun xorPositive(left: BigInteger, right: BigInteger): BigInteger {
+    if (left.sign == 0) return right
+    if (right.sign == 0) return left
+    if (left === right) return ZERO
     val smaller: BigInteger
     val larger: BigInteger
     if (left.size < right.size) {
@@ -841,6 +823,9 @@ private fun xorPositive(left: BigInteger, right: BigInteger): BigInteger {
 }
 
 private fun andNotPositive(left: BigInteger, right: BigInteger): BigInteger {
+    if (left.sign == 0) return ZERO
+    if (right.sign == 0) return left
+    if (left === right) return ZERO
     val result = ULongArray(left.size)
     val overlapSize = minOf(left.size, right.size)
     var lastNonZero = 0
@@ -874,6 +859,44 @@ private fun flipBitNonNegative(value: BigInteger, n: Int): BigInteger {
     }
     result[digitIndex] = result[digitIndex] xor bitMask
     return bigIntegerFromLimbs(1, resultSize, result)
+}
+
+private fun flipBitNegative(value: BigInteger, n: Int): BigInteger =
+    negativeFromBitwisePayload(xorPositive(negativeBitwisePayload(value), singleBitPositive(n)))
+
+private fun negativeBitwisePayload(value: BigInteger): BigInteger = subtractMagnitudeOne(1, value)
+
+private fun negativeFromBitwisePayload(payload: BigInteger): BigInteger = addMagnitudeOne(-1, payload)
+
+private fun singleBitPositive(n: Int): BigInteger {
+    val digitIndex = n / CANONICAL_LIMB_BITS
+    val limbs = ULongArray(digitIndex + 1)
+    limbs[digitIndex] = 1UL shl (n % CANONICAL_LIMB_BITS)
+    return BigInteger(1, digitIndex + 1, limbs)
+}
+
+private fun negativePayloadDigitAt(value: BigInteger, digitIndex: Int): ULong {
+    if (digitIndex >= value.size) return 0UL
+    for (index in 0 until digitIndex) {
+        if (value.limbs[index] != 0UL) {
+            return value.limbs[digitIndex]
+        }
+    }
+    val digit = value.limbs[digitIndex]
+    return if (digit == 0UL) CANONICAL_LIMB_MASK else digit - 1UL
+}
+
+private fun isPowerOfTwoMagnitude(value: BigInteger): Boolean {
+    var seenBit = false
+    for (index in 0 until value.size) {
+        val digit = value.limbs[index]
+        if (digit == 0UL) continue
+        if (seenBit || (digit and (digit - 1UL)) != 0UL) {
+            return false
+        }
+        seenBit = true
+    }
+    return seenBit
 }
 
 /** Schoolbook multiply when total result limbs (left.size + right.size) is at or below this. */

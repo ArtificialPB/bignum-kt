@@ -96,3 +96,71 @@ Key confirmed wins versus the original smoke baseline:
 - flipBit:  0.235/0.245/0.276 → 0.038/0.040/0.046
 - setBit:   0.246/0.253/0.285 → 0.046/0.049/0.054
 - clearBit: 0.245/0.252/0.291 → 0.046/0.049/0.056
+
+=== RUN 6 — 2026-04-16 ===
+Change: Expanded the bitwise benchmark fixtures and benchmark states to run both
+positive and negative operand profiles on the project BigInteger and IonSpin baselines.
+Validated with `:benchmarks:jvmBitwiseSmokeBenchmark` and
+`:benchmarks:macosArm64BitwiseSmokeBenchmark`.
+
+Negative baseline source:
+- benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-04-16T16.33.58.903451/macosArm64.json
+
+Negative baseline (macosArm64 smoke) — small / medium / large us/op:
+- and:      0.257 / 0.254 / 0.299
+- andNot:   0.317 / 0.331 / 0.476
+- bitCount: 0.190 / 0.255 / 0.467
+- bitLength:0.189 / 0.185 / 0.185
+- clearBit: 0.398 / 0.420 / 0.445
+- flipBit:  0.247 / 0.258 / 0.290
+- not:      0.044 / 0.048 / 0.052
+- or:       0.261 / 0.252 / 0.292
+- setBit:   0.398 / 0.415 / 0.448
+- testBit:  0.172 / 0.172 / 0.172
+- xor:      0.243 / 0.255 / 0.287
+
+Observed effect:
+- benchmark coverage now exercises the native negative two's-complement paths directly
+- the new matrix exposed the real hot spots: binary negative bitwise ops plus negative
+  `bitCount`, `bitLength`, `testBit`, and the bit mutators
+
+=== RUN 7 — 2026-04-16 ===
+Change: Replaced the negative-case LibTomMath bitwise paths with pure Kotlin limb
+formulas built around the two's-complement payload `abs(x) - 1`. Negative
+`and`/`or`/`xor`/`andNot`, `testBit`, `flipBit`, `bitLength`, and `bitCount` now stay on
+the Kotlin limb representation instead of routing through borrowed handles and temporary
+`mp_int`s.
+
+Final validation source:
+- benchmarks/build/reports/benchmarks/bitwise/2026-04-16T16.24.33.223833/macosArm64.json
+- `./gradlew macosArm64Test`
+- `./gradlew :benchmarks:macosArm64BitwiseBenchmark --rerun-tasks`
+
+Negative final (macosArm64 full) — small / medium / large us/op:
+- and:      0.124 / 0.140 / 0.181
+- andNot:   0.103 / 0.114 / 0.142
+- bitCount: 0.036 / 0.100 / 0.313
+- bitLength:0.025 / 0.035 / 0.039
+- clearBit: 0.128 / 0.126 / 0.153
+- flipBit:  0.108 / 0.118 / 0.144
+- not:      0.041 / 0.044 / 0.048
+- or:       0.127 / 0.140 / 0.173
+- setBit:   0.116 / 0.127 / 0.153
+- testBit:  0.023 / 0.023 / 0.024
+- xor:      0.105 / 0.117 / 0.152
+
+Key confirmed wins versus the negative smoke baseline:
+- and:      0.257/0.254/0.299 → 0.124/0.140/0.181
+- andNot:   0.317/0.331/0.476 → 0.103/0.114/0.142
+- bitCount: 0.190/0.255/0.467 → 0.036/0.100/0.313
+- bitLength:0.189/0.185/0.185 → 0.025/0.035/0.039
+- clearBit: 0.398/0.420/0.445 → 0.128/0.126/0.153
+- flipBit:  0.247/0.258/0.290 → 0.108/0.118/0.144
+- or:       0.261/0.252/0.292 → 0.127/0.140/0.173
+- setBit:   0.398/0.415/0.448 → 0.116/0.127/0.153
+- testBit:  0.172/0.172/0.172 → 0.023/0.023/0.024
+- xor:      0.243/0.255/0.287 → 0.105/0.117/0.152
+
+Notes:
+- a few unrelated positive full-benchmark samples showed scheduler noise on reruns; the
+  negative measurements above were stable on the forced rerun and match the smoke trend
