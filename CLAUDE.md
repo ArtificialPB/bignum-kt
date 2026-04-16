@@ -82,6 +82,10 @@ val b = bigIntegerOf(42L)
 val sum = a + b
 ```
 
+## Auto-Research Mode
+
+To start an autonomous performance optimization session, invoke the `perf-optimizer` skill and follow the Auto-Research Mode section. The agent will branch, baseline, optimize, test, benchmark, and log results in a continuous loop without human intervention.
+
 ## Conventions
 
 - Package: `io.github.artificialpb.bignum`

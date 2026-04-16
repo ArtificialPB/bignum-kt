@@ -24,6 +24,8 @@ Performance optimization is a disciplined, evidence-based process. Every optimiz
 
 ## Workflow
 
+Two modes share the same core loop. **Manual mode** checks with the human between iterations. **Auto-research mode** runs autonomously until interrupted.
+
 ```dot
 digraph perf_flow {
     rankdir=TB;
@@ -42,7 +44,7 @@ digraph perf_flow {
     improved [label="Improvement?" shape=diamond];
     append_results [label="Append results to history file"];
     discard [label="Discard — no measurable gain"];
-    more [label="More optimizations?" shape=diamond];
+    mode [label="Mode?" shape=diamond];
     done [label="Done — review history file"];
 
     tests_exist -> write_tests [label="no"];
@@ -59,10 +61,10 @@ digraph perf_flow {
     run_bench -> improved;
     improved -> append_results [label="yes"];
     improved -> discard [label="no"];
-    append_results -> more;
-    discard -> more;
-    more -> optimize [label="yes"];
-    more -> done [label="no"];
+    append_results -> mode;
+    discard -> mode;
+    mode -> optimize [label="auto-research:\nalways continue"];
+    mode -> done [label="manual:\nhuman decides"];
 }
 ```
 
@@ -116,6 +118,15 @@ Delta: add() +12% faster, multiply() unchanged
 
 Every improving run is appended so the file shows the **full history of incremental gains**. Runs that showed no improvement or regressions should be noted briefly but the code change discarded.
 
+### Constraints
+
+- **One optimization per loop iteration.** Keep changes atomic and reviewable.
+- **Never skip tests.** A fast but incorrect implementation is worthless.
+- **Never modify tests or benchmarks to make results look better.** The evaluation logic is immutable.
+- **Prefer the smoke benchmark profile** during iteration (faster feedback). Use the full benchmark profile only for final validation.
+- **Log honestly.** Record failed attempts briefly. Only append full results for genuine improvements.
+- **Commit each improvement separately** with a descriptive message explaining what changed and why.
+
 ## What to Look For
 
 ### N+1 Calls and Redundant Work
@@ -137,6 +148,58 @@ Avoid patterns where an operation that could be done once is repeated `n + 1` ti
 - Prefer bulk/batch APIs over per-item calls
 - Cache IO results when the data doesn't change between iterations
 - Consider lazy loading — don't read what you won't use
+
+### Native BigInteger–Specific
+
+These apply specifically to the LibTomMath-backed native implementation:
+
+- **Reduce FFI call count** — Each Kotlin/Native → LibTomMath cinterop call has overhead. Combine multi-step operations into single calls. Example: `mp_add_d` instead of constructing a BigInteger(1) and calling `mp_add`.
+- **Add fast paths for edge cases** — Operations with ZERO/ONE can short-circuit without calling LibTomMath. Self-operations (subtract self, divide self) have known results. Guard with cheap checks (signum, reference equality).
+- **Use optimal LibTomMath functions** — Single-digit variants (`mp_add_d`, `mp_sub_d`, `mp_mul_d`, `mp_div_d`) are faster than multi-precision equivalents. `mp_div` returns both quotient and remainder — don't call it twice. Use in-place variants where available.
+- **Reduce sign-handling overhead** — The native implementation translates between sign-magnitude and two's complement for bitwise operations. Look for redundant sign checks, conversions that can be simplified, and cases where the sign is known statically.
+- **Prefer simpler code** — A 0.001 us/op improvement that adds 20 lines of complex code is not worth it. Deleting code that enables the same performance is ideal.
+
+## Auto-Research Mode
+
+Autonomous optimization loop (Karpathy-style autoresearch). Follows the same workflow above but runs continuously without human intervention.
+
+### Scope
+
+**You may modify:**
+- `bignum/src/nativeMain/kotlin/io/github/artificialpb/bignum/BigInteger.native.kt`
+- `bignum/src/jvmMain/kotlin/io/github/artificialpb/bignum/BigInteger.jvm.kt` (only if a native change requires a matching JVM change for API parity)
+
+**You must NEVER modify:**
+- Tests (`commonTest`, `nativeTest`, `jvmTest`)
+- Benchmarks (`benchmarks/`)
+- Build files (`build.gradle.kts`, `settings.gradle.kts`, `libs.versions.toml`)
+
+### Setup
+
+1. **Branch** — Create `autoresearch/<date>` from the current branch. Verify it doesn't already exist.
+2. **Read context** — Read the mutable source files and `CLAUDE.md`.
+3. **Review prior work** — Read all files in `perf-results/`. Do not re-attempt applied optimizations.
+4. **Pick a target suite** — `arithmetic`, `bitwise`, `comparison`, `construction`, `conversion`, `numberTheory`, or `range`. Prefer suites with no log or remaining headroom.
+5. **Establish baseline** — Run `./gradlew :benchmarks:macosArm64<Suite>SmokeBenchmark`, parse JSON from `benchmarks/build/reports/benchmarks/`, write baseline to `perf-results/<suite>-optimization-log.txt`.
+6. **Confirm setup** — Verify tests pass: `./gradlew macosArm64Test`. If they fail, stop and report.
+
+### Running
+
+Execute Phase 4 in a continuous loop. **Do NOT pause to ask the human.** Continue until manually interrupted.
+
+On test failure: `git checkout -- .`, note the failure, try a different optimization.
+On improvement: `git commit`, append results to the log file.
+On no improvement: `git checkout -- .`, note what didn't work.
+
+### When You Run Out of Ideas
+
+Do not stop. Instead:
+- Re-read the source file for patterns you missed
+- Look at functions you haven't optimized yet
+- Combine two near-successful attempts
+- Study the LibTomMath API (`tommath.h`) for functions that could replace multi-step wrapper logic
+- Switch to a different benchmark suite
+- Review "What to Look For" with fresh eyes
 
 ## Common Mistakes
 
