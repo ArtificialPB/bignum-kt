@@ -282,12 +282,11 @@ actual class BigInteger internal constructor(
         }
     }
 
-    actual fun not(): BigInteger =
-        withBorrowedHandle { handle ->
-            val result = allocMp()
-            checkMp(mp_complement(handle, result), result)
-            result.toBigInteger()
-        }
+    actual fun not(): BigInteger = when (sign) {
+        0 -> MINUS_ONE
+        1 -> addMagnitudeOne(-1, this)
+        else -> subtractMagnitudeOne(1, this)
+    }
 
     actual fun andNot(other: BigInteger): BigInteger =
         withBorrowedHandles(this, other) { handle, otherHandle ->

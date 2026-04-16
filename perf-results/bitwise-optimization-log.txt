@@ -34,3 +34,14 @@ Observed effect:
 - positive binary bitwise ops are now roughly 4x to 7x faster across the smoke profiles
 - the rest of the suite stayed essentially flat, which means the new fast path is narrowly
   targeted instead of globally perturbing the bitwise code
+
+=== RUN 3 — 2026-04-16 ===
+Change: Replaced LibTomMath `mp_complement` with the exact arithmetic identity for bitwise
+not: positive values become `-(x + 1)` via `addMagnitudeOne`, and negative values become
+`|x| - 1` via `subtractMagnitudeOne`.
+
+notMethod: 0.169/0.174/0.193 → 0.029/0.031/0.040 us/op
+
+Observed effect:
+- `not()` is now about 5x to 6x faster across the smoke profiles
+- neighboring benchmarks stayed within noise, so this change is also tightly scoped
