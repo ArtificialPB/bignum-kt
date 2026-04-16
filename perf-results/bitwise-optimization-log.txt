@@ -45,3 +45,13 @@ notMethod: 0.169/0.174/0.193 → 0.029/0.031/0.040 us/op
 Observed effect:
 - `not()` is now about 5x to 6x faster across the smoke profiles
 - neighboring benchmarks stayed within noise, so this change is also tightly scoped
+
+=== RUN 4 — 2026-04-16 ===
+Change: Added a pure Kotlin positive fast path for `andNot`, computing `left & ~right`
+directly over the 60-bit limbs and keeping the LibTomMath fallback for negative inputs.
+
+andNotMethod: 0.291/0.309/0.350 → 0.034/0.039/0.059 us/op
+
+Observed effect:
+- `andNot()` is now roughly 6x to 9x faster on the smoke profiles
+- the rest of the suite stayed flat, so this is another isolated bitwise win

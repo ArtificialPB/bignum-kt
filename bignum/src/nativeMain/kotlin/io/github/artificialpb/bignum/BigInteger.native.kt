@@ -288,8 +288,12 @@ actual class BigInteger internal constructor(
         else -> subtractMagnitudeOne(1, this)
     }
 
-    actual fun andNot(other: BigInteger): BigInteger =
-        withBorrowedHandles(this, other) { handle, otherHandle ->
+    actual fun andNot(other: BigInteger): BigInteger {
+        if (sign == 0) return ZERO
+        if (other.sign == 0) return this
+        if (this === other) return ZERO
+        if (sign > 0 && other.sign > 0) return andNotPositive(this, other)
+        return withBorrowedHandles(this, other) { handle, otherHandle ->
             val notOther = allocMp()
             checkMp(mp_complement(otherHandle, notOther), notOther)
             val result = allocMp()
@@ -301,6 +305,7 @@ actual class BigInteger internal constructor(
             }
             result.toBigInteger()
         }
+    }
 
     actual fun shiftLeft(n: Int): BigInteger {
         if (n < 0) {
@@ -825,6 +830,30 @@ private fun xorPositive(left: BigInteger, right: BigInteger): BigInteger {
     }
     while (index < larger.size) {
         val digit = larger.limbs[index]
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
+}
+
+private fun andNotPositive(left: BigInteger, right: BigInteger): BigInteger {
+    val result = ULongArray(left.size)
+    val overlapSize = minOf(left.size, right.size)
+    var lastNonZero = 0
+    var index = 0
+    while (index < overlapSize) {
+        val digit = left.limbs[index] and (right.limbs[index].inv() and CANONICAL_LIMB_MASK)
+        result[index] = digit
+        if (digit != 0UL) {
+            lastNonZero = index + 1
+        }
+        index++
+    }
+    while (index < left.size) {
+        val digit = left.limbs[index]
         result[index] = digit
         if (digit != 0UL) {
             lastNonZero = index + 1
