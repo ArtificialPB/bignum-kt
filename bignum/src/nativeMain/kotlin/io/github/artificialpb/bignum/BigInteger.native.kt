@@ -402,7 +402,7 @@ actual class BigInteger internal constructor(
         if (size == 0) return 0
         var count = 0
         for (index in 0 until size) {
-            count += digitBitCount(limbs[index])
+            count += limbs[index].countOneBits()
         }
         return if (sign > 0) count else count + getLowestSetBit() - 1
     }
@@ -1446,10 +1446,6 @@ private fun digitBitLength(value: ULong): Int {
 
 private fun trailingZeroBits(value: ULong): Int {
     return value.countTrailingZeroBits()
-}
-
-private fun digitBitCount(value: ULong): Int {
-    return value.countOneBits()
 }
 
 @OptIn(ExperimentalForeignApi::class)
