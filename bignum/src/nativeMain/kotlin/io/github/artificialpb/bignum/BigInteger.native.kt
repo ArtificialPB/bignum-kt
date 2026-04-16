@@ -633,6 +633,27 @@ private fun compareMagnitudes(left: BigInteger, right: BigInteger): Int {
 }
 
 private fun addAbsolute(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
+    if (left.size == right.size) {
+        val size = left.size
+        val leftLimbs = left.limbs
+        val rightLimbs = right.limbs
+        val result = ULongArray(size + 1)
+        var carry = 0UL
+        var index = 0
+        while (index < size) {
+            val sum = leftLimbs[index] + rightLimbs[index] + carry
+            result[index] = sum and CANONICAL_LIMB_MASK
+            carry = sum shr CANONICAL_LIMB_BITS
+            index++
+        }
+        return if (carry != 0UL) {
+            result[size] = carry
+            BigInteger(sign, size + 1, result)
+        } else {
+            BigInteger(sign, size, result)
+        }
+    }
+
     val maxSize = maxOf(left.size, right.size)
     val result = ULongArray(maxSize + 1)
     var carry = 0UL
@@ -651,8 +672,36 @@ private fun addAbsolute(sign: Int, left: BigInteger, right: BigInteger): BigInte
 }
 
 private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger): BigInteger {
+    if (larger.size == smaller.size) {
+        val size = larger.size
+        val largerLimbs = larger.limbs
+        val smallerLimbs = smaller.limbs
+        val result = ULongArray(size)
+        var borrow = 0UL
+        var lastNonZero = 0
+        var index = 0
+        while (index < size) {
+            val leftDigit = largerLimbs[index]
+            val subtrahend = smallerLimbs[index] + borrow
+            val digit = if (leftDigit >= subtrahend) {
+                borrow = 0UL
+                leftDigit - subtrahend
+            } else {
+                borrow = 1UL
+                CANONICAL_LIMB_BASE + leftDigit - subtrahend
+            }
+            result[index] = digit
+            if (digit != 0UL) {
+                lastNonZero = index + 1
+            }
+            index++
+        }
+        return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
+    }
+
     val result = ULongArray(larger.size)
     var borrow = 0UL
+    var lastNonZero = 0
     for (index in 0 until larger.size) {
         val leftDigit = larger.digit(index)
         val rightDigit = smaller.digit(index)
@@ -664,8 +713,11 @@ private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger)
             result[index] = CANONICAL_LIMB_BASE + leftDigit - subtrahend
             borrow = 1UL
         }
+        if (result[index] != 0UL) {
+            lastNonZero = index + 1
+        }
     }
-    return bigIntegerFromLimbs(sign, larger.size, result)
+    return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
 }
 
 private fun digitBitLength(value: ULong): Int {
@@ -966,9 +1018,17 @@ actual operator fun BigInteger.unaryMinus(): BigInteger =
 
 // inc/dec
 
-actual operator fun BigInteger.inc(): BigInteger = this.add(ONE)
+actual operator fun BigInteger.inc(): BigInteger = when (sign) {
+    0 -> ONE
+    1 -> addMagnitudeOne(1, this)
+    else -> subtractMagnitudeOne(-1, this)
+}
 
-actual operator fun BigInteger.dec(): BigInteger = this.subtract(ONE)
+actual operator fun BigInteger.dec(): BigInteger = when (sign) {
+    0 -> MINUS_ONE
+    -1 -> addMagnitudeOne(-1, this)
+    else -> subtractMagnitudeOne(1, this)
+}
 
 // Additional operations
 
@@ -984,4 +1044,45 @@ actual fun BigInteger.lcm(other: BigInteger): BigInteger {
         }
         result.toBigInteger()
     }
+}
+
+private fun addMagnitudeOne(sign: Int, value: BigInteger): BigInteger {
+    val size = value.size
+    val limbs = value.limbs
+    val result = ULongArray(size + 1)
+    var carry = 1UL
+    var index = 0
+    while (index < size) {
+        val sum = limbs[index] + carry
+        result[index] = sum and CANONICAL_LIMB_MASK
+        carry = sum shr CANONICAL_LIMB_BITS
+        index++
+        if (carry == 0UL) {
+            limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = size)
+            return BigInteger(sign, size, result)
+        }
+    }
+    result[size] = carry
+    return BigInteger(sign, size + 1, result)
+}
+
+private fun subtractMagnitudeOne(sign: Int, value: BigInteger): BigInteger {
+    val size = value.size
+    val limbs = value.limbs
+    if (size == 1) {
+        val digit = limbs[0]
+        return if (digit == 1UL) ZERO else BigInteger(sign, 1, ulongArrayOf(digit - 1UL))
+    }
+
+    val result = ULongArray(size)
+    var index = 0
+    while (limbs[index] == 0UL) {
+        result[index] = CANONICAL_LIMB_MASK
+        index++
+    }
+    result[index] = limbs[index] - 1UL
+    index++
+    limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = size)
+    val resultSize = if (result[size - 1] == 0UL) size - 1 else size
+    return BigInteger(sign, resultSize, result)
 }
