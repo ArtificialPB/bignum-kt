@@ -137,15 +137,22 @@ actual class BigInteger internal constructor(
             throw ArithmeticException("BigInteger would overflow supported range")
         }
 
-        return withBorrowedHandle { handle ->
-            val result = allocMp()
-            val err = mp_expt_n(handle, exponent, result)
-            if (err != MP_OKAY) {
-                freeMp(result)
-                throw ArithmeticException("BigInteger would overflow supported range")
+        // Binary exponentiation using our multiply (which uses fast schoolbook for small operands)
+        val resultSign = if (sign < 0 && exponent % 2 == 1) -1 else 1
+        val base = abs()
+        var result = ONE
+        var power = base
+        var exp = exponent
+        while (exp > 0) {
+            if (exp and 1 == 1) {
+                result = result.multiply(power)
             }
-            result.toBigInteger()
+            exp = exp shr 1
+            if (exp > 0) {
+                power = power.multiply(power)
+            }
         }
+        return if (resultSign < 0) -result else result
     }
 
     actual fun mod(modulus: BigInteger): BigInteger {
