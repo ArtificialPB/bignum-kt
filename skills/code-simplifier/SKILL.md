@@ -121,12 +121,14 @@ This means: if function `A` calls function `B`, then `A` appears above `B`. A re
 
 ## Verification
 
-After **each** simplification:
+**When function bodies are changed** (inlining, extracting, removing code): tests and benchmarks are mandatory after each change.
 
 1. Run the full test suite: `./gradlew allTests`
 2. Run smoke benchmarks: `./gradlew :benchmarks:jvmSmokeBenchmark` / `macosArm64SmokeBenchmark`
 3. If either regresses, revert immediately and try a different simplification
 4. If both pass, commit with a message describing what was simplified and why
+
+**When only moving functions, classes, or types around** (reordering within a file, splitting files, relocating between files without changing any body): tests and benchmarks can be skipped. Just verify compilation succeeds.
 
 ## Common Mistakes
 
