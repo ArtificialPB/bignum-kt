@@ -137,6 +137,7 @@ Avoid patterns where an operation that could be done once is repeated `n + 1` ti
 - **Reuse variables** instead of allocating new objects on each iteration
 - Add **caching** for expensive computations that are called repeatedly with the same inputs
 - Prefer in-place mutation over copy-and-modify when the API allows it
+- **Avoid boxing primitives** — primitives get boxed (allocated on the heap) when used as generic type parameters (e.g., `List<Int>`) or returned as nullable values (e.g., `Int?`). Prefer non-nullable return types and specialized collections where possible
 
 ### Use Optimal Algorithms
 - Know the algorithmic complexity of what you're using — replace O(n²) with O(n log n) where possible
