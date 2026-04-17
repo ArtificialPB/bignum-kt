@@ -90,3 +90,29 @@ Observed effect:
 - Small-profile `isProbablePrime()` stayed effectively flat.
 - Small-profile `nextProbablePrime()` stayed flat to slightly better across the two confirmation
   runs while removing avoidable `Long` boxing from the primitive fast path.
+
+=== RUN 5 — 2026-04-17 ===
+Change: Switched the primitive `nextProbablePrime()` scan to a `6k ± 1` walk after the initial
+candidate setup, so the long fast path no longer feeds odd multiples of 3 into `isPrimeLong()`.
+
+Validation source:
+- `./gradlew macosArm64Test :benchmarks:macosArm64NumberTheorySmokeBenchmark --rerun-tasks`
+- `./gradlew :benchmarks:macosArm64NumberTheorySmokeBenchmark --rerun-tasks`
+
+Run 1:
+- isProbablePrimeMethod:   65.624/435.967/2128.216 us/op
+- nextProbablePrimeMethod: 149.062/1947.721/3263.936 us/op
+- sqrtMethod:              3.328/18.193/54.061 us/op
+
+Run 2 confirmation:
+- isProbablePrimeMethod:   65.376/438.249/2128.318 us/op
+- nextProbablePrimeMethod: 148.963/1901.758/3271.786 us/op
+- sqrtMethod:              3.326/18.159/54.649 us/op
+
+Observed effect:
+- Only the small 61-bit next-prime benchmark exercises this code. The medium and large profiles
+  still route through LibTomMath and their movement is rerun noise.
+- Small-profile `nextProbablePrime()` improved from the low-150 us/op range into the high-148 /
+  low-149 us/op range across the two confirmation runs, which is a modest but repeatable gain for
+  a one-function change.
+- `isProbablePrime()` and `sqrt()` stayed flat, as expected.

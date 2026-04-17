@@ -768,14 +768,25 @@ private inline fun nextProbablePrimeLongIfFits(start: Long, block: (Long) -> Uni
     if ((candidate and 1L) == 0L) {
         candidate++
     }
+    if (candidate <= 3L) {
+        block(3L)
+        return
+    }
+    if (candidate % 3L == 0L) {
+        if (candidate > Long.MAX_VALUE - 2L) return
+        candidate += 2L
+    }
+
+    var step = if (candidate % 6L == 1L) 4L else 2L
 
     while (true) {
         if (isPrimeLong(candidate)) {
             block(candidate)
             return
         }
-        if (candidate > Long.MAX_VALUE - 2L) return
-        candidate += 2L
+        if (candidate > Long.MAX_VALUE - step) return
+        candidate += step
+        step = 6L - step
     }
 }
 
