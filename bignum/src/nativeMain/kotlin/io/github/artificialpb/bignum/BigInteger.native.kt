@@ -386,7 +386,7 @@ actual class BigInteger internal constructor(
         for (index in 0 until size) {
             val digit = limbs[index]
             if (digit != 0UL) {
-                return index * CANONICAL_LIMB_BITS + trailingZeroBits(digit)
+                return index * CANONICAL_LIMB_BITS + digit.countTrailingZeroBits()
             }
         }
         return -1
@@ -394,7 +394,8 @@ actual class BigInteger internal constructor(
 
     actual fun bitLength(): Int {
         if (size == 0) return 0
-        val positiveBits = (size - 1) * CANONICAL_LIMB_BITS + digitBitLength(limbs[size - 1])
+        val digitBitLength = ULong.SIZE_BITS - limbs[size - 1].countLeadingZeroBits()
+        val positiveBits = (size - 1) * CANONICAL_LIMB_BITS + digitBitLength
         return if (sign > 0) positiveBits else if (isPowerOfTwoMagnitude(this)) positiveBits - 1 else positiveBits
     }
 
@@ -585,1121 +586,6 @@ actual class BigInteger internal constructor(
     }
 }
 
-// Internal helpers
-
-/**
- * Maximum bit length we allow before refusing an operation.
- * Matches the JVM's practical limit (~2^31 bits, i.e. ~256 MB magnitude).
- */
-private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
-
-/** Matches JVM's BigInteger.MAX_MAG_LENGTH: Integer.MAX_VALUE / Integer.SIZE + 1 */
-private const val MAX_MAG_LENGTH = Int.MAX_VALUE / 32 + 1L
-
-/** Matches JVM's BigInteger.DEFAULT_PRIME_CERTAINTY used by nextProbablePrime(). */
-private const val DEFAULT_PRIME_CERTAINTY = 100
-
-private const val CANONICAL_LIMB_BITS = 60
-private const val CANONICAL_LIMB_MASK = 0x0FFFFFFFFFFFFFFFUL
-private const val CANONICAL_LIMB_BASE = 0x1000000000000000UL
-
-private val EMPTY_LIMBS = ULongArray(0)
-private val BORROWED_ZERO_LIMBS = ULongArray(1)
-
-private fun BigInteger.digit(index: Int): ULong =
-    if (index in 0 until size) limbs[index] else 0UL
-
-private fun normalizeMagnitudeSize(size: Int, limbs: ULongArray): Int {
-    var normalizedSize = minOf(size, limbs.size)
-    while (normalizedSize > 0 && limbs[normalizedSize - 1] == 0UL) {
-        normalizedSize--
-    }
-    return normalizedSize
-}
-
-private fun bigIntegerFromLimbs(sign: Int, size: Int, limbs: ULongArray): BigInteger {
-    val normalizedSize = normalizeMagnitudeSize(size, limbs)
-    if (normalizedSize == 0 || sign == 0) return ZERO
-    return BigInteger(sign, normalizedSize, limbs)
-}
-
-private fun shiftLeftMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
-    val digitShift = n / CANONICAL_LIMB_BITS
-    val bitShift = n % CANONICAL_LIMB_BITS
-    if (bitShift == 0) {
-        val resultSize = value.size + digitShift
-        val result = ULongArray(resultSize)
-        value.limbs.copyInto(result, destinationOffset = digitShift, endIndex = value.size)
-        return BigInteger(sign, resultSize, result)
-    }
-
-    val result = ULongArray(value.size + digitShift + 1)
-    val carryShift = CANONICAL_LIMB_BITS - bitShift
-    var carry = 0UL
-    var sourceIndex = 0
-    while (sourceIndex < value.size) {
-        val limb = value.limbs[sourceIndex]
-        result[sourceIndex + digitShift] = ((limb shl bitShift) and CANONICAL_LIMB_MASK) or carry
-        carry = limb shr carryShift
-        sourceIndex++
-    }
-    return if (carry != 0UL) {
-        result[value.size + digitShift] = carry
-        BigInteger(sign, value.size + digitShift + 1, result)
-    } else {
-        BigInteger(sign, value.size + digitShift, result)
-    }
-}
-
-private fun shiftRightMagnitude(value: BigInteger, digitShift: Int, bitShift: Int): BigInteger {
-    val resultSize = value.size - digitShift
-    val result = ULongArray(resultSize)
-    if (bitShift == 0) {
-        value.limbs.copyInto(result, startIndex = digitShift, endIndex = value.size)
-        return BigInteger(1, resultSize, result)
-    }
-
-    val lowMask = (1UL shl bitShift) - 1UL
-    val carryShift = CANONICAL_LIMB_BITS - bitShift
-    var carry = 0UL
-    var sourceIndex = value.size - 1
-    while (sourceIndex >= digitShift) {
-        val limb = value.limbs[sourceIndex]
-        result[sourceIndex - digitShift] = (limb shr bitShift) or carry
-        carry = (limb and lowMask) shl carryShift
-        sourceIndex--
-    }
-    val normalizedSize = if (result[resultSize - 1] != 0UL) resultSize else resultSize - 1
-    return if (normalizedSize == 0) ZERO else BigInteger(1, normalizedSize, result)
-}
-
-private fun hasDiscardedShiftBits(value: BigInteger, digitShift: Int, bitShift: Int): Boolean {
-    var index = 0
-    while (index < digitShift) {
-        if (value.limbs[index] != 0UL) return true
-        index++
-    }
-    if (bitShift == 0) return false
-    val lowMask = (1UL shl bitShift) - 1UL
-    return (value.limbs[digitShift] and lowMask) != 0UL
-}
-
-private fun compareMagnitudes(left: BigInteger, right: BigInteger): Int {
-    if (left.size != right.size) return left.size.compareTo(right.size)
-    for (index in left.size - 1 downTo 0) {
-        val leftDigit = left.limbs[index]
-        val rightDigit = right.limbs[index]
-        if (leftDigit != rightDigit) {
-            return if (leftDigit < rightDigit) -1 else 1
-        }
-    }
-    return 0
-}
-
-private fun addAbsolute(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
-    if (left.size == right.size) {
-        val size = left.size
-        val leftLimbs = left.limbs
-        val rightLimbs = right.limbs
-        val result = ULongArray(size + 1)
-        var carry = 0UL
-        var index = 0
-        while (index < size) {
-            val sum = leftLimbs[index] + rightLimbs[index] + carry
-            result[index] = sum and CANONICAL_LIMB_MASK
-            carry = sum shr CANONICAL_LIMB_BITS
-            index++
-        }
-        return if (carry != 0UL) {
-            result[size] = carry
-            BigInteger(sign, size + 1, result)
-        } else {
-            BigInteger(sign, size, result)
-        }
-    }
-
-    val maxSize = maxOf(left.size, right.size)
-    val result = ULongArray(maxSize + 1)
-    var carry = 0UL
-    for (index in 0 until maxSize) {
-        val sum = left.digit(index) + right.digit(index) + carry
-        result[index] = sum and CANONICAL_LIMB_MASK
-        carry = sum shr CANONICAL_LIMB_BITS
-    }
-    val resultSize = if (carry != 0UL) {
-        result[maxSize] = carry
-        maxSize + 1
-    } else {
-        maxSize
-    }
-    return bigIntegerFromLimbs(sign, resultSize, result)
-}
-
-private fun subtractAbsolute(sign: Int, larger: BigInteger, smaller: BigInteger): BigInteger {
-    if (larger.size == smaller.size) {
-        val size = larger.size
-        val largerLimbs = larger.limbs
-        val smallerLimbs = smaller.limbs
-        val result = ULongArray(size)
-        var borrow = 0UL
-        var lastNonZero = 0
-        var index = 0
-        while (index < size) {
-            val leftDigit = largerLimbs[index]
-            val subtrahend = smallerLimbs[index] + borrow
-            val digit = if (leftDigit >= subtrahend) {
-                borrow = 0UL
-                leftDigit - subtrahend
-            } else {
-                borrow = 1UL
-                CANONICAL_LIMB_BASE + leftDigit - subtrahend
-            }
-            result[index] = digit
-            if (digit != 0UL) {
-                lastNonZero = index + 1
-            }
-            index++
-        }
-        return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
-    }
-
-    val result = ULongArray(larger.size)
-    var borrow = 0UL
-    var lastNonZero = 0
-    for (index in 0 until larger.size) {
-        val leftDigit = larger.digit(index)
-        val rightDigit = smaller.digit(index)
-        val subtrahend = rightDigit + borrow
-        if (leftDigit >= subtrahend) {
-            result[index] = leftDigit - subtrahend
-            borrow = 0UL
-        } else {
-            result[index] = CANONICAL_LIMB_BASE + leftDigit - subtrahend
-            borrow = 1UL
-        }
-        if (result[index] != 0UL) {
-            lastNonZero = index + 1
-        }
-    }
-    return if (lastNonZero == 0) ZERO else BigInteger(sign, lastNonZero, result)
-}
-
-private fun andPositive(left: BigInteger, right: BigInteger): BigInteger {
-    if (left.sign == 0 || right.sign == 0) return ZERO
-    val resultSize = minOf(left.size, right.size)
-    val result = ULongArray(resultSize)
-    var lastNonZero = 0
-    var index = 0
-    while (index < resultSize) {
-        val digit = left.limbs[index] and right.limbs[index]
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
-}
-
-private fun orPositive(left: BigInteger, right: BigInteger): BigInteger {
-    if (left.sign == 0) return right
-    if (right.sign == 0) return left
-    val smaller: BigInteger
-    val larger: BigInteger
-    if (left.size < right.size) {
-        smaller = left
-        larger = right
-    } else {
-        smaller = right
-        larger = left
-    }
-
-    val result = ULongArray(larger.size)
-    var index = 0
-    while (index < smaller.size) {
-        result[index] = larger.limbs[index] or smaller.limbs[index]
-        index++
-    }
-    while (index < larger.size) {
-        result[index] = larger.limbs[index]
-        index++
-    }
-    return BigInteger(1, larger.size, result)
-}
-
-private fun xorPositive(left: BigInteger, right: BigInteger): BigInteger {
-    if (left.sign == 0) return right
-    if (right.sign == 0) return left
-    if (left === right) return ZERO
-    val smaller: BigInteger
-    val larger: BigInteger
-    if (left.size < right.size) {
-        smaller = left
-        larger = right
-    } else {
-        smaller = right
-        larger = left
-    }
-
-    val result = ULongArray(larger.size)
-    var lastNonZero = 0
-    var index = 0
-    while (index < smaller.size) {
-        val digit = larger.limbs[index] xor smaller.limbs[index]
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    while (index < larger.size) {
-        val digit = larger.limbs[index]
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
-}
-
-private fun andNotPositive(left: BigInteger, right: BigInteger): BigInteger {
-    if (left.sign == 0) return ZERO
-    if (right.sign == 0) return left
-    if (left === right) return ZERO
-    val result = ULongArray(left.size)
-    val overlapSize = minOf(left.size, right.size)
-    var lastNonZero = 0
-    var index = 0
-    while (index < overlapSize) {
-        val digit = left.limbs[index] and (right.limbs[index].inv() and CANONICAL_LIMB_MASK)
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    while (index < left.size) {
-        val digit = left.limbs[index]
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
-}
-
-private fun flipBitNonNegative(value: BigInteger, n: Int): BigInteger {
-    val digitIndex = n / CANONICAL_LIMB_BITS
-    val bitMask = 1UL shl (n % CANONICAL_LIMB_BITS)
-    val resultSize = maxOf(value.size, digitIndex + 1)
-    val result = ULongArray(resultSize)
-    if (value.size > 0) {
-        value.limbs.copyInto(result, endIndex = value.size)
-    }
-    result[digitIndex] = result[digitIndex] xor bitMask
-    return bigIntegerFromLimbs(1, resultSize, result)
-}
-
-private inline fun combineNegativePayloadsToPositive(
-    left: BigInteger,
-    right: BigInteger,
-    combine: (ULong, ULong) -> ULong,
-): BigInteger {
-    val resultSize = maxOf(left.size, right.size)
-    val result = ULongArray(resultSize)
-    var leftBorrowPending = true
-    var rightBorrowPending = true
-    var lastNonZero = 0
-    var index = 0
-    while (index < resultSize) {
-        val leftRaw = if (index < left.size) left.limbs[index] else 0UL
-        val leftPayload = if (leftBorrowPending) {
-            if (leftRaw == 0UL) {
-                CANONICAL_LIMB_MASK
-            } else {
-                leftBorrowPending = false
-                leftRaw - 1UL
-            }
-        } else {
-            leftRaw
-        }
-        val rightRaw = if (index < right.size) right.limbs[index] else 0UL
-        val rightPayload = if (rightBorrowPending) {
-            if (rightRaw == 0UL) {
-                CANONICAL_LIMB_MASK
-            } else {
-                rightBorrowPending = false
-                rightRaw - 1UL
-            }
-        } else {
-            rightRaw
-        }
-        val digit = combine(leftPayload, rightPayload)
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
-}
-
-private inline fun combineNegativePayloadsToNegative(
-    left: BigInteger,
-    right: BigInteger,
-    combine: (ULong, ULong) -> ULong,
-): BigInteger {
-    val payloadSize = maxOf(left.size, right.size)
-    val result = ULongArray(payloadSize + 1)
-    var leftBorrowPending = true
-    var rightBorrowPending = true
-    var carry = 1UL
-    var lastNonZero = 0
-    var index = 0
-    while (index < payloadSize) {
-        val leftRaw = if (index < left.size) left.limbs[index] else 0UL
-        val leftPayload = if (leftBorrowPending) {
-            if (leftRaw == 0UL) {
-                CANONICAL_LIMB_MASK
-            } else {
-                leftBorrowPending = false
-                leftRaw - 1UL
-            }
-        } else {
-            leftRaw
-        }
-        val rightRaw = if (index < right.size) right.limbs[index] else 0UL
-        val rightPayload = if (rightBorrowPending) {
-            if (rightRaw == 0UL) {
-                CANONICAL_LIMB_MASK
-            } else {
-                rightBorrowPending = false
-                rightRaw - 1UL
-            }
-        } else {
-            rightRaw
-        }
-        val sum = combine(leftPayload, rightPayload) + carry
-        val digit = sum and CANONICAL_LIMB_MASK
-        result[index] = digit
-        carry = sum shr CANONICAL_LIMB_BITS
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    if (carry != 0UL) {
-        result[payloadSize] = carry
-        lastNonZero = payloadSize + 1
-    }
-    return BigInteger(-1, lastNonZero, result)
-}
-
-private inline fun combinePositiveWithNegativePayloadToPositive(
-    positive: BigInteger,
-    negative: BigInteger,
-    combine: (ULong, ULong) -> ULong,
-): BigInteger {
-    val result = ULongArray(positive.size)
-    var negativeBorrowPending = true
-    var lastNonZero = 0
-    var index = 0
-    while (index < positive.size) {
-        val negativeRaw = if (index < negative.size) negative.limbs[index] else 0UL
-        val negativePayload = if (negativeBorrowPending) {
-            if (negativeRaw == 0UL) {
-                CANONICAL_LIMB_MASK
-            } else {
-                negativeBorrowPending = false
-                negativeRaw - 1UL
-            }
-        } else {
-            negativeRaw
-        }
-        val digit = combine(positive.limbs[index], negativePayload)
-        result[index] = digit
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    return if (lastNonZero == 0) ZERO else BigInteger(1, lastNonZero, result)
-}
-
-private inline fun combinePositiveWithNegativePayloadToNegative(
-    positive: BigInteger,
-    negative: BigInteger,
-    combine: (ULong, ULong) -> ULong,
-): BigInteger {
-    val payloadSize = maxOf(positive.size, negative.size)
-    val result = ULongArray(payloadSize + 1)
-    var negativeBorrowPending = true
-    var carry = 1UL
-    var lastNonZero = 0
-    var index = 0
-    while (index < payloadSize) {
-        val positiveDigit = if (index < positive.size) positive.limbs[index] else 0UL
-        val negativeRaw = if (index < negative.size) negative.limbs[index] else 0UL
-        val negativePayload = if (negativeBorrowPending) {
-            if (negativeRaw == 0UL) {
-                CANONICAL_LIMB_MASK
-            } else {
-                negativeBorrowPending = false
-                negativeRaw - 1UL
-            }
-        } else {
-            negativeRaw
-        }
-        val sum = combine(positiveDigit, negativePayload) + carry
-        val digit = sum and CANONICAL_LIMB_MASK
-        result[index] = digit
-        carry = sum shr CANONICAL_LIMB_BITS
-        if (digit != 0UL) {
-            lastNonZero = index + 1
-        }
-        index++
-    }
-    if (carry != 0UL) {
-        result[payloadSize] = carry
-        lastNonZero = payloadSize + 1
-    }
-    return BigInteger(-1, lastNonZero, result)
-}
-
-private fun andPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit and (negativePayload.inv() and CANONICAL_LIMB_MASK)
-    }
-
-private fun andNotPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit and negativePayload
-    }
-
-private fun xorPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit xor negativePayload
-    }
-
-private fun orPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
-        negativePayload and (positiveDigit.inv() and CANONICAL_LIMB_MASK)
-    }
-
-private fun andNotNegativePositive(negative: BigInteger, positive: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit or negativePayload
-    }
-
-private fun andNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
-        leftPayload or rightPayload
-    }
-
-private fun orNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
-        leftPayload and rightPayload
-    }
-
-private fun xorNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
-        leftPayload xor rightPayload
-    }
-
-private fun andNotNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
-        rightPayload and (leftPayload.inv() and CANONICAL_LIMB_MASK)
-    }
-
-private fun addSingleBitMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
-    val digitIndex = n / CANONICAL_LIMB_BITS
-    val bitMask = 1UL shl (n % CANONICAL_LIMB_BITS)
-    if (digitIndex >= value.size) {
-        val resultSize = digitIndex + 1
-        val result = ULongArray(resultSize)
-        if (value.size > 0) {
-            value.limbs.copyInto(result, endIndex = value.size)
-        }
-        result[digitIndex] = bitMask
-        return BigInteger(sign, resultSize, result)
-    }
-
-    val result = ULongArray(value.size + 1)
-    if (digitIndex > 0) {
-        value.limbs.copyInto(result, endIndex = digitIndex)
-    }
-    var carry = bitMask
-    var index = digitIndex
-    while (index < value.size && carry != 0UL) {
-        val sum = value.limbs[index] + carry
-        result[index] = sum and CANONICAL_LIMB_MASK
-        carry = sum shr CANONICAL_LIMB_BITS
-        index++
-    }
-    if (index < value.size) {
-        value.limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = value.size)
-        return BigInteger(sign, value.size, result)
-    }
-    return if (carry != 0UL) {
-        result[value.size] = carry
-        BigInteger(sign, value.size + 1, result)
-    } else {
-        BigInteger(sign, value.size, result)
-    }
-}
-
-private fun subtractSingleBitMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
-    val digitIndex = n / CANONICAL_LIMB_BITS
-    val bitMask = 1UL shl (n % CANONICAL_LIMB_BITS)
-    val result = ULongArray(value.size)
-    if (digitIndex > 0) {
-        value.limbs.copyInto(result, endIndex = digitIndex)
-    }
-    var borrow = bitMask
-    var index = digitIndex
-    while (true) {
-        val digit = value.limbs[index]
-        if (digit >= borrow) {
-            result[index] = digit - borrow
-            index++
-            if (index < value.size) {
-                value.limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = value.size)
-            }
-            return bigIntegerFromLimbs(sign, value.size, result)
-        }
-        result[index] = CANONICAL_LIMB_BASE + digit - borrow
-        borrow = 1UL
-        index++
-    }
-}
-
-private fun negativePayloadDigitAt(value: BigInteger, digitIndex: Int): ULong {
-    if (digitIndex >= value.size) return 0UL
-    for (index in 0 until digitIndex) {
-        if (value.limbs[index] != 0UL) {
-            return value.limbs[digitIndex]
-        }
-    }
-    val digit = value.limbs[digitIndex]
-    return if (digit == 0UL) CANONICAL_LIMB_MASK else digit - 1UL
-}
-
-private fun isPowerOfTwoMagnitude(value: BigInteger): Boolean {
-    var seenBit = false
-    for (index in 0 until value.size) {
-        val digit = value.limbs[index]
-        if (digit == 0UL) continue
-        if (seenBit || (digit and (digit - 1UL)) != 0UL) {
-            return false
-        }
-        seenBit = true
-    }
-    return seenBit
-}
-
-/** Schoolbook multiply when total result limbs (left.size + right.size) is at or below this. */
-private const val SCHOOLBOOK_MUL_THRESHOLD = 14
-
-/** Use Kotlin division (Algorithm D) when both operands have at most this many 60-bit limbs. */
-private const val SCHOOLBOOK_DIV_THRESHOLD = 7
-
-private const val HALF_LIMB_BITS = 30
-private const val HALF_LIMB_MASK = 0x3FFFFFFFUL
-
-/**
- * Divides two magnitudes in pure Kotlin using Knuth's Algorithm D at base 2^30.
- * Returns (quotient, remainder) as positive-magnitude BigIntegers.
- * Caller applies signs.
- */
-private fun divRemMagnitude(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
-    val cmp = compareMagnitudes(dividend, divisor)
-    if (cmp < 0) return Pair(ZERO, BigInteger(1, dividend.size, dividend.limbs))
-    if (cmp == 0) return Pair(ONE, ZERO)
-
-    if (divisor.size == 1 && dividend.size == 1) {
-        val a = dividend.limbs[0]
-        val d = divisor.limbs[0]
-        val q = a / d
-        val r = a % d
-        return Pair(
-            if (q == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(q)),
-            if (r == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(r)),
-        )
-    }
-
-    // Convert to base 2^30 half-limbs and use long division
-    return divRemHalfLimbs(dividend, divisor)
-}
-
-/**
- * Long division at base 2^30 using Knuth's Algorithm D (TAOCP 4.3.1).
- * All arrays are MSB-first (index 0 is the most significant digit).
- */
-private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
-    val B: ULong = 1UL shl HALF_LIMB_BITS
-    val MASK: ULong = B - 1UL
-
-    val uOrig = toHalfLimbs(dividend) // MSB first, leading zeros stripped
-    val vOrig = toHalfLimbs(divisor)  // MSB first, leading zeros stripped
-    val n = vOrig.size
-    val m = uOrig.size - n
-
-    if (n == 1) {
-        // Single-digit divisor: simple long division
-        val d = vOrig[0]
-        var rem = 0UL
-        val q = ULongArray(uOrig.size)
-        for (i in uOrig.indices) {
-            val cur = rem * B + uOrig[i]
-            q[i] = cur / d
-            rem = cur % d
-        }
-        return Pair(halfLimbsToBigInteger(q), halfLimbRemainderToBigInteger(rem))
-    }
-
-    // Step D1: Normalize — left-shift so vOrig[0] has its high bit set (bit 29)
-    val s = countLeadingZeroBits30(vOrig[0])
-
-    val v = ULongArray(n)
-    val u = ULongArray(uOrig.size + 1) // one extra leading digit
-
-    if (s > 0) {
-        // Left-shift divisor
-        for (i in 0 until n - 1) {
-            v[i] = ((vOrig[i] shl s) or (vOrig[i + 1] shr (HALF_LIMB_BITS - s))) and MASK
-        }
-        v[n - 1] = (vOrig[n - 1] shl s) and MASK
-
-        // Left-shift dividend
-        u[0] = uOrig[0] shr (HALF_LIMB_BITS - s)
-        for (i in 0 until uOrig.size - 1) {
-            u[i + 1] = ((uOrig[i] shl s) or (uOrig[i + 1] shr (HALF_LIMB_BITS - s))) and MASK
-        }
-        u[uOrig.size] = (uOrig[uOrig.size - 1] shl s) and MASK
-    } else {
-        vOrig.copyInto(v)
-        u[0] = 0UL
-        uOrig.copyInto(u, 1)
-    }
-
-    val q = ULongArray(m + 1)
-
-    // Steps D2–D7: main loop — compute one quotient digit per iteration
-    for (j in 0..m) {
-        // D3: estimate qhat from top two dividend digits / top divisor digit
-        val twoDigit = u[j] * B + u[j + 1]
-        var qhat = twoDigit / v[0]
-        var rhat = twoDigit % v[0]
-
-        // Refine: decrease qhat while it would produce too large a product
-        while (qhat >= B || qhat * v[1] > B * rhat + u[j + 2]) {
-            qhat--
-            rhat += v[0]
-            if (rhat >= B) break
-        }
-
-        // D4: multiply v by qhat and subtract from u[j..j+n]
-        // Combine product + incoming borrow before subtracting to avoid double-borrow underflow
-        var borrow = 0UL
-        for (i in n - 1 downTo 0) {
-            val t = qhat * v[i] + borrow // product + carry, fits in ULong (< B^2)
-            val sub = u[j + 1 + i].toLong() - (t and MASK).toLong()
-            borrow = t shr HALF_LIMB_BITS
-            if (sub < 0) {
-                u[j + 1 + i] = (sub + B.toLong()).toULong()
-                borrow++
-            } else {
-                u[j + 1 + i] = sub.toULong()
-            }
-        }
-        val topSub = u[j].toLong() - borrow.toLong()
-        u[j] = if (topSub < 0) (topSub + B.toLong()).toULong() else topSub.toULong()
-
-        q[j] = qhat
-
-        // D6: add back if we subtracted too much
-        if (topSub < 0) {
-            q[j]--
-            var carry = 0UL
-            for (i in n - 1 downTo 0) {
-                val sum = u[j + 1 + i] + v[i] + carry
-                u[j + 1 + i] = sum and MASK
-                carry = sum shr HALF_LIMB_BITS
-            }
-            u[j] = (u[j] + carry) and MASK
-        }
-    }
-
-    // D8: un-normalize remainder — right-shift u[m+1..m+n] by s bits
-    val rem = ULongArray(n)
-    if (s > 0) {
-        // Right-shift: bits flow from MSB (lower index) to LSB (higher index)
-        rem[0] = u[m + 1] shr s
-        for (i in 1 until n) {
-            rem[i] = ((u[m + i] shl (HALF_LIMB_BITS - s)) or (u[m + 1 + i] shr s)) and MASK
-        }
-    } else {
-        for (i in 0 until n) {
-            rem[i] = u[m + 1 + i]
-        }
-    }
-
-    return Pair(halfLimbsToBigInteger(q), halfLimbsToBigInteger(rem))
-}
-
-/** Convert BigInteger magnitude to MSB-first array of 30-bit half-limbs, stripping leading zeros. */
-private fun toHalfLimbs(value: BigInteger): ULongArray {
-    val raw = ULongArray(value.size * 2)
-    for (i in 0 until value.size) {
-        raw[raw.size - 1 - 2 * i] = value.limbs[i] and HALF_LIMB_MASK
-        raw[raw.size - 2 - 2 * i] = value.limbs[i] shr HALF_LIMB_BITS
-    }
-    // Strip leading zeros
-    var start = 0
-    while (start < raw.size - 1 && raw[start] == 0UL) start++
-    return if (start == 0) raw else raw.copyOfRange(start, raw.size)
-}
-
-/** Convert MSB-first 30-bit half-limb array to BigInteger (positive magnitude). */
-private fun halfLimbsToBigInteger(halfLimbs: ULongArray): BigInteger {
-    // Strip leading zeros
-    var start = 0
-    while (start < halfLimbs.size && halfLimbs[start] == 0UL) start++
-    if (start == halfLimbs.size) return ZERO
-
-    val significantCount = halfLimbs.size - start
-    val limbCount = (significantCount + 1) / 2
-    val limbs = ULongArray(limbCount)
-
-    // Fill from LSB
-    var halfIdx = halfLimbs.size - 1
-    for (i in 0 until limbCount) {
-        val low = halfLimbs[halfIdx--]
-        val high = if (halfIdx >= start) halfLimbs[halfIdx--] else 0UL
-        limbs[i] = low or (high shl HALF_LIMB_BITS)
-    }
-
-    val normalizedSize = normalizeMagnitudeSize(limbCount, limbs)
-    return if (normalizedSize == 0) ZERO else BigInteger(1, normalizedSize, limbs)
-}
-
-private fun halfLimbRemainderToBigInteger(value: ULong): BigInteger =
-    if (value == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(value))
-
-/** Count leading zero bits within a 30-bit value. */
-private fun countLeadingZeroBits30(value: ULong): Int {
-    if (value == 0UL) return HALF_LIMB_BITS
-    var count = 0
-    var bit = HALF_LIMB_BITS - 1 // bit 29
-    while ((value and (1UL shl bit)) == 0UL) {
-        count++
-        bit--
-    }
-    return count
-}
-
-private fun divideSmall(resultSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
-    val (q, _) = divRemMagnitude(dividend, divisor)
-    return if (q.sign == 0) ZERO else BigInteger(resultSign, q.size, q.limbs)
-}
-
-private fun remainderSmall(dividendSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
-    val (_, r) = divRemMagnitude(dividend, divisor)
-    return if (r.sign == 0) ZERO else BigInteger(dividendSign, r.size, r.limbs)
-}
-
-private fun multiplySmall(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
-    val resultCapacity = left.size + right.size
-    val result = ULongArray(resultCapacity)
-    for (i in 0 until left.size) {
-        val aLimb = left.limbs[i]
-        val aL = aLimb and HALF_LIMB_MASK
-        val aH = aLimb shr HALF_LIMB_BITS
-        var carry = 0UL
-        for (j in 0 until right.size) {
-            val bLimb = right.limbs[j]
-            val bL = bLimb and HALF_LIMB_MASK
-            val bH = bLimb shr HALF_LIMB_BITS
-            // Full 120-bit product of two 60-bit limbs, split via 30-bit halves
-            val p0 = aL * bL
-            val mid = aH * bL + aL * bH
-            val p3 = aH * bH
-            val lowSum = p0 + ((mid and HALF_LIMB_MASK) shl HALF_LIMB_BITS)
-            val prodLow = lowSum and CANONICAL_LIMB_MASK
-            val prodHigh = p3 + (lowSum shr CANONICAL_LIMB_BITS) + (mid shr HALF_LIMB_BITS)
-            val acc = prodLow + result[i + j] + carry
-            result[i + j] = acc and CANONICAL_LIMB_MASK
-            carry = prodHigh + (acc shr CANONICAL_LIMB_BITS)
-        }
-        if (carry != 0UL) {
-            result[i + right.size] = carry
-        }
-    }
-    return bigIntegerFromLimbs(sign, resultCapacity, result)
-}
-
-private fun digitBitLength(value: ULong): Int {
-    return if (value == 0UL) 0 else ULong.SIZE_BITS - value.countLeadingZeroBits()
-}
-
-private fun trailingZeroBits(value: ULong): Int {
-    return value.countTrailingZeroBits()
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun signumFromHandle(handle: CPointer<mp_int>): Int {
-    if (handle.pointed.used == 0) return 0
-    return if (handle.pointed.sign == MP_NEG) -1 else 1
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun CPointer<mp_int>.toBigInteger(): BigInteger {
-    return BigInteger(this)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun copyCanonicalLimbs(handle: CPointer<mp_int>): ULongArray =
-    try {
-        val used = handle.pointed.used
-        if (used == 0) {
-            EMPTY_LIMBS
-        } else {
-            val dp = handle.pointed.dp!!
-            ULongArray(used) { index ->
-                dp[index] and CANONICAL_LIMB_MASK
-            }
-        }
-    } catch (t: Throwable) {
-        freeMp(handle)
-        throw t
-    }
-
-@OptIn(ExperimentalForeignApi::class)
-private inline fun <R> withBorrowedHandles(
-    first: BigInteger,
-    second: BigInteger,
-    block: (CPointer<mp_int>, CPointer<mp_int>) -> R,
-): R =
-    first.withBorrowedHandle { firstHandle ->
-        second.withBorrowedHandle { secondHandle ->
-            block(firstHandle, secondHandle)
-        }
-    }
-
-@OptIn(ExperimentalForeignApi::class)
-private inline fun <R> withBorrowedHandles(
-    first: BigInteger,
-    second: BigInteger,
-    third: BigInteger,
-    block: (CPointer<mp_int>, CPointer<mp_int>, CPointer<mp_int>) -> R,
-): R =
-    first.withBorrowedHandle { firstHandle ->
-        second.withBorrowedHandle { secondHandle ->
-            third.withBorrowedHandle { thirdHandle ->
-                block(firstHandle, secondHandle, thirdHandle)
-            }
-        }
-    }
-
-@OptIn(ExperimentalForeignApi::class)
-private inline fun <R> BigInteger.withBorrowedHandle(block: (CPointer<mp_int>) -> R): R {
-    val storage = if (limbs.isEmpty()) BORROWED_ZERO_LIMBS else limbs
-    return storage.usePinned { pinned ->
-        memScoped {
-            val handle = alloc<mp_int>()
-            handle.used = size
-            handle.alloc = storage.size
-            handle.sign = if (sign < 0) MP_NEG else MP_ZPOS
-            handle.dp = pinned.addressOf(0).reinterpret()
-            block(handle.ptr)
-        }
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
-internal fun allocMp(sizeHint: Int = 0): CPointer<mp_int> {
-    val mp = nativeHeap.alloc<mp_int>().ptr
-    val err = if (sizeHint > 0) mp_init_size(mp, sizeHint) else mp_init(mp)
-    if (err != MP_OKAY) {
-        nativeHeap.free(mp)
-        throw OutOfMemoryError("Failed to initialize mp_int")
-    }
-    return mp
-}
-
-/** Free a temporary mp_int that is NOT owned by a BigInteger instance. */
-@OptIn(ExperimentalForeignApi::class)
-internal fun freeMp(mp: CPointer<mp_int>) {
-    mp_clear(mp)
-    nativeHeap.free(mp)
-}
-
-/**
- * Check a LibTomMath error code; if not OK, free the given temporaries and throw.
- * Use this for operations that should never fail under normal conditions
- * (allocation-only failures).
- */
-@OptIn(ExperimentalForeignApi::class)
-internal fun checkMp(err: mp_err, vararg temps: CPointer<mp_int>) {
-    if (err != MP_OKAY) {
-        for (t in temps) freeMp(t)
-        throw ArithmeticException("LibTomMath error: $err")
-    }
-}
-
-@OptIn(ExperimentalForeignApi::class)
-internal fun validateRadixAndParse(value: String, radix: Int): CPointer<mp_int> {
-    if (radix !in 2..36) throw NumberFormatException("Radix out of range: $radix")
-    return parseTomMath(value, radix)
-}
-
-@OptIn(ExperimentalForeignApi::class)
-internal fun validateAndSliceBytes(bytes: ByteArray, off: Int, len: Int): CPointer<mp_int> {
-    if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
-        throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
-    }
-    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
-
-    // Match JDK 21 exactly. For len == 0, the constructor still reads bytes[off]
-    // before delegating into its positive/negative parsing helpers.
-    val leadingByte = bytes[off]
-    if (len == 0) {
-        if (leadingByte >= 0) {
-            return allocMp()
-        }
-
-        val magnitude = ((bytes[off - 1].toInt().inv()) and 0xFF) + 1
-        val mp = allocMp()
-        mp_set_i64(mp, magnitude.toLong())
-        mp_neg(mp, mp)
-        return mp
-    }
-
-    return fromTwosComplement(bytes.copyOfRange(off, off + len))
-}
-
-@OptIn(ExperimentalForeignApi::class)
-internal fun parseTomMath(value: String, radix: Int): CPointer<mp_int> {
-    // JVM accepts a single leading sign character (+ or -), then digits only.
-    // Reject malformed inputs: empty after sign, or embedded sign characters.
-    if (value.isEmpty()) throw NumberFormatException("Zero length BigInteger")
-    val hasSign = value[0] == '+' || value[0] == '-'
-    if (hasSign && value.length == 1) {
-        throw NumberFormatException("Zero length BigInteger")
-    }
-    if (hasSign) {
-        val rest = value.substring(1)
-        if (rest.contains('+') || rest.contains('-')) {
-            throw NumberFormatException("Illegal embedded sign character")
-        }
-    }
-    // Strip leading '+' since LibTomMath doesn't accept it (but does accept '-')
-    val normalized = if (value.startsWith("+")) value.substring(1) else value
-    val mp = allocMp()
-    if (mp_read_radix(mp, normalized, radix) != MP_OKAY) {
-        freeMp(mp)
-        // Match JVM message format
-        val msg = if (radix != 10) {
-            "For input string: \"$value\" under radix $radix"
-        } else {
-            "For input string: \"$value\""
-        }
-        throw NumberFormatException(msg)
-    }
-    return mp
-}
-
-@OptIn(ExperimentalForeignApi::class)
-internal fun fromTwosComplement(bytes: ByteArray): CPointer<mp_int> {
-    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
-    val mp = allocMp()
-    val negative = (bytes[0].toInt() and 0x80) != 0
-
-    if (!negative) {
-        memScoped {
-            val buf = allocArray<UByteVar>(bytes.size)
-            for (index in bytes.indices) buf[index] = bytes[index].toUByte()
-            mp_from_ubin(mp, buf.reinterpret(), bytes.size.toULong())
-        }
-    } else {
-        val mag = bytes.copyOf()
-        for (index in mag.indices) {
-            mag[index] = mag[index].toInt().inv().toByte()
-        }
-        var carry = 1
-        for (index in mag.indices.reversed()) {
-            val sum = (mag[index].toInt() and 0xFF) + carry
-            mag[index] = sum.toByte()
-            carry = sum shr 8
-        }
-        memScoped {
-            val buf = allocArray<UByteVar>(mag.size)
-            for (index in mag.indices) buf[index] = mag[index].toUByte()
-            mp_from_ubin(mp, buf.reinterpret(), mag.size.toULong())
-        }
-        mp_neg(mp, mp)
-    }
-    return mp
-}
-
-// Cached constants
-private val MINUS_ONE = bigIntegerOf(-1L)
-private val ZERO = BigInteger(0, 0, EMPTY_LIMBS)
-private val ONE = newBigIntegerFromLong(1L)
-private val TWO = newBigIntegerFromLong(2L)
-private val TEN = newBigIntegerFromLong(10L)
-private val HUNDRED = newBigIntegerFromLong(100L)
-
-// Top-level factory functions
-actual fun bigIntegerOf(value: String): BigInteger = when (value) {
-    "0" -> ZERO
-    "1" -> ONE
-    "2" -> TWO
-    "10" -> TEN
-    "100" -> HUNDRED
-    else -> BigInteger(value)
-}
-
-actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
-    0L -> ZERO
-    1L -> ONE
-    2L -> TWO
-    10L -> TEN
-    100L -> HUNDRED
-    else -> newBigIntegerFromLong(value)
-}
-
-actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
-    0 -> ZERO
-    1 -> ONE
-    2 -> TWO
-    10 -> TEN
-    100 -> HUNDRED
-    else -> newBigIntegerFromLong(value.toLong())
-}
-
-private fun newBigIntegerFromLong(value: Long): BigInteger {
-    if (value == 0L) return ZERO
-    val sign = if (value < 0) -1 else 1
-    val magnitude = when {
-        value >= 0L -> value.toULong()
-        value == Long.MIN_VALUE -> 1UL shl 63
-        else -> (-value).toULong()
-    }
-    val lower = magnitude and CANONICAL_LIMB_MASK
-    val upper = magnitude shr CANONICAL_LIMB_BITS
-    val limbs = if (upper == 0UL) {
-        ulongArrayOf(lower)
-    } else {
-        ulongArrayOf(lower, upper)
-    }
-    return BigInteger(sign, limbs.size, limbs)
-}
-
-// Operators
-
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
@@ -1747,43 +633,107 @@ actual fun BigInteger.lcm(other: BigInteger): BigInteger {
     }
 }
 
-private fun addMagnitudeOne(sign: Int, value: BigInteger): BigInteger {
-    val size = value.size
-    val limbs = value.limbs
-    val result = ULongArray(size + 1)
-    var carry = 1UL
-    var index = 0
-    while (index < size) {
-        val sum = limbs[index] + carry
-        result[index] = sum and CANONICAL_LIMB_MASK
-        carry = sum shr CANONICAL_LIMB_BITS
-        index++
-        if (carry == 0UL) {
-            limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = size)
-            return BigInteger(sign, size, result)
-        }
-    }
-    result[size] = carry
-    return BigInteger(sign, size + 1, result)
+// Constants
+
+/**
+ * Maximum bit length we allow before refusing an operation.
+ * Matches the JVM's practical limit (~2^31 bits, i.e. ~256 MB magnitude).
+ */
+private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
+
+/** Matches JVM's BigInteger.MAX_MAG_LENGTH: Integer.MAX_VALUE / Integer.SIZE + 1 */
+private const val MAX_MAG_LENGTH = Int.MAX_VALUE / 32 + 1L
+
+/** Matches JVM's BigInteger.DEFAULT_PRIME_CERTAINTY used by nextProbablePrime(). */
+private const val DEFAULT_PRIME_CERTAINTY = 100
+
+internal const val CANONICAL_LIMB_BITS = 60
+internal const val CANONICAL_LIMB_MASK = 0x0FFFFFFFFFFFFFFFUL
+internal const val CANONICAL_LIMB_BASE = 0x1000000000000000UL
+
+internal val EMPTY_LIMBS = ULongArray(0)
+internal val BORROWED_ZERO_LIMBS = ULongArray(1)
+
+// Cached constants
+
+internal val ZERO = BigInteger(0, 0, EMPTY_LIMBS)
+internal val ONE = newBigIntegerFromLong(1L)
+private val TWO = newBigIntegerFromLong(2L)
+private val TEN = newBigIntegerFromLong(10L)
+private val HUNDRED = newBigIntegerFromLong(100L)
+internal val MINUS_ONE = bigIntegerOf(-1L)
+
+// Factory functions
+
+actual fun bigIntegerOf(value: String): BigInteger = when (value) {
+    "0" -> ZERO
+    "1" -> ONE
+    "2" -> TWO
+    "10" -> TEN
+    "100" -> HUNDRED
+    else -> BigInteger(value)
 }
 
-private fun subtractMagnitudeOne(sign: Int, value: BigInteger): BigInteger {
-    val size = value.size
-    val limbs = value.limbs
-    if (size == 1) {
-        val digit = limbs[0]
-        return if (digit == 1UL) ZERO else BigInteger(sign, 1, ulongArrayOf(digit - 1UL))
-    }
+actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
+    0L -> ZERO
+    1L -> ONE
+    2L -> TWO
+    10L -> TEN
+    100L -> HUNDRED
+    else -> newBigIntegerFromLong(value)
+}
 
-    val result = ULongArray(size)
-    var index = 0
-    while (limbs[index] == 0UL) {
-        result[index] = CANONICAL_LIMB_MASK
-        index++
+actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
+    0 -> ZERO
+    1 -> ONE
+    2 -> TWO
+    10 -> TEN
+    100 -> HUNDRED
+    else -> newBigIntegerFromLong(value.toLong())
+}
+
+private fun newBigIntegerFromLong(value: Long): BigInteger {
+    if (value == 0L) return ZERO
+    val sign = if (value < 0) -1 else 1
+    val magnitude = when {
+        value >= 0L -> value.toULong()
+        value == Long.MIN_VALUE -> 1UL shl 63
+        else -> (-value).toULong()
     }
-    result[index] = limbs[index] - 1UL
-    index++
-    limbs.copyInto(result, destinationOffset = index, startIndex = index, endIndex = size)
-    val resultSize = if (result[size - 1] == 0UL) size - 1 else size
-    return BigInteger(sign, resultSize, result)
+    val lower = magnitude and CANONICAL_LIMB_MASK
+    val upper = magnitude shr CANONICAL_LIMB_BITS
+    val limbs = if (upper == 0UL) {
+        ulongArrayOf(lower)
+    } else {
+        ulongArrayOf(lower, upper)
+    }
+    return BigInteger(sign, limbs.size, limbs)
+}
+
+// Magnitude utilities
+
+internal fun normalizeMagnitudeSize(size: Int, limbs: ULongArray): Int {
+    var normalizedSize = minOf(size, limbs.size)
+    while (normalizedSize > 0 && limbs[normalizedSize - 1] == 0UL) {
+        normalizedSize--
+    }
+    return normalizedSize
+}
+
+internal fun bigIntegerFromLimbs(sign: Int, size: Int, limbs: ULongArray): BigInteger {
+    val normalizedSize = normalizeMagnitudeSize(size, limbs)
+    if (normalizedSize == 0 || sign == 0) return ZERO
+    return BigInteger(sign, normalizedSize, limbs)
+}
+
+internal fun compareMagnitudes(left: BigInteger, right: BigInteger): Int {
+    if (left.size != right.size) return left.size.compareTo(right.size)
+    for (index in left.size - 1 downTo 0) {
+        val leftDigit = left.limbs[index]
+        val rightDigit = right.limbs[index]
+        if (leftDigit != rightDigit) {
+            return if (leftDigit < rightDigit) -1 else 1
+        }
+    }
+    return 0
 }
