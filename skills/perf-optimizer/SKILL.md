@@ -105,7 +105,7 @@ Run the benchmarks **before any optimization** and save the results to a file. T
 For **each** optimization:
 
 1. **Apply one change** — keep optimizations atomic so you know what helped
-2. **Run tests** — if any test fails, revert immediately; the optimization is invalid
+2. **Run tests** — if any test fails, revert immediately; the optimization is invalid. If you discover a **bug** during optimization work (existing or introduced), fix it and add a regression test that reproduces the bug before continuing.
 3. **Run benchmarks** — compare against the previous run
 4. **Record results** — if the benchmark improved, **append** the new results to the history file with a description of what changed
 

@@ -127,6 +127,7 @@ This means: if function `A` calls function `B`, then `A` appears above `B`. A re
 2. Run smoke benchmarks: `./gradlew :benchmarks:jvmSmokeBenchmark` / `macosArm64SmokeBenchmark`
 3. If either regresses, revert immediately and try a different simplification
 4. If both pass, commit with a message describing what was simplified and why
+5. If you discover a **bug** during simplification work (existing or introduced), fix it and add a regression test that reproduces the bug before continuing
 
 **When only moving functions, classes, or types around** (reordering within a file, splitting files, relocating between files without changing any body): tests and benchmarks can be skipped. Just verify compilation succeeds.
 
