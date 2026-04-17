@@ -1,0 +1,35 @@
+=== BASELINE — 2026-04-17 10:05 ===
+Source: benchmarks/build/reports/benchmarks/constructionSmoke/2026-04-17T10.05.47.165402/macosArm64.json
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytesSlice                         0.219 / 0.493 / 1.564
+constructorBytes                              0.193 / 0.467 / 1.525
+constructorStringRadix                        0.425 / 1.603 / 7.595
+constructorString                             0.493 / 2.198 / 9.000
+factoryInt                                    0.025 / 0.025 / 0.025
+factoryLong                                   0.024 / 0.025 / 0.025
+factoryString                                 0.473 / 1.888 / 9.047
+
+Initial target:
+- `constructorBytes` / `constructorBytesSlice`, because both currently allocate a temporary
+  `mp_int`, import bytes through LibTomMath, copy the magnitude back into Kotlin-owned limbs,
+  and then free the temporary handle.
+- `constructorString` / `factoryString` are the next-largest headroom if the byte-path work lands cleanly.
+
+=== RUN 2 — 2026-04-17 ===
+Change: Replaced the byte-array constructors' LibTomMath import/copy/free round-trip with direct
+two's-complement decoding into the native canonical 60-bit limbs. `constructor(bytes, off, len)`
+now also decodes slices in place instead of allocating `copyOfRange`.
+
+Validation source:
+- `./gradlew macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+- benchmarks/build/reports/benchmarks/constructionSmoke/2026-04-17T10.09.45.689992/macosArm64.json
+
+constructorBytesSlice: 0.219/0.493/1.564 → 0.046/0.073/0.158 us/op
+constructorBytes:      0.193/0.467/1.525 → 0.042/0.066/0.154 us/op
+
+Observed effect:
+- `constructorBytesSlice` is now about 4.7x / 6.8x / 9.9x faster across small / medium / large
+- `constructorBytes` is now about 4.6x / 7.1x / 9.9x faster across small / medium / large
+- string and factory benchmarks stayed within noise, which keeps this change tightly scoped to the byte constructors

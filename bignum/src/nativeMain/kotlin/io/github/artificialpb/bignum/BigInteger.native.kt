@@ -3,12 +3,24 @@ package io.github.artificialpb.bignum
 import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
 
+private class BigIntegerConstruction(
+    val sign: Int,
+    val size: Int,
+    val limbs: ULongArray,
+)
+
 @OptIn(ExperimentalForeignApi::class)
 actual class BigInteger internal constructor(
     internal val sign: Int,
     internal val size: Int,
     internal val limbs: ULongArray,
 ) : Comparable<BigInteger> {
+    private constructor(construction: BigIntegerConstruction) : this(
+        construction.sign,
+        construction.size,
+        construction.limbs,
+    )
+
     init {
         require(sign in -1..1) { "Invalid signum: $sign" }
         require(size in 0..limbs.size) { "Invalid magnitude size: $size for capacity ${limbs.size}" }
@@ -32,10 +44,10 @@ actual class BigInteger internal constructor(
 
     actual constructor(value: String, radix: Int) : this(validateRadixAndParse(value, radix))
 
-    actual constructor(bytes: ByteArray) : this(fromTwosComplement(bytes))
+    actual constructor(bytes: ByteArray) : this(constructFromTwosComplement(bytes))
 
     actual constructor(bytes: ByteArray, off: Int, len: Int) : this(
-        validateAndSliceBytes(bytes, off, len)
+        constructFromTwosComplementSlice(bytes, off, len)
     )
 
     // Arithmetic
@@ -708,6 +720,126 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
         ulongArrayOf(lower, upper)
     }
     return BigInteger(sign, limbs.size, limbs)
+}
+
+private val ZERO_CONSTRUCTION = BigIntegerConstruction(0, 0, EMPTY_LIMBS)
+
+private fun constructFromTwosComplement(bytes: ByteArray): BigIntegerConstruction {
+    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
+    return constructFromTwosComplementRange(bytes, 0, bytes.size)
+}
+
+private fun constructFromTwosComplementSlice(
+    bytes: ByteArray,
+    off: Int,
+    len: Int,
+): BigIntegerConstruction {
+    if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
+        throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
+    }
+    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
+
+    if (len == 0) {
+        val leadingByte = bytes[off]
+        if (leadingByte >= 0) {
+            return ZERO_CONSTRUCTION
+        }
+        val magnitude = ((bytes[off - 1].toInt().inv()) and 0xFF) + 1
+        return constructFromLong(-magnitude.toLong())
+    }
+
+    return constructFromTwosComplementRange(bytes, off, off + len)
+}
+
+private fun constructFromTwosComplementRange(
+    bytes: ByteArray,
+    start: Int,
+    end: Int,
+): BigIntegerConstruction =
+    if ((bytes[start].toInt() and 0x80) == 0) {
+        constructPositiveBigEndian(bytes, start, end)
+    } else {
+        constructNegativeTwosComplement(bytes, start, end)
+    }
+
+private fun constructFromLong(value: Long): BigIntegerConstruction {
+    if (value == 0L) return ZERO_CONSTRUCTION
+    val sign = if (value < 0) -1 else 1
+    val magnitude = when {
+        value >= 0L -> value.toULong()
+        value == Long.MIN_VALUE -> 1UL shl 63
+        else -> (-value).toULong()
+    }
+    val lower = magnitude and CANONICAL_LIMB_MASK
+    val upper = magnitude shr CANONICAL_LIMB_BITS
+    val limbs = if (upper == 0UL) {
+        ulongArrayOf(lower)
+    } else {
+        ulongArrayOf(lower, upper)
+    }
+    return BigIntegerConstruction(sign, limbs.size, limbs)
+}
+
+private fun constructPositiveBigEndian(
+    bytes: ByteArray,
+    start: Int,
+    end: Int,
+): BigIntegerConstruction {
+    var first = start
+    while (first < end && bytes[first] == 0.toByte()) {
+        first++
+    }
+    if (first == end) return ZERO_CONSTRUCTION
+    val byteCount = end - first
+    val limbs = ULongArray(((byteCount.toLong() * 8 + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt())
+    var limbIndex = 0
+    var accumulator = 0UL
+    var accumulatorBits = 0
+    for (index in end - 1 downTo first) {
+        accumulator = accumulator or (((bytes[index].toInt() and 0xFF).toULong()) shl accumulatorBits)
+        accumulatorBits += 8
+        if (accumulatorBits >= CANONICAL_LIMB_BITS) {
+            limbs[limbIndex++] = accumulator and CANONICAL_LIMB_MASK
+            accumulator = accumulator shr CANONICAL_LIMB_BITS
+            accumulatorBits -= CANONICAL_LIMB_BITS
+        }
+    }
+    if (accumulatorBits > 0 && accumulator != 0UL) {
+        limbs[limbIndex++] = accumulator
+    }
+    val size = normalizeMagnitudeSize(limbIndex, limbs)
+    if (size == 0) return ZERO_CONSTRUCTION
+    return BigIntegerConstruction(1, size, limbs)
+}
+
+private fun constructNegativeTwosComplement(
+    bytes: ByteArray,
+    start: Int,
+    end: Int,
+): BigIntegerConstruction {
+    val byteCount = end - start
+    val limbs = ULongArray(((byteCount.toLong() * 8 + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt())
+    var limbIndex = 0
+    var accumulator = 0UL
+    var accumulatorBits = 0
+    var carry = 1
+    for (index in end - 1 downTo start) {
+        val sum = (bytes[index].toInt().inv() and 0xFF) + carry
+        accumulator = accumulator or (((sum and 0xFF).toULong()) shl accumulatorBits)
+        carry = sum ushr 8
+        accumulatorBits += 8
+        if (accumulatorBits >= CANONICAL_LIMB_BITS) {
+            limbs[limbIndex++] = accumulator and CANONICAL_LIMB_MASK
+            accumulator = accumulator shr CANONICAL_LIMB_BITS
+            accumulatorBits -= CANONICAL_LIMB_BITS
+        }
+    }
+    if (accumulatorBits > 0) {
+        limbs[limbIndex++] = accumulator
+    }
+    val size = normalizeMagnitudeSize(limbIndex, limbs)
+    if (size == 0) return ZERO_CONSTRUCTION
+    return BigIntegerConstruction(-1, size, limbs)
 }
 
 // Magnitude utilities
