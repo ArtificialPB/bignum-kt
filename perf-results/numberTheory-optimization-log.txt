@@ -34,3 +34,32 @@ Observed effect:
   value now stays entirely on the primitive scan path.
 - Medium and large profiles stayed essentially flat, which keeps the optimization tightly scoped to
   the small-number hot path instead of perturbing the generic number-theory code.
+
+=== DISCARDED ATTEMPT — 2026-04-17 ===
+Change: Replaced `allocMp()` + `mp_copy()` in the generic `nextProbablePrime()` path with
+`mp_init_copy()`.
+
+Result: No measurable win. The medium and large next-prime profiles regressed slightly, so the
+change was reverted.
+- nextProbablePrimeMethod: 148.848/2883.706/9258.713 → 148.779/2915.173/9319.781 us/op
+
+=== RUN 3 — 2026-04-17 ===
+Change: Switched the generic `nextProbablePrime()` path from a flat 50 random LibTomMath
+Miller-Rabin trials to a JDK-style bit-length-sensitive trial count. LibTomMath already performs
+fixed bases 2 and 3 plus a Lucas-Selfridge test before the configurable random rounds, so the
+native default search no longer over-tests 127-bit and 521-bit candidates.
+
+Validation source:
+- `./gradlew macosArm64Test :benchmarks:macosArm64NumberTheorySmokeBenchmark --rerun-tasks`
+
+isProbablePrimeMethod:   65.402/432.979/2116.568 → 65.608/443.392/2163.858 us/op
+nextProbablePrimeMethod: 148.848/2883.706/9258.713 → 150.137/1929.324/3314.682 us/op
+sqrtMethod:              3.357/18.150/53.862 → 3.413/18.255/54.141 us/op
+
+Observed effect:
+- `nextProbablePrime()` is now about 33% faster on the medium profile and about 64% faster on the
+  large profile.
+- The tiny `isProbablePrime()` and `sqrt()` movements are run-to-run noise; this change does not
+  alter their hot paths.
+- Small-profile `nextProbablePrime()` stayed effectively flat while the generic search path became
+  much cheaper for larger operands.

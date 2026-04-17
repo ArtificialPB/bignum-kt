@@ -449,10 +449,7 @@ actual class BigInteger internal constructor(
         return withBorrowedHandle { handle ->
             val result = allocMp()
             checkMp(mp_copy(handle, result), result)
-            // JVM uses DEFAULT_PRIME_CERTAINTY = 100, which maps to
-            // ceil(100/2) = 50 MR rounds via the same certainty→rounds
-            // conversion as isProbablePrime.
-            val defaultRounds = (DEFAULT_PRIME_CERTAINTY + 1) / 2
+            val defaultRounds = primeTrialsForCertainty(DEFAULT_PRIME_CERTAINTY, bitLength())
             checkMp(mp_prime_next_prime(result, defaultRounds, 0), result)
             result.toBigInteger()
         }
@@ -741,6 +738,19 @@ private fun BigInteger.toNonNegativeLongOrNull(): Long? {
         }
         else -> null
     }
+}
+
+private fun primeTrialsForCertainty(certainty: Int, bitLength: Int): Int {
+    val halfCertainty = ((certainty.coerceAtMost(Int.MAX_VALUE - 1)) + 1) / 2
+    val maxTrials = when {
+        bitLength < 100 -> 50
+        bitLength < 256 -> 27
+        bitLength < 512 -> 15
+        bitLength < 768 -> 8
+        bitLength < 1024 -> 4
+        else -> 2
+    }
+    return minOf(halfCertainty, maxTrials).coerceAtLeast(1)
 }
 
 private fun nextProbablePrimeLongOrNull(start: Long): Long? {
