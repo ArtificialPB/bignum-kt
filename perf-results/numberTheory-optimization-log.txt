@@ -63,3 +63,30 @@ Observed effect:
   alter their hot paths.
 - Small-profile `nextProbablePrime()` stayed effectively flat while the generic search path became
   much cheaper for larger operands.
+
+=== RUN 4 — 2026-04-17 ===
+Change: Replaced the nullable `Long?` helpers behind the 64-bit primality fast path with inline
+primitive callbacks so `isProbablePrime()` and `nextProbablePrime()` no longer box the small-value
+`Long` on the native hot path.
+
+Validation source:
+- `./gradlew macosArm64Test :benchmarks:macosArm64NumberTheorySmokeBenchmark --rerun-tasks`
+- `./gradlew :benchmarks:macosArm64NumberTheorySmokeBenchmark --rerun-tasks`
+
+Run 1:
+- isProbablePrimeMethod:   65.608/443.392/2163.858 → 65.657/436.341/2128.829 us/op
+- nextProbablePrimeMethod: 150.137/1929.324/3314.682 → 150.578/1916.226/3269.796 us/op
+- sqrtMethod:              3.413/18.255/54.141 → 3.340/18.606/53.884 us/op
+
+Run 2 confirmation:
+- isProbablePrimeMethod:   65.398/434.193/2170.395 us/op
+- nextProbablePrimeMethod: 148.827/1903.705/3278.625 us/op
+- sqrtMethod:              3.331/18.497/54.600 us/op
+
+Observed effect:
+- Only the small 61-bit profile can hit this change. The medium and large benchmark fixtures use
+  127-bit and 521-bit Mersenne values, so their movement is measurement noise from rerunning
+  unchanged generic code.
+- Small-profile `isProbablePrime()` stayed effectively flat.
+- Small-profile `nextProbablePrime()` stayed flat to slightly better across the two confirmation
+  runs while removing avoidable `Long` boxing from the primitive fast path.

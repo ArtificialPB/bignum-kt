@@ -428,7 +428,7 @@ actual class BigInteger internal constructor(
         // JVM tests absolute value for primality
         if (sign == 0) return false
         val target = if (sign < 0) abs() else this@BigInteger
-        target.toNonNegativeLongOrNull()?.let { return isPrimeLong(it) }
+        target.ifNonNegativeLong { return isPrimeLong(it) }
         // JVM certainty means error probability ≤ 2^(-certainty).
         // Each Miller-Rabin round has error ≤ 1/4 = 2^(-2),
         // so ceil(certainty / 2) rounds achieve the required bound.
@@ -443,8 +443,8 @@ actual class BigInteger internal constructor(
     actual fun nextProbablePrime(): BigInteger {
         if (sign < 0) throw ArithmeticException("start < 0: $this")
         if (sign == 0 || this == ONE) return TWO
-        toNonNegativeLongOrNull()?.let { start ->
-            nextProbablePrimeLongOrNull(start)?.let { return bigIntegerOf(it) }
+        ifNonNegativeLong { start ->
+            nextProbablePrimeLongIfFits(start) { return bigIntegerOf(it) }
         }
         return withBorrowedHandle { handle ->
             val result = allocMp()
@@ -724,19 +724,19 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
     return BigInteger(sign, limbs.size, limbs)
 }
 
-private fun BigInteger.toNonNegativeLongOrNull(): Long? {
-    if (sign < 0) return null
-    return when (size) {
-        0 -> 0L
-        1 -> limbs[0].toLong()
+private inline fun BigInteger.ifNonNegativeLong(block: (Long) -> Unit) {
+    if (sign < 0) return
+    when (size) {
+        0 -> block(0L)
+        1 -> block(limbs[0].toLong())
         2 -> {
             val upper = limbs[1]
-            if (upper >= 8UL) return null
+            if (upper >= 8UL) return
             val combined = (upper shl CANONICAL_LIMB_BITS) or limbs[0]
-            if (combined > Long.MAX_VALUE.toULong()) return null
-            combined.toLong()
+            if (combined > Long.MAX_VALUE.toULong()) return
+            block(combined.toLong())
         }
-        else -> null
+        else -> return
     }
 }
 
@@ -753,19 +753,28 @@ private fun primeTrialsForCertainty(certainty: Int, bitLength: Int): Int {
     return minOf(halfCertainty, maxTrials).coerceAtLeast(1)
 }
 
-private fun nextProbablePrimeLongOrNull(start: Long): Long? {
-    if (start < 2L) return 2L
-    if (start > Long.MAX_VALUE - 2L) return null
+private inline fun nextProbablePrimeLongIfFits(start: Long, block: (Long) -> Unit) {
+    if (start < 2L) {
+        block(2L)
+        return
+    }
+    if (start > Long.MAX_VALUE - 2L) return
 
     var candidate = start + 1L
-    if (candidate <= 2L) return 2L
+    if (candidate <= 2L) {
+        block(2L)
+        return
+    }
     if ((candidate and 1L) == 0L) {
         candidate++
     }
 
     while (true) {
-        if (isPrimeLong(candidate)) return candidate
-        if (candidate > Long.MAX_VALUE - 2L) return null
+        if (isPrimeLong(candidate)) {
+            block(candidate)
+            return
+        }
+        if (candidate > Long.MAX_VALUE - 2L) return
         candidate += 2L
     }
 }
