@@ -427,8 +427,8 @@ actual class BigInteger internal constructor(
         if (certainty <= 0) return true
         // JVM tests absolute value for primality
         if (sign == 0) return false
+        this@BigInteger.ifMagnitudeFitsInLong { return isPrimeLong(it) }
         val target = if (sign < 0) abs() else this@BigInteger
-        target.ifNonNegativeLong { return isPrimeLong(it) }
         // JVM certainty means error probability ≤ 2^(-certainty).
         // Each Miller-Rabin round has error ≤ 1/4 = 2^(-2),
         // so ceil(certainty / 2) rounds achieve the required bound.
@@ -443,7 +443,7 @@ actual class BigInteger internal constructor(
     actual fun nextProbablePrime(): BigInteger {
         if (sign < 0) throw ArithmeticException("start < 0: $this")
         if (sign == 0 || this == ONE) return TWO
-        ifNonNegativeLong { start ->
+        ifMagnitudeFitsInLong { start ->
             nextProbablePrimeLongIfFits(start) { return bigIntegerOf(it) }
         }
         return withBorrowedHandle { handle ->
@@ -654,6 +654,8 @@ actual fun BigInteger.lcm(other: BigInteger): BigInteger {
  * Matches the JVM's practical limit (~2^31 bits, i.e. ~256 MB magnitude).
  */
 private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
+private val MAX_SIGNED_LONG_MAGNITUDE = Long.MAX_VALUE.toULong()
+private const val UNSIGNED_LONG_UPPER_LIMB_EXCLUSIVE = 16UL
 
 /** Matches JVM's BigInteger.MAX_MAG_LENGTH: Integer.MAX_VALUE / Integer.SIZE + 1 */
 private const val MAX_MAG_LENGTH = Int.MAX_VALUE / 32 + 1L
@@ -709,34 +711,28 @@ actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
 private fun newBigIntegerFromLong(value: Long): BigInteger {
     if (value == 0L) return ZERO
     val sign = if (value < 0) -1 else 1
-    val magnitude = when {
-        value >= 0L -> value.toULong()
-        value == Long.MIN_VALUE -> 1UL shl 63
-        else -> (-value).toULong()
-    }
-    val lower = magnitude and CANONICAL_LIMB_MASK
-    val upper = magnitude shr CANONICAL_LIMB_BITS
-    val limbs = if (upper == 0UL) {
-        ulongArrayOf(lower)
-    } else {
-        ulongArrayOf(lower, upper)
-    }
+    val limbs = canonicalLimbsForMagnitude(longMagnitude(value))
     return BigInteger(sign, limbs.size, limbs)
 }
 
-private inline fun BigInteger.ifNonNegativeLong(block: (Long) -> Unit) {
-    if (sign < 0) return
+private inline fun BigInteger.ifMagnitudeFitsInULong(block: (ULong) -> Unit) {
     when (size) {
-        0 -> block(0L)
-        1 -> block(limbs[0].toLong())
+        0 -> block(0UL)
+        1 -> block(limbs[0])
         2 -> {
             val upper = limbs[1]
-            if (upper >= 8UL) return
-            val combined = (upper shl CANONICAL_LIMB_BITS) or limbs[0]
-            if (combined > Long.MAX_VALUE.toULong()) return
-            block(combined.toLong())
+            if (upper >= UNSIGNED_LONG_UPPER_LIMB_EXCLUSIVE) return
+            block((upper shl CANONICAL_LIMB_BITS) or limbs[0])
         }
         else -> return
+    }
+}
+
+private inline fun BigInteger.ifMagnitudeFitsInLong(block: (Long) -> Unit) {
+    ifMagnitudeFitsInULong { magnitude ->
+        if (magnitude <= MAX_SIGNED_LONG_MAGNITUDE) {
+            block(magnitude.toLong())
+        }
     }
 }
 
@@ -1095,19 +1091,25 @@ private fun constructFromTwosComplementRange(
 private fun constructFromLong(value: Long): BigIntegerConstruction {
     if (value == 0L) return ZERO_CONSTRUCTION
     val sign = if (value < 0) -1 else 1
-    val magnitude = when {
-        value >= 0L -> value.toULong()
-        value == Long.MIN_VALUE -> 1UL shl 63
-        else -> (-value).toULong()
-    }
+    val limbs = canonicalLimbsForMagnitude(longMagnitude(value))
+    return BigIntegerConstruction(sign, limbs.size, limbs)
+}
+
+private fun longMagnitude(value: Long): ULong = when {
+    value >= 0L -> value.toULong()
+    value == Long.MIN_VALUE -> 1UL shl 63
+    else -> (-value).toULong()
+}
+
+private fun canonicalLimbsForMagnitude(magnitude: ULong): ULongArray {
+    if (magnitude == 0UL) return EMPTY_LIMBS
     val lower = magnitude and CANONICAL_LIMB_MASK
     val upper = magnitude shr CANONICAL_LIMB_BITS
-    val limbs = if (upper == 0UL) {
+    return if (upper == 0UL) {
         ulongArrayOf(lower)
     } else {
         ulongArrayOf(lower, upper)
     }
-    return BigIntegerConstruction(sign, limbs.size, limbs)
 }
 
 private fun constructPositiveBigEndian(
