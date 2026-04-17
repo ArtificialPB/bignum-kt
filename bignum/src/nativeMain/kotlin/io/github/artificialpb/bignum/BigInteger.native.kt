@@ -40,7 +40,7 @@ actual class BigInteger internal constructor(
         freeMp(handle)
     }
 
-    actual constructor(value: String) : this(parseTomMath(value, 10))
+    actual constructor(value: String) : this(constructFromString(value, 10))
 
     actual constructor(value: String, radix: Int) : this(constructFromString(value, radix))
 
@@ -723,84 +723,176 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
 }
 
 private val ZERO_CONSTRUCTION = BigIntegerConstruction(0, 0, EMPTY_LIMBS)
-private const val HEX_DIGITS_PER_LIMB = CANONICAL_LIMB_BITS / 4
+private const val STRING_PARSE_WORD_BITS = 32
+private const val STRING_PARSE_WORD_MASK = 0xFFFFFFFFUL
+private val STRING_BITS_PER_DIGIT = longArrayOf(
+    0L, 0L,
+    1024L, 1624L, 2048L, 2378L, 2648L, 2875L, 3072L, 3247L, 3402L, 3543L, 3672L,
+    3790L, 3899L, 4001L, 4096L, 4186L, 4271L, 4350L, 4426L, 4498L, 4567L, 4633L,
+    4696L, 4756L, 4814L, 4870L, 4923L, 4975L, 5025L, 5074L, 5120L, 5166L, 5210L,
+    5253L, 5295L,
+)
+private val STRING_DIGITS_PER_LIMB = intArrayOf(
+    0, 0, 60, 37, 30, 25, 23, 21,
+    20, 18, 18, 17, 16, 16, 15, 15,
+    15, 14, 14, 14, 13, 13, 13, 13,
+    13, 12, 12, 12, 12, 12, 12, 12,
+    12, 11, 11, 11, 11,
+)
+private val STRING_LIMB_RADIX = ulongArrayOf(
+    0x0UL, 0x0UL, 0x1000000000000000UL, 0x63fbad3a2b55473UL,
+    0x1000000000000000UL, 0x422ca8b0a00a425UL, 0xaf5af7425800000UL, 0x7c05a810b72a027UL,
+    0x1000000000000000UL, 0x2153e468b91c6d1UL, 0xde0b6b3a7640000UL, 0x703b564fa7a264bUL,
+    0x290d74100000000UL, 0x93c08e16a022441UL, 0x228b05bd21b8000UL, 0x613b62c597707efUL,
+    0x1000000000000000UL, 0x25632bdbc201be1UL, 0x5339ac59fcc4000UL, 0xb16a458ef403f19UL,
+    0x12309ce54000000UL, 0x224cbcf22c00b65UL, 0x3ecbe3fcf076000UL, 0x6feb266931a75b7UL,
+    0xc29e98000000000UL, 0xd3c21bcecceda1UL, 0x1530821671b1000UL, 0x2153e468b91c6d1UL,
+    0x339014821000000UL, 0x4e900abb53e6b71UL, 0x7600ec618141000UL, 0xaee5720ee830681UL,
+    0x1000000000000000UL, 0xb38fc730f35d61UL, 0xf95c61a43d8800UL, 0x15702f27495705bUL,
+    0x1d39d3e06400000UL,
+)
 
-@OptIn(ExperimentalForeignApi::class)
-private fun constructFromHandle(handle: CPointer<mp_int>): BigIntegerConstruction =
-    try {
-        val used = handle.pointed.used
-        val limbs = if (used == 0) {
-            EMPTY_LIMBS
-        } else {
-            val dp = handle.pointed.dp!!
-            ULongArray(used) { index ->
-                dp[index] and CANONICAL_LIMB_MASK
-            }
-        }
-        BigIntegerConstruction(
-            sign = signumFromHandle(handle),
-            size = used,
-            limbs = limbs,
-        )
-    } finally {
-        freeMp(handle)
-    }
+private data class ParsedStringMetadata(
+    val sign: Int,
+    val cursor: Int,
+    val numDigits: Int,
+)
 
-@OptIn(ExperimentalForeignApi::class)
 private fun constructFromString(value: String, radix: Int): BigIntegerConstruction {
-    if (radix == 16) {
-        val hexConstruction = constructFromHexStringOrNull(value)
-        if (hexConstruction != null) return hexConstruction
+    val metadata = parseStringMetadata(value, radix) ?: return ZERO_CONSTRUCTION
+    val numDigits = metadata.numDigits
+    val numBits = ((numDigits.toLong() * STRING_BITS_PER_DIGIT[radix]) ushr 10) + 1L
+    if (numBits > MAX_BIT_LENGTH) {
+        throw ArithmeticException("BigInteger would overflow supported range")
     }
-    return constructFromHandle(validateRadixAndParse(value, radix))
+
+    val estimatedLimbs = ((numBits + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt()
+    val magnitude = ULongArray(estimatedLimbs + 1)
+    var size = 1
+    var cursor = metadata.cursor
+    val digitsPerGroup = STRING_DIGITS_PER_LIMB[radix]
+    var firstGroupLen = numDigits % digitsPerGroup
+    if (firstGroupLen == 0) {
+        firstGroupLen = digitsPerGroup
+    }
+    magnitude[0] = parseDigitGroup(value, cursor, cursor + firstGroupLen, radix)
+    cursor += firstGroupLen
+    val superRadix = STRING_LIMB_RADIX[radix]
+    while (cursor < value.length) {
+        val groupEnd = cursor + digitsPerGroup
+        val groupValue = parseDigitGroup(value, cursor, groupEnd, radix)
+        size = destructiveMulAdd(magnitude, size, superRadix, groupValue)
+        cursor = groupEnd
+    }
+    val normalizedSize = normalizeMagnitudeSize(size, magnitude)
+    if (normalizedSize == 0) return ZERO_CONSTRUCTION
+    return BigIntegerConstruction(metadata.sign, normalizedSize, magnitude)
 }
 
-private fun constructFromHexStringOrNull(value: String): BigIntegerConstruction? {
-    if (value.isEmpty()) return null
+private fun parseStringMetadata(value: String, radix: Int): ParsedStringMetadata? {
+    if (radix !in 2..36) throw NumberFormatException("Radix out of range: $radix")
+    val length = value.length
+    if (length == 0) throw NumberFormatException("Zero length BigInteger")
+
+    var cursor = 0
     var sign = 1
-    var start = 0
-    when (value[0]) {
-        '+' -> start = 1
-        '-' -> {
-            sign = -1
-            start = 1
+    val minusIndex = value.lastIndexOf('-')
+    val plusIndex = value.lastIndexOf('+')
+    if (minusIndex >= 0) {
+        if (minusIndex != 0 || plusIndex >= 0) {
+            throw NumberFormatException("Illegal embedded sign character")
         }
-    }
-    if (start == value.length) return null
-    for (index in start until value.length) {
-        when (value[index]) {
-            '+', '-' -> return null
+        sign = -1
+        cursor = 1
+    } else if (plusIndex >= 0) {
+        if (plusIndex != 0) {
+            throw NumberFormatException("Illegal embedded sign character")
         }
+        cursor = 1
     }
-    while (start < value.length && value[start] == '0') {
-        start++
-    }
-    if (start == value.length) return ZERO_CONSTRUCTION
 
-    val digitCount = value.length - start
-    val limbs = ULongArray((digitCount + HEX_DIGITS_PER_LIMB - 1) / HEX_DIGITS_PER_LIMB)
-    var limbIndex = 0
-    var end = value.length
-    while (end > start) {
-        val chunkStart = maxOf(start, end - HEX_DIGITS_PER_LIMB)
-        var limb = 0UL
-        for (index in chunkStart until end) {
-            val digit = hexDigitOrNull(value[index]) ?: return null
-            limb = (limb shl 4) or digit.toULong()
-        }
-        limbs[limbIndex++] = limb
-        end = chunkStart
+    if (cursor == length) throw NumberFormatException("Zero length BigInteger")
+
+    while (cursor < length) {
+        val digit = digitOrThrow(value[cursor], radix, value)
+        if (digit != 0) break
+        cursor++
     }
-    val size = normalizeMagnitudeSize(limbIndex, limbs)
-    if (size == 0) return ZERO_CONSTRUCTION
-    return BigIntegerConstruction(sign, size, limbs)
+    if (cursor == length) return null
+    return ParsedStringMetadata(sign, cursor, length - cursor)
 }
 
-private fun hexDigitOrNull(value: Char): Int? = when (value) {
-    in '0'..'9' -> value.code - '0'.code
-    in 'a'..'f' -> value.code - 'a'.code + 10
-    in 'A'..'F' -> value.code - 'A'.code + 10
-    else -> null
+private fun parseDigitGroup(value: String, start: Int, end: Int, radix: Int): ULong {
+    val radixValue = radix.toULong()
+    var result = digitOrThrow(value[start], radix, value).toULong()
+    for (index in start + 1 until end) {
+        result = result * radixValue + digitOrThrow(value[index], radix, value).toULong()
+    }
+    return result
+}
+
+private fun digitOrThrow(char: Char, radix: Int, value: String): Int =
+    char.digitToIntOrNull(radix) ?: throw invalidDigitException(value, radix)
+
+private fun invalidDigitException(value: String, radix: Int): NumberFormatException {
+    val message = if (radix == 10) {
+        "For input string: \"$value\""
+    } else {
+        "For input string: \"$value\" under radix $radix"
+    }
+    return NumberFormatException(message)
+}
+
+private fun destructiveMulAdd(
+    magnitude: ULongArray,
+    size: Int,
+    multiplier: ULong,
+    addend: ULong,
+): Int {
+    var carry = 0UL
+    var index = 0
+    val multiplierLow = multiplier and STRING_PARSE_WORD_MASK
+    val multiplierHigh = multiplier shr STRING_PARSE_WORD_BITS
+    while (index < size) {
+        val limb = magnitude[index]
+        val limbLow = limb and STRING_PARSE_WORD_MASK
+        val limbHigh = limb shr STRING_PARSE_WORD_BITS
+        val lowProduct = limbLow * multiplierLow
+        val crossProduct = limbLow * multiplierHigh + limbHigh * multiplierLow
+        var low64 = lowProduct + ((crossProduct and STRING_PARSE_WORD_MASK) shl STRING_PARSE_WORD_BITS)
+        var high64 = limbHigh * multiplierHigh + (crossProduct shr STRING_PARSE_WORD_BITS)
+        if (low64 < lowProduct) {
+            high64++
+        }
+
+        val product = low64 + carry
+        if (product < low64) {
+            high64++
+        }
+
+        magnitude[index] = product and CANONICAL_LIMB_MASK
+        carry = (high64 shl (ULong.SIZE_BITS - CANONICAL_LIMB_BITS)) or (product shr CANONICAL_LIMB_BITS)
+        index++
+    }
+
+    var resultSize = size
+    if (carry != 0UL) {
+        magnitude[resultSize++] = carry
+    }
+
+    var addCarry = addend
+    index = 0
+    while (addCarry != 0UL) {
+        if (index == resultSize) {
+            magnitude[resultSize++] = addCarry
+            break
+        }
+        val sum = magnitude[index] + addCarry
+        magnitude[index] = sum and CANONICAL_LIMB_MASK
+        addCarry = sum shr CANONICAL_LIMB_BITS
+        index++
+    }
+    return resultSize
 }
 
 private fun constructFromTwosComplement(bytes: ByteArray): BigIntegerConstruction {

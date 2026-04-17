@@ -73,3 +73,52 @@ Notes:
 - the decimal constructor/factory paths still dominate the remaining construction cost
 - `factoryInt`, `factoryLong`, and some `factoryString` full-benchmark samples showed scheduler noise,
   but the targeted byte and radix-16 constructor wins were stable across the full run
+
+=== RUN 4 — 2026-04-17 ===
+Change: Replaced the specialized native string-constructor parsing with a JVM-style chunked parser
+for every radix. Instead of grouping into JVM-sized `int` chunks, the parser now groups into the
+largest radix power that fits one native 60-bit limb and multiplies the canonical limb array
+directly. The old LibTomMath constructor parsing helpers were removed after the new path was green.
+
+Validation source:
+- `./gradlew jvmTest macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+- benchmarks/build/reports/benchmarks/constructionSmoke/2026-04-17T10.28.11.543405/macosArm64.json
+
+constructorStringRadix: 0.098/0.334/0.986 → 0.271/1.087/3.918 us/op
+constructorString:      0.498/1.901/9.025 → 0.319/1.284/4.574 us/op
+factoryString:          0.474/1.960/9.101 → 0.318/1.297/4.539 us/op
+
+Observed effect:
+- the decimal string constructor/factory path is now about 1.6x / 1.5x / 2.0x faster than the
+  earlier implementation, which was still paying LibTomMath parsing overhead
+- the generic radix parser gives back part of the dedicated radix-16 win, but it still stays ahead
+  of the original radix baseline while deleting the special-case parsing path
+- the byte-constructor wins held steady
+
+=== FINAL — 2026-04-17 (macosArm64 full construction benchmark, JVM-style parser) ===
+Validation source:
+- `./gradlew :benchmarks:macosArm64ConstructionBenchmark --rerun-tasks`
+- benchmarks/build/reports/benchmarks/construction/2026-04-17T10.16.53.17074/macosArm64.json
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytesSlice                         0.046 / 0.070 / 0.159
+constructorBytes                              0.042 / 0.066 / 0.153
+constructorStringRadix                        0.269 / 1.085 / 3.875
+constructorString                             0.313 / 1.285 / 4.559
+factoryInt                                    0.026 / 0.025 / 0.025
+factoryLong                                   0.025 / 0.025 / 0.024
+factoryString                                 0.317 / 1.300 / 4.520
+
+Key confirmed wins versus the original smoke baseline:
+- `constructorBytesSlice`: 0.219/0.493/1.564 → 0.046/0.070/0.159
+- `constructorBytes`:      0.193/0.467/1.525 → 0.042/0.066/0.153
+- `constructorStringRadix`:0.425/1.603/7.595 → 0.269/1.085/3.875
+- `constructorString`:     0.493/2.198/9.000 → 0.313/1.285/4.559
+- `factoryString`:         0.473/1.888/9.047 → 0.317/1.300/4.520
+
+Notes:
+- this version is a measured trade: it is slower than the dedicated radix-16 fast path from RUN 3,
+  but materially faster on the plain decimal constructor/factory hot path while using one parser
+  structure across radices
+- the benchmark report path above was updated in place by the benchmark task on this host
