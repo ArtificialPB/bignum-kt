@@ -428,6 +428,7 @@ actual class BigInteger internal constructor(
         // JVM tests absolute value for primality
         if (sign == 0) return false
         val target = if (sign < 0) abs() else this@BigInteger
+        target.toNonNegativeLongOrNull()?.let { return isPrimeLong(it) }
         // JVM certainty means error probability ≤ 2^(-certainty).
         // Each Miller-Rabin round has error ≤ 1/4 = 2^(-2),
         // so ceil(certainty / 2) rounds achieve the required bound.
@@ -441,6 +442,10 @@ actual class BigInteger internal constructor(
 
     actual fun nextProbablePrime(): BigInteger {
         if (sign < 0) throw ArithmeticException("start < 0: $this")
+        if (sign == 0 || this == ONE) return TWO
+        toNonNegativeLongOrNull()?.let { start ->
+            nextProbablePrimeLongOrNull(start)?.let { return bigIntegerOf(it) }
+        }
         return withBorrowedHandle { handle ->
             val result = allocMp()
             checkMp(mp_copy(handle, result), result)
@@ -721,6 +726,130 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
     }
     return BigInteger(sign, limbs.size, limbs)
 }
+
+private fun BigInteger.toNonNegativeLongOrNull(): Long? {
+    if (sign < 0) return null
+    return when (size) {
+        0 -> 0L
+        1 -> limbs[0].toLong()
+        2 -> {
+            val upper = limbs[1]
+            if (upper >= 8UL) return null
+            val combined = (upper shl CANONICAL_LIMB_BITS) or limbs[0]
+            if (combined > Long.MAX_VALUE.toULong()) return null
+            combined.toLong()
+        }
+        else -> null
+    }
+}
+
+private fun nextProbablePrimeLongOrNull(start: Long): Long? {
+    if (start < 2L) return 2L
+    if (start > Long.MAX_VALUE - 2L) return null
+
+    var candidate = start + 1L
+    if (candidate <= 2L) return 2L
+    if ((candidate and 1L) == 0L) {
+        candidate++
+    }
+
+    while (true) {
+        if (isPrimeLong(candidate)) return candidate
+        if (candidate > Long.MAX_VALUE - 2L) return null
+        candidate += 2L
+    }
+}
+
+private fun isPrimeLong(value: Long): Boolean {
+    if (value < 2L) return false
+    if (value == 2L || value == 3L) return true
+    if ((value and 1L) == 0L) return false
+
+    val candidate = value.toULong()
+    for (prime in SMALL_PRIME_PRETESTS) {
+        if (value == prime.toLong()) return true
+        if (value % prime.toLong() == 0L) return false
+    }
+
+    val minusOne = candidate - 1UL
+    var oddPart = minusOne
+    var powersOfTwo = 0
+    while ((oddPart and 1UL) == 0UL) {
+        oddPart = oddPart shr 1
+        powersOfTwo++
+    }
+
+    for (base in LONG_MILLER_RABIN_BASES) {
+        val witness = base % candidate
+        if (witness <= 1UL) continue
+
+        var x = powModULong(witness, oddPart, candidate)
+        if (x == 1UL || x == minusOne) continue
+
+        var passed = false
+        var round = 1
+        while (round < powersOfTwo) {
+            x = multiplyModULong(x, x, candidate)
+            if (x == minusOne) {
+                passed = true
+                break
+            }
+            round++
+        }
+        if (!passed) return false
+    }
+
+    return true
+}
+
+private fun powModULong(base: ULong, exponent: ULong, modulus: ULong): ULong {
+    var result = 1UL
+    var factor = base % modulus
+    var remaining = exponent
+    while (remaining != 0UL) {
+        if ((remaining and 1UL) != 0UL) {
+            result = multiplyModULong(result, factor, modulus)
+        }
+        remaining = remaining shr 1
+        if (remaining != 0UL) {
+            factor = multiplyModULong(factor, factor, modulus)
+        }
+    }
+    return result
+}
+
+private fun multiplyModULong(left: ULong, right: ULong, modulus: ULong): ULong {
+    if (modulus == 1UL || left == 0UL || right == 0UL) return 0UL
+
+    var multiplicand = left % modulus
+    var multiplier = right % modulus
+    var result = 0UL
+    while (multiplier != 0UL) {
+        if ((multiplier and 1UL) != 0UL) {
+            result = addModULong(result, multiplicand, modulus)
+        }
+        multiplier = multiplier shr 1
+        if (multiplier != 0UL) {
+            multiplicand = addModULong(multiplicand, multiplicand, modulus)
+        }
+    }
+    return result
+}
+
+private fun addModULong(left: ULong, right: ULong, modulus: ULong): ULong =
+    if (left >= modulus - right) {
+        left - (modulus - right)
+    } else {
+        left + right
+    }
+
+private val SMALL_PRIME_PRETESTS = intArrayOf(
+    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37
+)
+
+private val LONG_MILLER_RABIN_BASES = ulongArrayOf(
+    2UL, 325UL, 9375UL, 28178UL, 450775UL, 9780504UL, 1795265022UL
+)
 
 private val ZERO_CONSTRUCTION = BigIntegerConstruction(0, 0, EMPTY_LIMBS)
 private const val STRING_PARSE_WORD_BITS = 32

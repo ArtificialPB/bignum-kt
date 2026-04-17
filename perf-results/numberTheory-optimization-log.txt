@@ -1,0 +1,36 @@
+=== BASELINE — 2026-04-17 10:47 ===
+Source: benchmarks/build/reports/benchmarks/numberTheorySmoke/2026-04-17T10.47.36.179202/macosArm64.json
+
+Benchmark                                      small  / medium / large   us/op
+---------------------------------------------------------------------------
+isProbablePrimeMethod                          296.367 / 433.007 / 2125.094
+nextProbablePrimeMethod                       1794.713 / 2951.669 / 9295.463
+sqrtMethod                                       3.348 / 18.076 / 54.690
+
+Initial target:
+- Small-profile `isProbablePrime()` and `nextProbablePrime()`, because the benchmark uses the
+  61-bit Mersenne prime `2^61 - 1` and a start value just below it. The current implementation
+  still routes these through borrowed LibTomMath handles and generic native primality search.
+- Keep the first optimization narrowly scoped to values that fit in primitive 64-bit arithmetic so
+  the change is reviewable and the measured effect is easy to attribute.
+
+=== RUN 2 — 2026-04-17 ===
+Change: Added a primitive 64-bit fast path for `isProbablePrime()` and `nextProbablePrime()`.
+When the non-negative operand fits in a signed `Long`, the native implementation now uses direct
+small-prime filtering plus deterministic Miller-Rabin on primitive arithmetic instead of borrowing
+LibTomMath handles and routing the small case through the generic native primality routines.
+
+Validation source:
+- `./gradlew macosArm64Test :benchmarks:macosArm64NumberTheorySmokeBenchmark --rerun-tasks`
+- benchmarks/build/reports/benchmarks/numberTheorySmoke/2026-04-17T10.52.49.614009/macosArm64.json
+
+isProbablePrimeMethod:   296.367/433.007/2125.094 → 65.402/432.979/2116.568 us/op
+nextProbablePrimeMethod: 1794.713/2951.669/9295.463 → 148.848/2883.706/9258.713 us/op
+sqrtMethod:              3.348/18.076/54.690 → 3.357/18.150/53.862 us/op
+
+Observed effect:
+- `isProbablePrime()` is about 4.5x faster on the 61-bit small profile.
+- `nextProbablePrime()` is about 12x faster on the 61-bit small profile because the benchmark start
+  value now stays entirely on the primitive scan path.
+- Medium and large profiles stayed essentially flat, which keeps the optimization tightly scoped to
+  the small-number hot path instead of perturbing the generic number-theory code.
