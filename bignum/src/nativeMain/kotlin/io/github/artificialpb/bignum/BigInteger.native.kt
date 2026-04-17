@@ -42,7 +42,7 @@ actual class BigInteger internal constructor(
 
     actual constructor(value: String) : this(parseTomMath(value, 10))
 
-    actual constructor(value: String, radix: Int) : this(validateRadixAndParse(value, radix))
+    actual constructor(value: String, radix: Int) : this(constructFromString(value, radix))
 
     actual constructor(bytes: ByteArray) : this(constructFromTwosComplement(bytes))
 
@@ -723,6 +723,85 @@ private fun newBigIntegerFromLong(value: Long): BigInteger {
 }
 
 private val ZERO_CONSTRUCTION = BigIntegerConstruction(0, 0, EMPTY_LIMBS)
+private const val HEX_DIGITS_PER_LIMB = CANONICAL_LIMB_BITS / 4
+
+@OptIn(ExperimentalForeignApi::class)
+private fun constructFromHandle(handle: CPointer<mp_int>): BigIntegerConstruction =
+    try {
+        val used = handle.pointed.used
+        val limbs = if (used == 0) {
+            EMPTY_LIMBS
+        } else {
+            val dp = handle.pointed.dp!!
+            ULongArray(used) { index ->
+                dp[index] and CANONICAL_LIMB_MASK
+            }
+        }
+        BigIntegerConstruction(
+            sign = signumFromHandle(handle),
+            size = used,
+            limbs = limbs,
+        )
+    } finally {
+        freeMp(handle)
+    }
+
+@OptIn(ExperimentalForeignApi::class)
+private fun constructFromString(value: String, radix: Int): BigIntegerConstruction {
+    if (radix == 16) {
+        val hexConstruction = constructFromHexStringOrNull(value)
+        if (hexConstruction != null) return hexConstruction
+    }
+    return constructFromHandle(validateRadixAndParse(value, radix))
+}
+
+private fun constructFromHexStringOrNull(value: String): BigIntegerConstruction? {
+    if (value.isEmpty()) return null
+    var sign = 1
+    var start = 0
+    when (value[0]) {
+        '+' -> start = 1
+        '-' -> {
+            sign = -1
+            start = 1
+        }
+    }
+    if (start == value.length) return null
+    for (index in start until value.length) {
+        when (value[index]) {
+            '+', '-' -> return null
+        }
+    }
+    while (start < value.length && value[start] == '0') {
+        start++
+    }
+    if (start == value.length) return ZERO_CONSTRUCTION
+
+    val digitCount = value.length - start
+    val limbs = ULongArray((digitCount + HEX_DIGITS_PER_LIMB - 1) / HEX_DIGITS_PER_LIMB)
+    var limbIndex = 0
+    var end = value.length
+    while (end > start) {
+        val chunkStart = maxOf(start, end - HEX_DIGITS_PER_LIMB)
+        var limb = 0UL
+        for (index in chunkStart until end) {
+            val digit = hexDigitOrNull(value[index]) ?: return null
+            limb = (limb shl 4) or digit.toULong()
+        }
+        limbs[limbIndex++] = limb
+        end = chunkStart
+    }
+    val size = normalizeMagnitudeSize(limbIndex, limbs)
+    if (size == 0) return ZERO_CONSTRUCTION
+    return BigIntegerConstruction(sign, size, limbs)
+}
+
+private fun hexDigitOrNull(value: Char): Int? = when (value) {
+    in '0'..'9' -> value.code - '0'.code
+    in 'a'..'f' -> value.code - 'a'.code + 10
+    in 'A'..'F' -> value.code - 'A'.code + 10
+    else -> null
+}
 
 private fun constructFromTwosComplement(bytes: ByteArray): BigIntegerConstruction {
     if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")

@@ -33,3 +33,43 @@ Observed effect:
 - `constructorBytesSlice` is now about 4.7x / 6.8x / 9.9x faster across small / medium / large
 - `constructorBytes` is now about 4.6x / 7.1x / 9.9x faster across small / medium / large
 - string and factory benchmarks stayed within noise, which keeps this change tightly scoped to the byte constructors
+
+=== RUN 3 — 2026-04-17 ===
+Change: Added a native fast path for `BigInteger(value, 16)` that parses signed hex directly into
+the 60-bit canonical limbs. Invalid or non-fast-path inputs still fall back to the existing
+LibTomMath radix parser, so behavior stays unchanged outside the optimized path.
+
+Validation source:
+- `./gradlew macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+
+constructorStringRadix: 0.425/1.603/7.595 → 0.098/0.334/0.986 us/op
+
+Observed effect:
+- `constructorStringRadix` is now about 4.3x / 4.8x / 7.7x faster across small / medium / large
+- the byte-constructor improvements held up after the string-radix fast path
+- plain decimal `constructorString` / `factoryString` remain the largest remaining construction hot spots
+
+=== FINAL — 2026-04-17 (macosArm64 full construction benchmark) ===
+Validation source:
+- benchmarks/build/reports/benchmarks/construction/2026-04-17T10.16.53.17074/macosArm64.json
+- `./gradlew :benchmarks:macosArm64ConstructionBenchmark --rerun-tasks`
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytesSlice                         0.045 / 0.069 / 0.156
+constructorBytes                              0.042 / 0.066 / 0.155
+constructorStringRadix                        0.097 / 0.323 / 0.985
+constructorString                             0.496 / 1.882 / 9.039
+factoryInt                                    0.025 / 0.036 / 0.030
+factoryLong                                   0.028 / 0.027 / 0.025
+factoryString                                 0.475 / 2.311 / 9.433
+
+Key confirmed wins versus the original smoke baseline:
+- `constructorBytesSlice`: 0.219/0.493/1.564 → 0.045/0.069/0.156
+- `constructorBytes`:      0.193/0.467/1.525 → 0.042/0.066/0.155
+- `constructorStringRadix`:0.425/1.603/7.595 → 0.097/0.323/0.985
+
+Notes:
+- the decimal constructor/factory paths still dominate the remaining construction cost
+- `factoryInt`, `factoryLong`, and some `factoryString` full-benchmark samples showed scheduler noise,
+  but the targeted byte and radix-16 constructor wins were stable across the full run
