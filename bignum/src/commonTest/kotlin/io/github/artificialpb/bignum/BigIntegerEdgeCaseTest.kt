@@ -999,6 +999,27 @@ class ByteArrayAdditionalEdgeCaseTest : FunSpec({
         val bytes = value.toByteArray()
         BigInteger(bytes) shouldBe value
     }
+
+    test("positive 8-byte values with a zero top nibble round-trip") {
+        val bytes = byteArrayOf(
+            0x01,
+            0x08,
+            0x93.toByte(),
+            0x13,
+            0x4A,
+            0x1D,
+            0xD7.toByte(),
+            0x9B.toByte(),
+        )
+        val value = BigInteger("74471104908744603")
+
+        value.toByteArray() shouldBe bytes
+        BigInteger(bytes) shouldBe value
+        BigInteger(bytes).toByteArray() shouldBe bytes
+
+        val padded = byteArrayOf(0x7F) + bytes + byteArrayOf(0x00)
+        BigInteger(padded, 1, bytes.size) shouldBe value
+    }
 })
 
 // -- toString with radix for negative numbers --
