@@ -134,7 +134,10 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         if (other == ONE) return this
         if (other == MINUS_ONE) return -this
         if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
-            return divideSmall(sign * other.sign, this, other)
+            val resultSign = sign * other.sign
+            return divRemMagnitude(this, other) { q, _ ->
+                if (q.sign == 0) ZERO else BigInteger(resultSign, q.size, q.limbs)
+            }
         }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
             val result = allocMp()
@@ -205,9 +208,11 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         if (sign == 0) return ZERO
         if (size <= 2 && modulus.size <= 2) {
-            val r = remainderSmall(sign, this, modulus)
-            // mod returns non-negative: if remainder is negative, add modulus
-            return if (r.sign < 0) r.add(modulus) else r
+            return divRemMagnitude(this, modulus) { _, r ->
+                val signedR = if (r.sign == 0) ZERO else BigInteger(sign, r.size, r.limbs)
+                // mod returns non-negative: if remainder is negative, add modulus
+                if (signedR.sign < 0) signedR.add(modulus) else signedR
+            }
         }
         return withBorrowedHandles(this, modulus) { handle, modulusHandle ->
             val result = allocMp()
@@ -262,13 +267,14 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return arrayOf(ZERO, ZERO)
         if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
-            val (q, r) = divRemMagnitude(this, other)
-            val qSign = if (q.sign == 0) 0 else sign * other.sign
-            val rSign = if (r.sign == 0) 0 else sign
-            return arrayOf(
-                if (qSign == 0) ZERO else BigInteger(qSign, q.size, q.limbs),
-                if (rSign == 0) ZERO else BigInteger(rSign, r.size, r.limbs),
-            )
+            return divRemMagnitude(this, other) { q, r ->
+                val qSign = if (q.sign == 0) 0 else sign * other.sign
+                val rSign = if (r.sign == 0) 0 else sign
+                arrayOf(
+                    if (qSign == 0) ZERO else BigInteger(qSign, q.size, q.limbs),
+                    if (rSign == 0) ZERO else BigInteger(rSign, r.size, r.limbs),
+                )
+            }
         }
         return withBorrowedHandles(this, other) { handle, otherHandle ->
             val quotient = allocMp()
@@ -636,7 +642,10 @@ actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
     if (signum() == 0) return ZERO
     if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
-        return remainderSmall(signum(), this, other)
+        val dividendSign = signum()
+        return divRemMagnitude(this, other) { _, r ->
+            if (r.signum() == 0) ZERO else BigInteger(dividendSign, r.size, r.limbs)
+        }
     }
     return withBorrowedHandles(this, other) { handle, otherHandle ->
         val result = allocMp()

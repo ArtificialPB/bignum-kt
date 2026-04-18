@@ -144,34 +144,42 @@ private fun BigInteger.digit(index: Int): ULong {
 
 /**
  * Divides two magnitudes in pure Kotlin using Knuth's Algorithm D at base 2^30.
- * Returns (quotient, remainder) as positive-magnitude BigIntegers.
- * Caller applies signs.
+ * Invokes [consume] with positive-magnitude quotient and remainder BigIntegers.
+ * Caller applies signs to the returned values.
  */
-internal fun divRemMagnitude(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
+internal inline fun <R> divRemMagnitude(
+    dividend: BigInteger,
+    divisor: BigInteger,
+    consume: (quotient: BigInteger, remainder: BigInteger) -> R,
+): R {
     val cmp = compareMagnitudes(dividend, divisor)
-    if (cmp < 0) return Pair(ZERO, BigInteger(1, dividend.size, dividend.limbs))
-    if (cmp == 0) return Pair(ONE, ZERO)
+    if (cmp < 0) return consume(ZERO, BigInteger(1, dividend.size, dividend.limbs))
+    if (cmp == 0) return consume(ONE, ZERO)
 
     if (divisor.size == 1 && dividend.size == 1) {
         val a = dividend.limbs[0]
         val d = divisor.limbs[0]
         val q = a / d
         val r = a % d
-        return Pair(
+        return consume(
             if (q == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(q)),
             if (r == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(r)),
         )
     }
 
     // Convert to base 2^30 half-limbs and use long division
-    return divRemHalfLimbs(dividend, divisor)
+    return divRemHalfLimbs(dividend, divisor, consume)
 }
 
 /**
  * Long division at base 2^30 using Knuth's Algorithm D (TAOCP 4.3.1).
  * All arrays are MSB-first (index 0 is the most significant digit).
  */
-private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<BigInteger, BigInteger> {
+private inline fun <R> divRemHalfLimbs(
+    dividend: BigInteger,
+    divisor: BigInteger,
+    consume: (quotient: BigInteger, remainder: BigInteger) -> R,
+): R {
     val B: ULong = 1UL shl HALF_LIMB_BITS
     val MASK: ULong = B - 1UL
 
@@ -191,7 +199,7 @@ private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<Big
             rem = cur % d
         }
         val remBigInt = if (rem == 0UL) ZERO else BigInteger(1, 1, ulongArrayOf(rem))
-        return Pair(halfLimbsToBigInteger(q), remBigInt)
+        return consume(halfLimbsToBigInteger(q), remBigInt)
     }
 
     // Step D1: Normalize — left-shift so vOrig[0] has its high bit set (bit 29)
@@ -281,7 +289,7 @@ private fun divRemHalfLimbs(dividend: BigInteger, divisor: BigInteger): Pair<Big
         }
     }
 
-    return Pair(halfLimbsToBigInteger(q), halfLimbsToBigInteger(rem))
+    return consume(halfLimbsToBigInteger(q), halfLimbsToBigInteger(rem))
 }
 
 /** Convert BigInteger magnitude to MSB-first array of 30-bit half-limbs, stripping leading zeros. */
@@ -330,16 +338,6 @@ private fun countLeadingZeroBits30(value: ULong): Int {
         bit--
     }
     return count
-}
-
-internal fun divideSmall(resultSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
-    val (q, _) = divRemMagnitude(dividend, divisor)
-    return if (q.signum() == 0) ZERO else BigInteger(resultSign, q.size, q.limbs)
-}
-
-internal fun remainderSmall(dividendSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
-    val (_, r) = divRemMagnitude(dividend, divisor)
-    return if (r.signum() == 0) ZERO else BigInteger(dividendSign, r.size, r.limbs)
 }
 
 internal fun multiplySmall(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
