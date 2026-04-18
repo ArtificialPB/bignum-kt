@@ -509,20 +509,13 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
     actual fun toByteArray(): ByteArray {
         if (sign == 0) return byteArrayOf(0)
 
-        val magnitude = withBorrowedHandle { handle ->
-            val bytesSize = mp_ubin_size(handle)
-            memScoped {
-                val buf = allocArray<UByteVar>(bytesSize.toLong())
-                val written = alloc<ULongVar>()
-                mp_to_ubin(handle, buf.reinterpret(), bytesSize, written.ptr)
-                val count = written.value.toInt()
-                ByteArray(count) { buf[it].toByte() }
-            }
-        }
+        val magnitude = magnitudeToUnsignedBigEndian(this)
 
         if (sign > 0) {
             return if ((magnitude[0].toInt() and 0x80) != 0) {
-                byteArrayOf(0) + magnitude
+                ByteArray(magnitude.size + 1).also { result ->
+                    magnitude.copyInto(result, destinationOffset = 1)
+                }
             } else {
                 magnitude
             }
@@ -538,17 +531,29 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
             carry = sum shr 8
         }
         return if ((magnitude[0].toInt() and 0x80) == 0) {
-            byteArrayOf(0xFF.toByte()) + magnitude
+            ByteArray(magnitude.size + 1).also { result ->
+                result[0] = 0xFF.toByte()
+                magnitude.copyInto(result, destinationOffset = 1)
+            }
         } else {
             magnitude
         }
     }
 
-    actual fun toInt(): Int =
-        withBorrowedHandle { handle -> mp_get_i32(handle) }
+    actual fun toInt(): Int {
+        if (sign == 0) return 0
+        val lowBits = limbs[0].toUInt()
+        return if (sign > 0) lowBits.toInt() else (0u - lowBits).toInt()
+    }
 
-    actual fun toLong(): Long =
-        withBorrowedHandle { handle -> mp_get_i64(handle) }
+    actual fun toLong(): Long {
+        if (sign == 0) return 0L
+        val lowBits = if (size == 0) 0UL else {
+            val upperNibble = if (size > 1) limbs[1] and (UNSIGNED_LONG_UPPER_LIMB_EXCLUSIVE - 1UL) else 0UL
+            (upperNibble shl CANONICAL_LIMB_BITS) or limbs[0]
+        }
+        return if (sign > 0) lowBits.toLong() else (0UL - lowBits).toLong()
+    }
 
     actual fun toDouble(): Double = toString().toDouble()
 
@@ -574,17 +579,7 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
     actual fun toString(radix: Int): String {
         // JVM semantics: invalid radix falls back to radix 10
         val effectiveRadix = if (radix in 2..36) radix else 10
-        return withBorrowedHandle { handle ->
-            memScoped {
-                val sizeVar = alloc<IntVar>()
-                mp_radix_size(handle, effectiveRadix, sizeVar.ptr)
-                val stringSize = sizeVar.value
-                val buf = allocArray<ByteVar>(stringSize)
-                val written = alloc<ULongVar>()
-                mp_to_radix(handle, buf, stringSize.toULong(), written.ptr, effectiveRadix)
-                buf.toKString().lowercase()
-            }
-        }
+        return magnitudeToString(this, effectiveRadix)
     }
 
     actual override fun toString(): String = toString(10)
@@ -601,37 +596,25 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
 
     actual override fun hashCode(): Int {
         // Match java.math.BigInteger.hashCode():
-        // XOR each 32-bit word of big-endian magnitude with factor 31, then multiply by signum
+        // fold the big-endian magnitude into 32-bit words, then multiply by signum
         if (sign == 0) return 0
-        val bytes = toByteArray()
-        // Strip sign byte if present to get magnitude
-        val start = if (sign >= 0 && bytes[0] == 0.toByte() && bytes.size > 1) 1 else 0
-        val mag = if (sign >= 0) {
-            if (start == 1) bytes.copyOfRange(1, bytes.size) else bytes
-        } else {
-            withBorrowedHandle { handle ->
-                val bytesSize = mp_ubin_size(handle)
-                memScoped {
-                    val buf = allocArray<UByteVar>(bytesSize.toLong())
-                    val written = alloc<ULongVar>()
-                    mp_to_ubin(handle, buf.reinterpret(), bytesSize, written.ptr)
-                    val count = written.value.toInt()
-                    ByteArray(count) { buf[it].toByte() }
-                }
+        val magnitude = magnitudeToUnsignedBigEndian(this)
+        var hashCode = 0
+        var index = 0
+        val leadingBytes = magnitude.size % Int.SIZE_BYTES
+        if (leadingBytes != 0) {
+            repeat(leadingBytes) {
+                hashCode = (hashCode shl Byte.SIZE_BITS) or (magnitude[index++].toInt() and 0xFF)
             }
         }
-        val padded = if (mag.size % 4 != 0) {
-            ByteArray(((mag.size + 3) / 4) * 4 - mag.size) + mag
-        } else {
-            mag
-        }
-        var hashCode = 0
-        for (index in padded.indices step 4) {
-            val word = ((padded[index].toInt() and 0xFF) shl 24) or
-                ((padded[index + 1].toInt() and 0xFF) shl 16) or
-                ((padded[index + 2].toInt() and 0xFF) shl 8) or
-                (padded[index + 3].toInt() and 0xFF)
+        while (index < magnitude.size) {
+            val word = ((magnitude[index].toInt() and 0xFF) shl 24) or
+                ((magnitude[index + 1].toInt() and 0xFF) shl 16) or
+                ((magnitude[index + 2].toInt() and 0xFF) shl 8) or
+                (magnitude[index + 3].toInt() and 0xFF)
+
             hashCode = 31 * hashCode + word
+            index += Int.SIZE_BYTES
         }
         return hashCode * sign
     }
@@ -919,6 +902,9 @@ private val LONG_MILLER_RABIN_BASES = ulongArrayOf(
 
 private const val STRING_PARSE_WORD_BITS = 32
 private const val STRING_PARSE_WORD_MASK = 0xFFFFFFFFUL
+private const val STRING_FORMAT_WORD_BITS = 30
+private val STRING_FORMAT_WORD_MASK = (1UL shl STRING_FORMAT_WORD_BITS) - 1UL
+private val STRING_FORMAT_WORD_LIMIT = 1UL shl STRING_FORMAT_WORD_BITS
 private val STRING_BITS_PER_DIGIT = longArrayOf(
     0L, 0L,
     1024L, 1624L, 2048L, 2378L, 2648L, 2875L, 3072L, 3247L, 3402L, 3543L, 3672L,
@@ -945,6 +931,28 @@ private val STRING_LIMB_RADIX = ulongArrayOf(
     0x1000000000000000UL, 0xb38fc730f35d61UL, 0xf95c61a43d8800UL, 0x15702f27495705bUL,
     0x1d39d3e06400000UL,
 )
+private val STRING_FORMAT_DIGITS_PER_GROUP = IntArray(37).also { digitsPerGroup ->
+    for (radix in 2..36) {
+        val radixValue = radix.toULong()
+        var digits = 0
+        var power = 1UL
+        while (power <= STRING_FORMAT_WORD_LIMIT / radixValue) {
+            power *= radixValue
+            digits++
+        }
+        digitsPerGroup[radix] = digits
+    }
+}
+private val STRING_FORMAT_GROUP_RADIX = ULongArray(37).also { groupRadix ->
+    for (radix in 2..36) {
+        val radixValue = radix.toULong()
+        var power = 1UL
+        while (power <= STRING_FORMAT_WORD_LIMIT / radixValue) {
+            power *= radixValue
+        }
+        groupRadix[radix] = power
+    }
+}
 
 private inline fun fromStringConstructor(value: String, radix: Int, init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit) {
     withStringMetadata(value, radix) { sign, metaCursor, numDigits ->
@@ -1106,6 +1114,89 @@ private fun canonicalLimbsForMagnitude(magnitude: ULong): ULongArray {
     } else {
         ulongArrayOf(lower, upper)
     }
+}
+
+private fun magnitudeToUnsignedBigEndian(value: BigInteger): ByteArray {
+    if (value.size == 0) return ByteArray(0)
+    val byteCount = (magnitudeBitLength(value) + Byte.SIZE_BITS - 1) / Byte.SIZE_BITS
+    val bytes = ByteArray(byteCount)
+    var byteIndex = byteCount
+    var accumulator = 0UL
+    var accumulatorBits = 0
+    for (index in 0 until value.size) {
+        accumulator = accumulator or (value.limbs[index] shl accumulatorBits)
+        accumulatorBits += CANONICAL_LIMB_BITS
+        while (accumulatorBits >= Byte.SIZE_BITS && byteIndex > 0) {
+            bytes[--byteIndex] = accumulator.toByte()
+            accumulator = accumulator shr Byte.SIZE_BITS
+            accumulatorBits -= Byte.SIZE_BITS
+        }
+    }
+    while (byteIndex > 0) {
+        bytes[--byteIndex] = accumulator.toByte()
+        accumulator = accumulator shr Byte.SIZE_BITS
+    }
+    return bytes
+}
+
+private fun magnitudeBitLength(value: BigInteger): Int {
+    if (value.size == 0) return 0
+    val highDigitBits = ULong.SIZE_BITS - value.limbs[value.size - 1].countLeadingZeroBits()
+    return (((value.size - 1).toLong() * CANONICAL_LIMB_BITS) + highDigitBits.toLong()).toInt()
+}
+
+private fun magnitudeToString(value: BigInteger, radix: Int): String {
+    val sign = value.signum()
+    if (sign == 0) return "0"
+    value.ifMagnitudeFitsInULong { magnitude ->
+        val digits = magnitude.toString(radix)
+        return if (sign < 0) "-$digits" else digits
+    }
+
+    val digitsPerGroup = STRING_FORMAT_DIGITS_PER_GROUP[radix]
+    val groupRadix = STRING_FORMAT_GROUP_RADIX[radix]
+    val magnitude = value.limbs.copyOf(value.size)
+    var size = value.size
+    val groups = ArrayList<String>()
+    while (size > 0) {
+        val remainder = destructiveDivRemMagnitudeByGroup(magnitude, size, groupRadix)
+        while (size > 0 && magnitude[size - 1] == 0UL) {
+            size--
+        }
+        val digits = remainder.toString(radix)
+        groups.add(if (size == 0) digits else digits.padStart(digitsPerGroup, '0'))
+    }
+
+    return buildString(groups.sumOf { it.length } + if (sign < 0) 1 else 0) {
+        if (sign < 0) append('-')
+        for (index in groups.indices.reversed()) {
+            append(groups[index])
+        }
+    }
+}
+
+private fun destructiveDivRemMagnitudeByGroup(
+    magnitude: ULongArray,
+    size: Int,
+    divisor: ULong,
+): ULong {
+    var remainder = 0UL
+    for (index in size - 1 downTo 0) {
+        val limb = magnitude[index]
+        val high = limb shr STRING_FORMAT_WORD_BITS
+        val low = limb and STRING_FORMAT_WORD_MASK
+
+        val upper = (remainder shl STRING_FORMAT_WORD_BITS) or high
+        val quotientHigh = upper / divisor
+        val upperRemainder = upper % divisor
+
+        val lower = (upperRemainder shl STRING_FORMAT_WORD_BITS) or low
+        val quotientLow = lower / divisor
+        remainder = lower % divisor
+
+        magnitude[index] = (quotientHigh shl STRING_FORMAT_WORD_BITS) or quotientLow
+    }
+    return remainder
 }
 
 private inline fun constructPositiveBigEndian(

@@ -1,0 +1,80 @@
+=== BASELINE — 2026-04-18 16:03 ===
+Source:
+- benchmarks/build/reports/benchmarks/conversionSmoke/2026-04-18T16.03.36.179982/macosArm64.json
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+signumMethod                             0.005 / 0.009 / 0.005
+toByteArrayMethod                        0.217 / 0.418 / 1.380
+toDoubleMethod                           1.850 / 10.435 / 80.585
+toIntMethod                              0.061 / 0.061 / 0.061
+toLongMethod                             0.062 / 0.061 / 0.062
+toStringMethod                           1.388 / 8.887 / 78.384
+toStringRadixMethod                      0.756 / 3.158 / 11.193
+
+Initial target:
+- `toByteArray`, `toInt`, `toLong`, and `toString(radix)` were still paying Kotlin/Native -> LibTomMath
+  FFI overhead for value export even though the native BigInteger already stores canonical 60-bit limbs in Kotlin.
+- `hashCode` and `toDouble` were expected to move with the same work because `hashCode` exported the magnitude
+  through LibTomMath and `toDouble` goes through decimal string formatting.
+
+=== RUN 2 — 2026-04-18 ===
+Change: Replaced the remaining conversion-side LibTomMath export calls with limb-native Kotlin code.
+- `toByteArray` now writes unsigned big-endian bytes directly from the canonical limb array and applies
+  two's-complement fixup locally for negative values.
+- `toInt` / `toLong` now read the low 32 / 64 bits directly from the canonical limbs and preserve JVM wraparound semantics.
+- `toString(radix)` now formats from Kotlin-owned limbs using grouped division with a `ULong` fast path for small magnitudes.
+- `hashCode` now folds the magnitude directly instead of round-tripping through LibTomMath export.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test`
+- `./gradlew :benchmarks:macosArm64ConversionSmokeBenchmark`
+- Note: the latest `conversionSmoke` report directory on this host only emitted `jvm.json`, so the macosArm64
+  numbers below are transcribed from the Gradle benchmark summary printed by the validated rerun.
+
+Key deltas versus baseline:
+- `toByteArrayMethod`:   0.217/0.418/1.380 -> 0.028/0.045/0.126 us/op
+- `toIntMethod`:         0.061/0.061/0.061 -> 0.010/0.010/0.010 us/op
+- `toLongMethod`:        0.062/0.061/0.062 -> 0.011/0.011/0.011 us/op
+- `toStringMethod`:      1.388/8.887/78.384 -> 0.195/1.659/7.543 us/op
+- `toStringRadixMethod`: 0.756/3.158/11.193 -> 0.159/1.601/7.124 us/op
+- `toDoubleMethod`:      1.850/10.435/80.585 -> 0.630/3.045/8.978 us/op
+
+Observed effect:
+- `toByteArrayMethod` is about 7.9x / 9.3x / 11.0x faster across small / medium / large.
+- `toIntMethod` is about 6.2x / 6.3x / 6.3x faster.
+- `toLongMethod` is about 5.6x / 5.5x / 5.6x faster.
+- `toStringMethod` is about 7.1x / 5.4x / 10.4x faster.
+- `toStringRadixMethod` is about 4.8x / 2.0x / 1.6x faster.
+- `toDoubleMethod` moved with the decimal formatting path, improving by about 2.9x / 3.4x / 9.0x.
+- `signumMethod` stayed effectively flat, which is expected because it never used LibTomMath.
+
+=== FINAL — 2026-04-18 (macosArm64 conversion smoke benchmark) ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test`
+- `./gradlew :benchmarks:macosArm64ConversionSmokeBenchmark`
+- macosArm64 summary transcribed from the validated rerun's console output
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+signumMethod                             0.005 / 0.005 / 0.005
+toByteArrayMethod                        0.028 / 0.045 / 0.126
+toDoubleMethod                           0.630 / 3.045 / 8.978
+toIntMethod                              0.010 / 0.010 / 0.010
+toLongMethod                             0.011 / 0.011 / 0.011
+toStringMethod                           0.195 / 1.659 / 7.543
+toStringRadixMethod                      0.159 / 1.601 / 7.124
+
+Key confirmed wins versus the original smoke baseline:
+- `toByteArrayMethod`:   0.217/0.418/1.380 -> 0.028/0.045/0.126
+- `toDoubleMethod`:      1.850/10.435/80.585 -> 0.630/3.045/8.978
+- `toIntMethod`:         0.061/0.061/0.061 -> 0.010/0.010/0.010
+- `toLongMethod`:        0.062/0.061/0.062 -> 0.011/0.011/0.011
+- `toStringMethod`:      1.388/8.887/78.384 -> 0.195/1.659/7.543
+- `toStringRadixMethod`: 0.756/3.158/11.193 -> 0.159/1.601/7.124
+
+Notes:
+- This optimization is tightly scoped to the conversion/export surface in `BigInteger.native.kt`; arithmetic and
+  number-theory behavior stayed green under the full native test suite.
+- `toDoubleMethod` improved because the implementation still goes through decimal formatting; there was no separate
+  floating-point-specific optimization in this change.
