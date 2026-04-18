@@ -334,12 +334,12 @@ private fun countLeadingZeroBits30(value: ULong): Int {
 
 internal fun divideSmall(resultSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
     val (q, _) = divRemMagnitude(dividend, divisor)
-    return if (q.sign == 0) ZERO else BigInteger(resultSign, q.size, q.limbs)
+    return if (q.signum() == 0) ZERO else BigInteger(resultSign, q.size, q.limbs)
 }
 
 internal fun remainderSmall(dividendSign: Int, dividend: BigInteger, divisor: BigInteger): BigInteger {
     val (_, r) = divRemMagnitude(dividend, divisor)
-    return if (r.sign == 0) ZERO else BigInteger(dividendSign, r.size, r.limbs)
+    return if (r.signum() == 0) ZERO else BigInteger(dividendSign, r.size, r.limbs)
 }
 
 internal fun multiplySmall(sign: Int, left: BigInteger, right: BigInteger): BigInteger {
