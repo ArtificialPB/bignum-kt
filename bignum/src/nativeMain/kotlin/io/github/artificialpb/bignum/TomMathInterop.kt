@@ -4,21 +4,6 @@ import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
-internal fun copyCanonicalLimbs(handle: CPointer<mp_int>): ULongArray =
-    try {
-        val used = handle.pointed.used
-        if (used == 0) {
-            EMPTY_LIMBS
-        } else {
-            val dp = handle.pointed.dp!!
-            ULongArray(used) { index -> dp[index] and CANONICAL_LIMB_MASK }
-        }
-    } catch (t: Throwable) {
-        freeMp(handle)
-        throw t
-    }
-
-@OptIn(ExperimentalForeignApi::class)
 internal inline fun <R> withBorrowedHandles(
     first: BigInteger,
     second: BigInteger,

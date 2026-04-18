@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalForeignApi::class)
+
 package io.github.artificialpb.bignum
 
 import io.github.artificialpb.bignum.tommath.*
@@ -16,16 +17,26 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
     }
 
     internal constructor(handle: CPointer<mp_int>) : this() {
-        val sign = when {
-            handle.pointed.used == 0 -> 0
-            handle.pointed.sign == MP_NEG -> -1
-            else -> 1
-        }
-        val size = handle.pointed.used
-        val limbs = copyCanonicalLimbs(handle)
-        freeMp(handle)
+        try {
+            val sign = when {
+                handle.pointed.used == 0 -> 0
+                handle.pointed.sign == MP_NEG -> -1
+                else -> 1
+            }
 
-        initialize(sign, size, limbs)
+            val size = handle.pointed.used
+            val used = handle.pointed.used
+            val limbs = if (used == 0) {
+                EMPTY_LIMBS
+            } else {
+                val dp = handle.pointed.dp!!
+                ULongArray(used) { index -> dp[index] and CANONICAL_LIMB_MASK }
+            }
+
+            initialize(sign, size, limbs)
+        } finally {
+            freeMp(handle)
+        }
     }
 
     actual constructor(value: String) : this(value, 10)
@@ -44,9 +55,10 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
 
         @Suppress("IntroduceWhenSubject")
         when {
-            len == 0 && bytes[off] >= 0-> {
+            len == 0 && bytes[off] >= 0 -> {
                 initialize(0, 0, EMPTY_LIMBS)
             }
+
             len == 0 -> {
                 val magnitude = -(((bytes[off - 1].toInt().inv()) and 0xFF) + 1).toLong()
                 if (magnitude == 0L) {
@@ -56,6 +68,7 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
                     initialize(if (magnitude < 0) -1 else 1, limbs.size, limbs)
                 }
             }
+
             else -> {
                 val end = off + len
                 when {
@@ -609,9 +622,9 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         }
         while (index < magnitude.size) {
             val word = ((magnitude[index].toInt() and 0xFF) shl 24) or
-                ((magnitude[index + 1].toInt() and 0xFF) shl 16) or
-                ((magnitude[index + 2].toInt() and 0xFF) shl 8) or
-                (magnitude[index + 3].toInt() and 0xFF)
+                    ((magnitude[index + 1].toInt() and 0xFF) shl 16) or
+                    ((magnitude[index + 2].toInt() and 0xFF) shl 8) or
+                    (magnitude[index + 3].toInt() and 0xFF)
 
             hashCode = 31 * hashCode + word
             index += Int.SIZE_BYTES
@@ -747,6 +760,7 @@ private inline fun BigInteger.ifMagnitudeFitsInULong(block: (ULong) -> Unit) {
             if (upper >= UNSIGNED_LONG_UPPER_LIMB_EXCLUSIVE) return
             block((upper shl CANONICAL_LIMB_BITS) or limbs[0])
         }
+
         else -> return
     }
 }
@@ -954,7 +968,11 @@ private val STRING_FORMAT_GROUP_RADIX = ULongArray(37).also { groupRadix ->
     }
 }
 
-private inline fun fromStringConstructor(value: String, radix: Int, init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit) {
+private inline fun fromStringConstructor(
+    value: String,
+    radix: Int,
+    init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit
+) {
     withStringMetadata(value, radix) { sign, metaCursor, numDigits ->
         if (numDigits == 0) {
             init(0, 0, EMPTY_LIMBS)
@@ -994,7 +1012,11 @@ private inline fun fromStringConstructor(value: String, radix: Int, init: (sign:
     }
 }
 
-private inline fun withStringMetadata(value: String, radix: Int, consumer: (sign: Int, cursor: Int, numDigits: Int) -> Unit) {
+private inline fun withStringMetadata(
+    value: String,
+    radix: Int,
+    consumer: (sign: Int, cursor: Int, numDigits: Int) -> Unit
+) {
     if (radix !in 2..36) throw NumberFormatException("Radix out of range: $radix")
     val length = value.length
     if (length == 0) throw NumberFormatException("Zero length BigInteger")
