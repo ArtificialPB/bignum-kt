@@ -122,3 +122,53 @@ Notes:
   but materially faster on the plain decimal constructor/factory hot path while using one parser
   structure across radices
 - the benchmark report path above was updated in place by the benchmark task on this host
+
+=== RUN 5 — 2026-04-18 ===
+Change: Follow-up constructor cleanup and allocation trimming after the direct native parsing work.
+The latest refactor keeps the byte and string constructors on the Kotlin-owned canonical limb path
+while simplifying constructor plumbing and reducing overhead in the shared initialization path.
+
+Validation source:
+- user-provided macosArm64 full construction benchmark summary
+
+constructorBytesSlice: 0.046/0.070/0.159 → 0.033/0.055/0.124 us/op
+constructorBytes:      0.042/0.066/0.153 → 0.031/0.051/0.122 us/op
+constructorStringRadix:0.269/1.085/3.875 → 0.216/0.901/3.252 us/op
+constructorString:     0.313/1.285/4.559 → 0.254/1.078/3.825 us/op
+factoryString:         0.317/1.300/4.520 → 0.254/1.084/3.760 us/op
+
+Observed effect:
+- `constructorBytesSlice` improved again by about 28% / 21% / 22% across small / medium / large
+- `constructorBytes` improved again by about 26% / 23% / 20%
+- `constructorStringRadix` improved again by about 20% / 17% / 16%
+- `constructorString` improved again by about 19% / 16% / 16%
+- `factoryString` moved with the decimal constructor as expected, improving by about 20% / 17% / 17%
+- `factoryInt` and `factoryLong` stayed effectively flat and still read as noise-level movement
+
+=== FINAL — 2026-04-18 (macosArm64 full construction benchmark, constructor follow-up) ===
+Validation source:
+- user-provided macosArm64 full construction benchmark summary
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytesSlice                         0.033 / 0.055 / 0.124
+constructorBytes                              0.031 / 0.051 / 0.122
+constructorStringRadix                        0.216 / 0.901 / 3.252
+constructorString                             0.254 / 1.078 / 3.825
+factoryInt                                    0.034 / 0.024 / 0.025
+factoryLong                                   0.025 / 0.024 / 0.024
+factoryString                                 0.254 / 1.084 / 3.760
+
+Key confirmed wins versus the original smoke baseline:
+- `constructorBytesSlice`: 0.219/0.493/1.564 → 0.033/0.055/0.124
+- `constructorBytes`:      0.193/0.467/1.525 → 0.031/0.051/0.122
+- `constructorStringRadix`:0.425/1.603/7.595 → 0.216/0.901/3.252
+- `constructorString`:     0.493/2.198/9.000 → 0.254/1.078/3.825
+- `factoryString`:         0.473/1.888/9.047 → 0.254/1.084/3.760
+
+Notes:
+- this run improves both the byte constructors and the generic string constructor again without
+  giving back the broad radix support from RUN 4
+- the decimal constructor and factory are now materially below the 4 us/op mark on the large profile
+- `factoryInt` small-profile movement regressed relative to the prior full run, but the medium/large
+  samples stayed flat and the constructor-focused wins remained strong across the full suite

@@ -4,17 +4,6 @@ import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
 
 @OptIn(ExperimentalForeignApi::class)
-internal fun signumFromHandle(handle: CPointer<mp_int>): Int {
-    if (handle.pointed.used == 0) return 0
-    return if (handle.pointed.sign == MP_NEG) -1 else 1
-}
-
-@OptIn(ExperimentalForeignApi::class)
-internal fun CPointer<mp_int>.toBigInteger(): BigInteger {
-    return BigInteger(this)
-}
-
-@OptIn(ExperimentalForeignApi::class)
 internal fun copyCanonicalLimbs(handle: CPointer<mp_int>): ULongArray =
     try {
         val used = handle.pointed.used
@@ -22,9 +11,7 @@ internal fun copyCanonicalLimbs(handle: CPointer<mp_int>): ULongArray =
             EMPTY_LIMBS
         } else {
             val dp = handle.pointed.dp!!
-            ULongArray(used) { index ->
-                dp[index] and CANONICAL_LIMB_MASK
-            }
+            ULongArray(used) { index -> dp[index] and CANONICAL_LIMB_MASK }
         }
     } catch (t: Throwable) {
         freeMp(handle)
@@ -66,7 +53,7 @@ internal inline fun <R> BigInteger.withBorrowedHandle(block: (CPointer<mp_int>) 
             val handle = alloc<mp_int>()
             handle.used = size
             handle.alloc = storage.size
-            handle.sign = if (sign < 0) MP_NEG else MP_ZPOS
+            handle.sign = if (signum() < 0) MP_NEG else MP_ZPOS
             handle.dp = pinned.addressOf(0).reinterpret()
             block(handle.ptr)
         }

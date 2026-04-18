@@ -1,27 +1,72 @@
+@file:OptIn(ExperimentalForeignApi::class)
 package io.github.artificialpb.bignum
 
 import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
 
-private class BigIntegerConstruction(
-    val sign: Int,
-    val size: Int,
-    val limbs: ULongArray,
-)
+actual class BigInteger private constructor() : Comparable<BigInteger> {
+    private var sign: Int = Int.MIN_VALUE
+    internal var size: Int = Int.MIN_VALUE
+        private set
+    internal var limbs: ULongArray = EMPTY_LIMBS
+        private set
 
-@OptIn(ExperimentalForeignApi::class)
-actual class BigInteger internal constructor(
-    internal val sign: Int,
-    internal val size: Int,
-    internal val limbs: ULongArray,
-) : Comparable<BigInteger> {
-    private constructor(construction: BigIntegerConstruction) : this(
-        construction.sign,
-        construction.size,
-        construction.limbs,
-    )
+    internal constructor(sign: Int, size: Int, limbs: ULongArray) : this() {
+        initialize(sign, size, limbs)
+    }
 
-    init {
+    internal constructor(handle: CPointer<mp_int>) : this() {
+        val sign = when {
+            handle.pointed.used == 0 -> 0
+            handle.pointed.sign == MP_NEG -> -1
+            else -> 1
+        }
+        val size = handle.pointed.used
+        val limbs = copyCanonicalLimbs(handle)
+        freeMp(handle)
+
+        initialize(sign, size, limbs)
+    }
+
+    actual constructor(value: String) : this(value, 10)
+
+    actual constructor(value: String, radix: Int) : this() {
+        fromStringConstructor(value, radix, ::initialize)
+    }
+
+    actual constructor(bytes: ByteArray) : this(bytes, 0, bytes.size)
+
+    actual constructor(bytes: ByteArray, off: Int, len: Int) : this() {
+        if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
+            throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
+        }
+        if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
+
+        @Suppress("IntroduceWhenSubject")
+        when {
+            len == 0 && bytes[off] >= 0-> {
+                initialize(0, 0, EMPTY_LIMBS)
+            }
+            len == 0 -> {
+                val magnitude = -(((bytes[off - 1].toInt().inv()) and 0xFF) + 1).toLong()
+                if (magnitude == 0L) {
+                    initialize(0, 0, EMPTY_LIMBS)
+                } else {
+                    val limbs = canonicalLimbsForMagnitude(longMagnitude(magnitude))
+                    initialize(if (magnitude < 0) -1 else 1, limbs.size, limbs)
+                }
+            }
+            else -> {
+                val end = off + len
+                when {
+                    (bytes[off].toInt() and 0x80) == 0 -> constructPositiveBigEndian(bytes, off, end, ::initialize)
+                    else -> constructNegativeTwosComplement(bytes, off, end, ::initialize)
+                }
+            }
+        }
+    }
+
+    private fun initialize(sign: Int, size: Int, limbs: ULongArray) {
         require(sign in -1..1) { "Invalid signum: $sign" }
         require(size in 0..limbs.size) { "Invalid magnitude size: $size for capacity ${limbs.size}" }
         if (sign == 0) {
@@ -30,25 +75,11 @@ actual class BigInteger internal constructor(
             require(size > 0) { "Non-zero BigInteger must have non-empty logical magnitude" }
             require(limbs[size - 1] != 0UL) { "Magnitude is not normalized" }
         }
+
+        this.sign = sign
+        this.size = size
+        this.limbs = limbs
     }
-
-    internal constructor(handle: CPointer<mp_int>) : this(
-        signumFromHandle(handle),
-        handle.pointed.used,
-        copyCanonicalLimbs(handle),
-    ) {
-        freeMp(handle)
-    }
-
-    actual constructor(value: String) : this(constructFromString(value, 10))
-
-    actual constructor(value: String, radix: Int) : this(constructFromString(value, radix))
-
-    actual constructor(bytes: ByteArray) : this(constructFromTwosComplement(bytes))
-
-    actual constructor(bytes: ByteArray, off: Int, len: Int) : this(
-        constructFromTwosComplementSlice(bytes, off, len)
-    )
 
     // Arithmetic
 
@@ -93,7 +124,7 @@ actual class BigInteger internal constructor(
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
             val result = allocMp()
             checkMp(mp_mul(leftHandle, rightHandle, result), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -108,7 +139,7 @@ actual class BigInteger internal constructor(
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
             val result = allocMp()
             checkMp(mp_div(leftHandle, rightHandle, result, null), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -181,7 +212,7 @@ actual class BigInteger internal constructor(
         return withBorrowedHandles(this, modulus) { handle, modulusHandle ->
             val result = allocMp()
             checkMp(mp_mod(handle, modulusHandle, result), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -196,13 +227,13 @@ actual class BigInteger internal constructor(
             return withBorrowedHandles(inverse, absExponent, modulus) { inverseHandle, exponentHandle, modulusHandle ->
                 val result = allocMp()
                 checkMp(mp_exptmod(inverseHandle, exponentHandle, modulusHandle, result), result)
-                result.toBigInteger()
+                BigInteger(result)
             }
         }
         return withBorrowedHandles(this, exponent, modulus) { handle, exponentHandle, modulusHandle ->
             val result = allocMp()
             checkMp(mp_exptmod(handle, exponentHandle, modulusHandle, result), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -218,7 +249,7 @@ actual class BigInteger internal constructor(
                 freeMp(result)
                 throw ArithmeticException("BigInteger not invertible")
             }
-            result.toBigInteger()
+            BigInteger(result)
         }
         // For negative input: (-a)^-1 mod m = m - (a^-1 mod m), when a^-1 != 0
         if (sign < 0 && inverse.sign != 0) {
@@ -243,7 +274,7 @@ actual class BigInteger internal constructor(
             val quotient = allocMp()
             val remainder = allocMp()
             checkMp(mp_div(handle, otherHandle, quotient, remainder), quotient, remainder)
-            arrayOf(quotient.toBigInteger(), remainder.toBigInteger())
+            arrayOf(BigInteger(quotient), BigInteger(remainder))
         }
     }
 
@@ -253,7 +284,7 @@ actual class BigInteger internal constructor(
         return withBorrowedHandles(this, other) { handle, otherHandle ->
             val result = allocMp()
             checkMp(mp_gcd(handle, otherHandle, result), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -451,7 +482,7 @@ actual class BigInteger internal constructor(
             checkMp(mp_copy(handle, result), result)
             val defaultRounds = primeTrialsForCertainty(DEFAULT_PRIME_CERTAINTY, bitLength())
             checkMp(mp_prime_next_prime(result, defaultRounds, 0), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -463,7 +494,7 @@ actual class BigInteger internal constructor(
         return withBorrowedHandle { handle ->
             val result = allocMp()
             checkMp(mp_sqrt(handle, result), result)
-            result.toBigInteger()
+            BigInteger(result)
         }
     }
 
@@ -602,30 +633,30 @@ actual class BigInteger internal constructor(
 
 @OptIn(ExperimentalForeignApi::class)
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
-    if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
-    if (sign == 0) return ZERO
+    if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
+    if (signum() == 0) return ZERO
     if (size <= SCHOOLBOOK_DIV_THRESHOLD && other.size <= SCHOOLBOOK_DIV_THRESHOLD) {
-        return remainderSmall(sign, this, other)
+        return remainderSmall(signum(), this, other)
     }
     return withBorrowedHandles(this, other) { handle, otherHandle ->
         val result = allocMp()
         checkMp(mp_div(handle, otherHandle, null, result), result)
-        result.toBigInteger()
+        BigInteger(result)
     }
 }
 
 actual operator fun BigInteger.unaryMinus(): BigInteger =
-    if (sign == 0) this else BigInteger(-sign, size, limbs)
+    if (signum() == 0) this else BigInteger(-signum(), size, limbs)
 
 // inc/dec
 
-actual operator fun BigInteger.inc(): BigInteger = when (sign) {
+actual operator fun BigInteger.inc(): BigInteger = when (signum()) {
     0 -> ONE
     1 -> addMagnitudeOne(1, this)
     else -> subtractMagnitudeOne(-1, this)
 }
 
-actual operator fun BigInteger.dec(): BigInteger = when (sign) {
+actual operator fun BigInteger.dec(): BigInteger = when (signum()) {
     0 -> MINUS_ONE
     -1 -> addMagnitudeOne(-1, this)
     else -> subtractMagnitudeOne(1, this)
@@ -635,15 +666,15 @@ actual operator fun BigInteger.dec(): BigInteger = when (sign) {
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun BigInteger.lcm(other: BigInteger): BigInteger {
-    if (this.sign == 0 || other.sign == 0) return ZERO
+    if (this.signum() == 0 || other.signum() == 0) return ZERO
     return withBorrowedHandles(this, other) { handle, otherHandle ->
         val result = allocMp()
         checkMp(mp_lcm(handle, otherHandle, result), result)
         // mp_lcm always returns positive; JVM semantics: (this / gcd) * other preserves sign
-        if (this.sign * other.sign < 0) {
+        if (this.signum() * other.signum() < 0) {
             mp_neg(result, result)
         }
-        result.toBigInteger()
+        BigInteger(result)
     }
 }
 
@@ -877,7 +908,6 @@ private val LONG_MILLER_RABIN_BASES = ulongArrayOf(
     2UL, 325UL, 9375UL, 28178UL, 450775UL, 9780504UL, 1795265022UL
 )
 
-private val ZERO_CONSTRUCTION = BigIntegerConstruction(0, 0, EMPTY_LIMBS)
 private const val STRING_PARSE_WORD_BITS = 32
 private const val STRING_PARSE_WORD_MASK = 0xFFFFFFFFUL
 private val STRING_BITS_PER_DIGIT = longArrayOf(
@@ -907,44 +937,47 @@ private val STRING_LIMB_RADIX = ulongArrayOf(
     0x1d39d3e06400000UL,
 )
 
-private data class ParsedStringMetadata(
-    val sign: Int,
-    val cursor: Int,
-    val numDigits: Int,
-)
+private inline fun fromStringConstructor(value: String, radix: Int, init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit) {
+    withStringMetadata(value, radix) { sign, metaCursor, numDigits ->
+        if (numDigits == 0) {
+            init(0, 0, EMPTY_LIMBS)
+            return@withStringMetadata
+        }
 
-private fun constructFromString(value: String, radix: Int): BigIntegerConstruction {
-    val metadata = parseStringMetadata(value, radix) ?: return ZERO_CONSTRUCTION
-    val numDigits = metadata.numDigits
-    val numBits = ((numDigits.toLong() * STRING_BITS_PER_DIGIT[radix]) ushr 10) + 1L
-    if (numBits > MAX_BIT_LENGTH) {
-        throw ArithmeticException("BigInteger would overflow supported range")
-    }
+        val numBits = ((numDigits.toLong() * STRING_BITS_PER_DIGIT[radix]) ushr 10) + 1L
+        if (numBits > MAX_BIT_LENGTH) {
+            throw ArithmeticException("BigInteger would overflow supported range")
+        }
 
-    val estimatedLimbs = ((numBits + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt()
-    val magnitude = ULongArray(estimatedLimbs + 1)
-    var size = 1
-    var cursor = metadata.cursor
-    val digitsPerGroup = STRING_DIGITS_PER_LIMB[radix]
-    var firstGroupLen = numDigits % digitsPerGroup
-    if (firstGroupLen == 0) {
-        firstGroupLen = digitsPerGroup
+        val estimatedLimbs = ((numBits + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt()
+        val magnitude = ULongArray(estimatedLimbs + 1)
+        var size = 1
+        var cursor = metaCursor
+        val digitsPerGroup = STRING_DIGITS_PER_LIMB[radix]
+        var firstGroupLen = numDigits % digitsPerGroup
+        if (firstGroupLen == 0) {
+            firstGroupLen = digitsPerGroup
+        }
+        magnitude[0] = parseDigitGroup(value, cursor, cursor + firstGroupLen, radix)
+        cursor += firstGroupLen
+        val superRadix = STRING_LIMB_RADIX[radix]
+        while (cursor < value.length) {
+            val groupEnd = cursor + digitsPerGroup
+            val groupValue = parseDigitGroup(value, cursor, groupEnd, radix)
+            size = destructiveMulAdd(magnitude, size, superRadix, groupValue)
+            cursor = groupEnd
+        }
+        val normalizedSize = normalizeMagnitudeSize(size, magnitude)
+        if (normalizedSize == 0) {
+            init(0, 0, EMPTY_LIMBS)
+            return@withStringMetadata
+        }
+
+        init(sign, normalizedSize, magnitude)
     }
-    magnitude[0] = parseDigitGroup(value, cursor, cursor + firstGroupLen, radix)
-    cursor += firstGroupLen
-    val superRadix = STRING_LIMB_RADIX[radix]
-    while (cursor < value.length) {
-        val groupEnd = cursor + digitsPerGroup
-        val groupValue = parseDigitGroup(value, cursor, groupEnd, radix)
-        size = destructiveMulAdd(magnitude, size, superRadix, groupValue)
-        cursor = groupEnd
-    }
-    val normalizedSize = normalizeMagnitudeSize(size, magnitude)
-    if (normalizedSize == 0) return ZERO_CONSTRUCTION
-    return BigIntegerConstruction(metadata.sign, normalizedSize, magnitude)
 }
 
-private fun parseStringMetadata(value: String, radix: Int): ParsedStringMetadata? {
+private inline fun withStringMetadata(value: String, radix: Int, consumer: (sign: Int, cursor: Int, numDigits: Int) -> Unit) {
     if (radix !in 2..36) throw NumberFormatException("Radix out of range: $radix")
     val length = value.length
     if (length == 0) throw NumberFormatException("Zero length BigInteger")
@@ -973,8 +1006,7 @@ private fun parseStringMetadata(value: String, radix: Int): ParsedStringMetadata
         if (digit != 0) break
         cursor++
     }
-    if (cursor == length) return null
-    return ParsedStringMetadata(sign, cursor, length - cursor)
+    return consumer(sign, cursor, length - cursor)
 }
 
 private fun parseDigitGroup(value: String, start: Int, end: Int, radix: Int): ULong {
@@ -1014,7 +1046,7 @@ private fun destructiveMulAdd(
         val limbHigh = limb shr STRING_PARSE_WORD_BITS
         val lowProduct = limbLow * multiplierLow
         val crossProduct = limbLow * multiplierHigh + limbHigh * multiplierLow
-        var low64 = lowProduct + ((crossProduct and STRING_PARSE_WORD_MASK) shl STRING_PARSE_WORD_BITS)
+        val low64 = lowProduct + ((crossProduct and STRING_PARSE_WORD_MASK) shl STRING_PARSE_WORD_BITS)
         var high64 = limbHigh * multiplierHigh + (crossProduct shr STRING_PARSE_WORD_BITS)
         if (low64 < lowProduct) {
             high64++
@@ -1050,51 +1082,6 @@ private fun destructiveMulAdd(
     return resultSize
 }
 
-private fun constructFromTwosComplement(bytes: ByteArray): BigIntegerConstruction {
-    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
-    return constructFromTwosComplementRange(bytes, 0, bytes.size)
-}
-
-private fun constructFromTwosComplementSlice(
-    bytes: ByteArray,
-    off: Int,
-    len: Int,
-): BigIntegerConstruction {
-    if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
-        throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
-    }
-    if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
-
-    if (len == 0) {
-        val leadingByte = bytes[off]
-        if (leadingByte >= 0) {
-            return ZERO_CONSTRUCTION
-        }
-        val magnitude = ((bytes[off - 1].toInt().inv()) and 0xFF) + 1
-        return constructFromLong(-magnitude.toLong())
-    }
-
-    return constructFromTwosComplementRange(bytes, off, off + len)
-}
-
-private fun constructFromTwosComplementRange(
-    bytes: ByteArray,
-    start: Int,
-    end: Int,
-): BigIntegerConstruction =
-    if ((bytes[start].toInt() and 0x80) == 0) {
-        constructPositiveBigEndian(bytes, start, end)
-    } else {
-        constructNegativeTwosComplement(bytes, start, end)
-    }
-
-private fun constructFromLong(value: Long): BigIntegerConstruction {
-    if (value == 0L) return ZERO_CONSTRUCTION
-    val sign = if (value < 0) -1 else 1
-    val limbs = canonicalLimbsForMagnitude(longMagnitude(value))
-    return BigIntegerConstruction(sign, limbs.size, limbs)
-}
-
 private fun longMagnitude(value: Long): ULong = when {
     value >= 0L -> value.toULong()
     value == Long.MIN_VALUE -> 1UL shl 63
@@ -1112,16 +1099,20 @@ private fun canonicalLimbsForMagnitude(magnitude: ULong): ULongArray {
     }
 }
 
-private fun constructPositiveBigEndian(
+private inline fun constructPositiveBigEndian(
     bytes: ByteArray,
     start: Int,
     end: Int,
-): BigIntegerConstruction {
+    init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit,
+) {
     var first = start
     while (first < end && bytes[first] == 0.toByte()) {
         first++
     }
-    if (first == end) return ZERO_CONSTRUCTION
+    if (first == end) {
+        init(0, 0, EMPTY_LIMBS)
+        return
+    }
     val byteCount = end - first
     val limbs = ULongArray(((byteCount.toLong() * 8 + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt())
     var limbIndex = 0
@@ -1140,15 +1131,19 @@ private fun constructPositiveBigEndian(
         limbs[limbIndex++] = accumulator
     }
     val size = normalizeMagnitudeSize(limbIndex, limbs)
-    if (size == 0) return ZERO_CONSTRUCTION
-    return BigIntegerConstruction(1, size, limbs)
+    if (size == 0) {
+        init(0, 0, EMPTY_LIMBS)
+        return
+    }
+    init(1, size, limbs)
 }
 
-private fun constructNegativeTwosComplement(
+private inline fun constructNegativeTwosComplement(
     bytes: ByteArray,
     start: Int,
     end: Int,
-): BigIntegerConstruction {
+    init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit,
+) {
     val byteCount = end - start
     val limbs = ULongArray(((byteCount.toLong() * 8 + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt())
     var limbIndex = 0
@@ -1170,8 +1165,11 @@ private fun constructNegativeTwosComplement(
         limbs[limbIndex++] = accumulator
     }
     val size = normalizeMagnitudeSize(limbIndex, limbs)
-    if (size == 0) return ZERO_CONSTRUCTION
-    return BigIntegerConstruction(-1, size, limbs)
+    if (size == 0) {
+        init(0, 0, EMPTY_LIMBS)
+        return
+    }
+    init(-1, size, limbs)
 }
 
 // Magnitude utilities
