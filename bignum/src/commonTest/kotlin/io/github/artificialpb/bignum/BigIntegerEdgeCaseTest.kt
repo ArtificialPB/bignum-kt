@@ -638,6 +638,8 @@ class PrimalityStressEdgeCaseTest : FunSpec({
 
     val mersenne127 = "170141183460469231731687303715884105727" // 2^127 - 1
     val mersenne127Squared = "28948022309329048855892746252171976962977213799489202546401021394546514198529"
+    val maxLongPrime = "9223372036854775783"
+    val nextPrimeAboveMaxLong = "9223372036854775837"
 
     context("isProbablePrime rejects pseudoprimes and handles large values") {
         withData(
@@ -669,6 +671,16 @@ class PrimalityStressEdgeCaseTest : FunSpec({
         }
     }
 
+    context("Long fast path stays correct near Long.MAX_VALUE") {
+        withData(
+            BoolCase(maxLongPrime, true),
+            BoolCase("9223372036854775785", false),
+            BoolCase("9223372036854775807", false),
+        ) { (input, expected) ->
+            BigInteger(input).isProbablePrime(100) shouldBe expected
+        }
+    }
+
     context("nextProbablePrime matches JVM for pseudoprimes and large prime boundaries") {
         withData(
             PrimeCase("561", "563"),
@@ -676,6 +688,10 @@ class PrimalityStressEdgeCaseTest : FunSpec({
             PrimeCase("1729", "1733"),
             PrimeCase("2047", "2053"), // 23 * 89, Mersenne composite
             PrimeCase("2147483647", "2147483659"),
+            PrimeCase(maxLongPrime, nextPrimeAboveMaxLong),
+            PrimeCase("9223372036854775805", nextPrimeAboveMaxLong),
+            PrimeCase("9223372036854775806", nextPrimeAboveMaxLong),
+            PrimeCase("9223372036854775807", nextPrimeAboveMaxLong),
             PrimeCase(mersenne127, "170141183460469231731687303715884105757"),
         ) { (input, expected) ->
             BigInteger(input).nextProbablePrime() shouldBe BigInteger(expected)

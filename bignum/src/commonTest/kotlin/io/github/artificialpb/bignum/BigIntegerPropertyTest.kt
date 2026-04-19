@@ -10,6 +10,7 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.long
 import io.kotest.property.arbitrary.map
 import io.kotest.property.checkAll
+import kotlin.random.Random
 
 // -- Custom generators --
 
@@ -28,6 +29,43 @@ fun Arb.Companion.largeBigInteger(): Arb<BigInteger> = Arb.long().map { seed ->
     val abs = if (seed == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(seed)
     val sign = if (seed < 0) "-" else ""
     BigInteger("${sign}${abs}${abs.toString().takeLast(10)}")
+}
+
+/** Generates non-zero multi-limb values large enough to exercise native paths beyond Long-sized inputs. */
+fun Arb.Companion.multiLimbBigInteger(): Arb<BigInteger> = Arb.long().map(::multiLimbBigIntegerFromSeed)
+
+/** Generates positive multi-limb values. */
+fun Arb.Companion.multiLimbPositiveBigInteger(): Arb<BigInteger> = Arb.long().map { seed ->
+    multiLimbBigIntegerFromSeed(seed).abs()
+}
+
+private fun multiLimbBigIntegerFromSeed(seed: Long): BigInteger {
+    val magnitudeSeed = when {
+        seed == Long.MIN_VALUE -> Long.MAX_VALUE
+        seed < 0L -> -seed
+        else -> seed
+    }
+    val random = Random(seed.toInt())
+    val chunkCount = 5 + (magnitudeSeed % 3L).toInt() // 5..7 groups of up to 18 digits
+    val firstChunkLength = 1 + ((magnitudeSeed / 3L) % 18L).toInt()
+    val digits = buildString {
+        append(randomDigitChunk(random, firstChunkLength, allowLeadingZero = false))
+        repeat(chunkCount - 1) {
+            append(randomDigitChunk(random, 18, allowLeadingZero = true))
+        }
+    }
+    return if (seed < 0L) BigInteger("-$digits") else BigInteger(digits)
+}
+
+private fun randomDigitChunk(
+    random: Random,
+    length: Int,
+    allowLeadingZero: Boolean,
+): String = buildString(length) {
+    repeat(length) { index ->
+        val digit = if (index == 0 && !allowLeadingZero) random.nextInt(1, 10) else random.nextInt(10)
+        append(('0'.code + digit).toChar())
+    }
 }
 
 // -- Immutability helper --
@@ -138,6 +176,27 @@ class BigIntegerArithmeticPropertyTest : FunSpec({
             }
         }
     }
+
+    test("large multi-limb addition and subtraction round-trip") {
+        checkAll(40, Arb.multiLimbBigInteger(), Arb.multiLimbBigInteger()) { a, b ->
+            assertImmutable(a, b) {
+                ((a + b) - b) shouldBe a
+                ((a - b) + b) shouldBe a
+            }
+        }
+    }
+
+    test("large multi-limb divideAndRemainder reconstructs the dividend") {
+        checkAll(32, Arb.multiLimbBigInteger(), Arb.multiLimbBigInteger()) { a, b ->
+            assertImmutable(a, b) {
+                val divisor = if (b.signum() == 0) bigIntegerOf(1L) else b
+                val result = a.divideAndRemainder(divisor)
+                result[0] shouldBe (a / divisor)
+                result[1] shouldBe (a % divisor)
+                ((result[0] * divisor) + result[1]) shouldBe a
+            }
+        }
+    }
 })
 
 class BigIntegerBitwisePropertyTest : FunSpec({
@@ -205,6 +264,25 @@ class BigIntegerBitwisePropertyTest : FunSpec({
     test("shiftLeft by n == multiply by 2^n") {
         checkAll(Arb.bigInteger(), Arb.int(0..30)) { a, n ->
             assertImmutable(a) { a.shiftLeft(n) shouldBe (a * BigInteger("2").pow(n)) }
+        }
+    }
+
+    test("large multi-limb bitwise identities hold") {
+        checkAll(40, Arb.multiLimbBigInteger(), Arb.multiLimbBigInteger()) { a, b ->
+            assertImmutable(a, b) {
+                a.not().not() shouldBe a
+                a.and(b.not()) shouldBe a.andNot(b)
+                a.xor(b) shouldBe b.xor(a)
+            }
+        }
+    }
+
+    test("large multi-limb shifts stay consistent") {
+        checkAll(40, Arb.multiLimbPositiveBigInteger(), Arb.int(0..20)) { a, n ->
+            assertImmutable(a) {
+                a.shiftLeft(n).shiftRight(n) shouldBe a
+                a.shiftLeft(n) shouldBe (a * BigInteger("2").pow(n))
+            }
         }
     }
 })
@@ -300,6 +378,12 @@ class BigIntegerComparisonPropertyTest : FunSpec({
             val mn = a.min(b)
             val mx = a.max(b)
             setOf(mn.toString(), mx.toString()) shouldBe setOf(a.toString(), b.toString())
+        }
+    }
+
+    test("large multi-limb compareTo remains antisymmetric") {
+        checkAll(40, Arb.multiLimbBigInteger(), Arb.multiLimbBigInteger()) { a, b ->
+            Integer.signum(a.compareTo(b)) shouldBeExactly -Integer.signum(b.compareTo(a))
         }
     }
 })
