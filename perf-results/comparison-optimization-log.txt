@@ -53,3 +53,29 @@ equalsMethod                             0.013 / 0.018 / 0.035
 hashCodeMethod                           0.019 / 0.035 / 0.084
 maxMethod                                0.012 / 0.016 / 0.028
 minMethod                                0.012 / 0.016 / 0.028
+
+=== RUN 3 — 2026-04-19 ===
+Change: Replaced the per-word index math in `hashCode()` with a carry-state stream over the
+canonical 60-bit limbs. The new implementation emits the equivalent JVM 32-bit magnitude words in
+low-to-high order and accumulates the same `31^n` hash polynomial directly, which removes the
+generic division/modulo work from the hot path.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test`
+- `./gradlew :benchmarks:macosArm64ComparisonSmokeBenchmark --rerun-tasks`
+- `./gradlew :benchmarks:macosArm64ComparisonBenchmark :benchmarks:macosArm64IonspinComparisonBenchmark --rerun-tasks`
+
+Smoke delta versus RUN 2:
+- `hashCodeMethod`: 0.019/0.035/0.084 -> 0.018/0.024/0.059 us/op
+
+Full comparison benchmark:
+- `bignum-kt hashCodeMethod`: 0.017/0.024/0.058 us/op
+- `Ionspin hashCodeMethod`:   0.012/0.013/0.018 us/op
+
+Observed effect:
+- Relative to the original baseline, `hashCodeMethod` is now about 2.1x faster on the small
+  profile, 4.1x faster on medium, and 4.8x faster on large.
+- Relative to RUN 2, the second pass improved `hashCodeMethod` by about 8% on small, 32% on
+  medium, and 30% on large.
+- The comparison suite now loses only `hashCode`; `compareTo`, `equals`, `min`, and `max` stay
+  comfortably ahead of IonSpin.

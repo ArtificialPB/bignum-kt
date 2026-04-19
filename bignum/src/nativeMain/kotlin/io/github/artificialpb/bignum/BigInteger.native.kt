@@ -614,11 +614,123 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
     actual override fun hashCode(): Int {
         // Match java.math.BigInteger.hashCode():
         // fold the big-endian magnitude into 32-bit words, then multiply by signum.
+        //
+        // Our limbs are little-endian 60-bit chunks, so walk the equivalent 32-bit JVM words
+        // in low-to-high order and accumulate the same polynomial with powers of 31.
         if (sign == 0) return 0
         val wordCount = (magnitudeBitLength(this) + Int.SIZE_BITS - 1) / Int.SIZE_BITS
         var hashCode = 0
-        for (wordIndex in wordCount - 1 downTo 0) {
-            hashCode = 31 * hashCode + unsignedMagnitudeIntWord(this, wordIndex)
+        var factor = 1
+        var emittedWords = 0
+        var carry = 0UL
+        var carryBits = 0
+
+        for (limbIndex in 0 until size) {
+            val limb = limbs[limbIndex]
+            when (carryBits) {
+                0 -> {
+                    hashCode += factor * limb.toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr Int.SIZE_BITS
+                    carryBits = 28
+                }
+
+                28 -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0xFUL).toInt() shl 28))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 4).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr 36
+                    carryBits = 24
+                }
+
+                24 -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0xFFUL).toInt() shl 24))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 8).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr 40
+                    carryBits = 20
+                }
+
+                20 -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFUL).toInt() shl 20))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 12).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr 44
+                    carryBits = 16
+                }
+
+                16 -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFFUL).toInt() shl 16))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 16).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr 48
+                    carryBits = 12
+                }
+
+                12 -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFFFUL).toInt() shl 12))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 20).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr 52
+                    carryBits = 8
+                }
+
+                8 -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFFFFUL).toInt() shl 8))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 24).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = limb shr 56
+                    carryBits = 4
+                }
+
+                else -> {
+                    hashCode += factor * (carry.toInt() or ((limb and 0x0FFFFFFFUL).toInt() shl 4))
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    hashCode += factor * (limb shr 28).toInt()
+                    factor *= 31
+                    emittedWords++
+                    if (emittedWords == wordCount) return hashCode * sign
+                    carry = 0UL
+                    carryBits = 0
+                }
+            }
+        }
+        if (emittedWords < wordCount) {
+            hashCode += factor * carry.toInt()
         }
         return hashCode * sign
     }
@@ -1171,18 +1283,6 @@ private fun magnitudeBitLength(value: BigInteger): Int {
     if (value.size == 0) return 0
     val highDigitBits = ULong.SIZE_BITS - value.limbs[value.size - 1].countLeadingZeroBits()
     return (((value.size - 1).toLong() * CANONICAL_LIMB_BITS) + highDigitBits.toLong()).toInt()
-}
-
-private fun unsignedMagnitudeIntWord(value: BigInteger, wordIndex: Int): Int {
-    val bitOffset = wordIndex.toLong() * Int.SIZE_BITS
-    val limbIndex = (bitOffset / CANONICAL_LIMB_BITS).toInt()
-    val limbShift = (bitOffset % CANONICAL_LIMB_BITS).toInt()
-    var word = value.limbs[limbIndex] shr limbShift
-    val bitsFromCurrentLimb = CANONICAL_LIMB_BITS - limbShift
-    if (bitsFromCurrentLimb < Int.SIZE_BITS && limbIndex + 1 < value.size) {
-        word = word or (value.limbs[limbIndex + 1] shl bitsFromCurrentLimb)
-    }
-    return word.toInt()
 }
 
 private fun magnitudeToString(value: BigInteger, radix: Int): String {
