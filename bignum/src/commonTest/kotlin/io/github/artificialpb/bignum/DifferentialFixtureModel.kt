@@ -81,6 +81,7 @@ enum class DifferentialOperation {
     EQUALS_STRING,
     HASH_CODE,
     RANGE_TO_LIST,
+    FACTORY_OF_INT,
 }
 
 val DifferentialOperation.group: DifferentialGroup
@@ -97,6 +98,7 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.CONSTANT_TEN,
         DifferentialOperation.FACTORY_OF_STRING,
         DifferentialOperation.FACTORY_OF_LONG,
+        DifferentialOperation.FACTORY_OF_INT,
             -> DifferentialGroup.FACTORY
 
         DifferentialOperation.ADD,
@@ -462,6 +464,9 @@ object DifferentialExecutor {
 
             DifferentialOperation.FACTORY_OF_LONG ->
                 normalizeBigInt(bigIntegerOf(args.long(0)))
+
+            DifferentialOperation.FACTORY_OF_INT ->
+                normalizeBigInt(bigIntegerOf(args.int(0)))
 
             DifferentialOperation.ADD ->
                 normalizeBigInt(args.bigInt(0) + args.bigInt(1))

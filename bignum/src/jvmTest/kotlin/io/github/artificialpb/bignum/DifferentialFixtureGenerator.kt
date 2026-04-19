@@ -88,6 +88,10 @@ object DifferentialFixtureGenerator {
         StringArg(randomDecimalConstructorLiteral(rs))
     }
 
+    private val intArgArb = arbitrary { rs: RandomSource ->
+        IntArg(randomIntValue(rs))
+    }
+
     private val longArgArb = arbitrary { rs: RandomSource ->
         LongArg(randomLongValue(rs))
     }
@@ -202,6 +206,9 @@ object DifferentialFixtureGenerator {
 
             DifferentialOperation.FACTORY_OF_LONG ->
                 listOf(longArgArb.next(rs = rs))
+
+            DifferentialOperation.FACTORY_OF_INT ->
+                listOf(intArgArb.next(rs = rs))
 
             DifferentialOperation.ADD,
             DifferentialOperation.SUBTRACT,
@@ -332,6 +339,10 @@ object DifferentialFixtureGenerator {
 
         longFactoryValues().forEach { value ->
             builder.add(DifferentialOperation.FACTORY_OF_LONG, LongArg(value))
+        }
+
+        intFactoryValues().forEach { value ->
+            builder.add(DifferentialOperation.FACTORY_OF_INT, IntArg(value))
         }
     }
 
@@ -540,6 +551,11 @@ object DifferentialFixtureGenerator {
     private fun randomLongValue(rs: RandomSource): Long = when (nextChoice(rs, 6)) {
         0 -> listOf(Long.MIN_VALUE, Long.MIN_VALUE + 1, -1L, 0L, 1L, 2L, Long.MAX_VALUE - 1, Long.MAX_VALUE).pick(rs)
         else -> Arb.long().next(rs = rs)
+    }
+
+    private fun randomIntValue(rs: RandomSource): Int = when (nextChoice(rs, 6)) {
+        0 -> listOf(Int.MIN_VALUE, Int.MIN_VALUE + 1, -100, -10, -2, -1, 0, 1, 2, 7, 10, 42, 100, Int.MAX_VALUE - 1, Int.MAX_VALUE).pick(rs)
+        else -> Arb.int().next(rs = rs)
     }
 
     private fun randomCanonicalBigInt(
@@ -971,6 +987,35 @@ object DifferentialFixtureGenerator {
         val random = Random(0xF111)
         repeat(8) {
             add(random.nextLong())
+        }
+    }
+
+    private fun intFactoryValues(): List<Int> = buildList {
+        addAll(
+            listOf(
+                Int.MIN_VALUE,
+                Int.MIN_VALUE + 1,
+                -255,
+                -100,
+                -10,
+                -2,
+                -1,
+                0,
+                1,
+                2,
+                7,
+                10,
+                42,
+                100,
+                255,
+                65_535,
+                Int.MAX_VALUE - 1,
+                Int.MAX_VALUE,
+            ),
+        )
+        val random = Random(0xF110)
+        repeat(8) {
+            add(random.nextInt())
         }
     }
 

@@ -1171,6 +1171,51 @@ class LargeNumberArithmeticTest : FunSpec({
     }
 })
 
+// -- Threshold-focused regression tests for native algorithm splits --
+
+class NativeThresholdRegressionTest : FunSpec({
+
+    fun twoPow(exponent: Int): BigInteger = bigIntegerOf(2L).pow(exponent)
+
+    test("multiply matches the closed form at the 14-limb schoolbook boundary") {
+        val operand = twoPow(420) - bigIntegerOf(1L) // 7 60-bit limbs
+        val expected = twoPow(840) - twoPow(421) + bigIntegerOf(1L)
+
+        (operand * operand) shouldBe expected
+    }
+
+    test("multiply matches the closed form above the 14-limb schoolbook boundary") {
+        val operand = twoPow(480) - bigIntegerOf(1L) // 8 60-bit limbs
+        val expected = twoPow(960) - twoPow(481) + bigIntegerOf(1L)
+
+        (operand * operand) shouldBe expected
+    }
+
+    test("divideAndRemainder stays correct at the 7-limb schoolbook division boundary") {
+        val limbBoundary = 180
+        val divisor = twoPow(limbBoundary) - bigIntegerOf(1L)      // 3 limbs
+        val quotient = twoPow(limbBoundary) + bigIntegerOf(1L)     // 4 limbs
+        val remainder = BigInteger("12345678901234567890")
+        val dividend = twoPow(limbBoundary * 2) - bigIntegerOf(1L) + remainder
+
+        val result = dividend.divideAndRemainder(divisor)
+        result[0] shouldBe quotient
+        result[1] shouldBe remainder
+    }
+
+    test("divideAndRemainder stays correct above the 7-limb schoolbook division boundary") {
+        val limbBoundary = 480
+        val divisor = twoPow(limbBoundary) - bigIntegerOf(1L)      // 8 limbs
+        val quotient = twoPow(limbBoundary) + bigIntegerOf(1L)
+        val remainder = BigInteger("123456789012345678901234567890")
+        val dividend = twoPow(limbBoundary * 2) - bigIntegerOf(1L) + remainder
+
+        val result = dividend.divideAndRemainder(divisor)
+        result[0] shouldBe quotient
+        result[1] shouldBe remainder
+    }
+})
+
 // -- sqrt additional edge cases --
 
 class SqrtEdgeCaseTest : FunSpec({
@@ -1192,5 +1237,30 @@ class SqrtEdgeCaseTest : FunSpec({
     test("sqrt of 2^256") {
         val value = bigIntegerOf(2L).pow(256)
         value.sqrt() shouldBe bigIntegerOf(2L).pow(128)
+    }
+})
+
+// -- range iteration edge cases --
+
+class RangeEdgeCaseTest : FunSpec({
+
+    test("range iterator throws after exhaustion") {
+        val iterator = (bigIntegerOf(2L)..bigIntegerOf(2L)).iterator()
+
+        iterator.hasNext() shouldBe true
+        iterator.next() shouldBe bigIntegerOf(2L)
+        iterator.hasNext() shouldBe false
+        shouldThrow<NoSuchElementException> {
+            iterator.next()
+        }
+    }
+
+    test("descending range iterator is immediately exhausted") {
+        val iterator = (bigIntegerOf(3L)..bigIntegerOf(1L)).iterator()
+
+        iterator.hasNext() shouldBe false
+        shouldThrow<NoSuchElementException> {
+            iterator.next()
+        }
     }
 })

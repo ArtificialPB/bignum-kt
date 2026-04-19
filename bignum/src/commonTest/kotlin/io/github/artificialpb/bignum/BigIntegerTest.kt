@@ -134,6 +134,22 @@ class BigIntegerConstructionTest : FunSpec({
         }
     }
 
+    context("fromInt") {
+        withData(
+            0 to "0",
+            1 to "1",
+            2 to "2",
+            10 to "10",
+            100 to "100",
+            -1 to "-1",
+            42 to "42",
+            Int.MAX_VALUE to "2147483647",
+            Int.MIN_VALUE to "-2147483648",
+        ) { (input, expected) ->
+            bigIntegerOf(input) shouldBe bi(expected)
+        }
+    }
+
     context("fromByteArray") {
         withData(
             nameFn = { "bytes ${it.first.joinToString(",") { b -> "0x${b.and(0xFF).toString(16).padStart(2, '0')}" }} -> ${it.second}" },
@@ -157,6 +173,15 @@ class BigIntegerConstructionTest : FunSpec({
         bigIntegerOf(1L) shouldBe bi("1")
         bigIntegerOf(2L) shouldBe bi("2")
         bigIntegerOf(10L) shouldBe bi("10")
+    }
+
+    test("string factory covers cached constants and general values") {
+        bigIntegerOf("0") shouldBe bi("0")
+        bigIntegerOf("1") shouldBe bi("1")
+        bigIntegerOf("2") shouldBe bi("2")
+        bigIntegerOf("10") shouldBe bi("10")
+        bigIntegerOf("100") shouldBe bi("100")
+        bigIntegerOf("12345678901234567890") shouldBe bi("12345678901234567890")
     }
 })
 
