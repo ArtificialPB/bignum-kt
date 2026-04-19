@@ -55,7 +55,12 @@ bignum-kt/
 ./gradlew macosArm64Test          # Native tests (macOS ARM64)
 ./gradlew allTests                # All platform tests
 ./gradlew build                   # Full build (all targets)
+./gradlew coverage                # JVM/common HTML + XML coverage reports
+./gradlew coverageHtml            # JVM/common HTML coverage report
+./gradlew coverageXml             # JVM/common XML coverage report
 ```
+
+Coverage is reported through Kover for the JVM target. That includes `commonMain` and `jvmMain` code exercised by JVM tests, but it does not include Kotlin/Native execution coverage.
 
 ## Architecture
 

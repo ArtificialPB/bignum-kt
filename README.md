@@ -250,6 +250,8 @@ The library is tested at several levels:
 
 Tests live in `commonTest`, so the same cases run across JVM, Android, and Apple native targets.
 
+Coverage reports are generated with Kover for the JVM target, which means `commonMain` and `jvmMain` code exercised by JVM tests is reported. Apple native tests still run via the normal test tasks, but Kotlin-native coverage is not collected by the current JetBrains coverage tooling.
+
 ## Build, test, and benchmark
 
 Requires JDK 17+. Xcode is required for Apple targets. The Android SDK is required if you build the Android artifact.
@@ -264,6 +266,11 @@ Requires JDK 17+. Xcode is required for Apple targets. The Android SDK is requir
 # Library tests only
 ./gradlew :bignum:jvmTest
 ./gradlew :bignum:macosArm64Test
+
+# Generate JVM/common coverage reports
+./gradlew coverage
+./gradlew coverageHtml
+./gradlew coverageXml
 
 # Regenerate differential fuzz fixtures
 ./gradlew :bignum:generateDifferentialFixtures
