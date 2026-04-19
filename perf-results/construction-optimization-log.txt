@@ -209,3 +209,36 @@ constructorString                             0.157 / 0.612 / 2.250
 factoryInt                                    0.029 / 0.030 / 0.030
 factoryLong                                   0.029 / 0.030 / 0.031
 factoryString                                 0.165 / 0.627 / 2.257
+
+=== RUN 7 — 2026-04-19 ===
+Change: Split validated and trusted native initialization so internal `BigInteger(sign, size, limbs)`
+construction no longer pays invariant `require(...)` checks on every result object. Public parse/import
+paths still validate; only already-normalized internal call sites use the unchecked assignment path.
+
+Validation source:
+- baseline: `./gradlew :bignum:macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+  (post ASCII digit fast path)
+- candidate: `./gradlew :bignum:macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+
+factoryInt:  0.029/0.030/0.030 → 0.026/0.026/0.026 us/op
+factoryLong: 0.029/0.030/0.031 → 0.026/0.026/0.025 us/op
+
+Observed effect:
+- `factoryInt` improved by about 11% / 13% / 13% across small / medium / large
+- `factoryLong` improved by about 10% / 13% / 19%
+- byte, string-constructor, and radix-constructor numbers stayed within normal run-to-run noise, which
+  matches the scope of removing fixed-cost internal construction checks
+
+=== SNAPSHOT — 2026-04-19 (macosArm64 construction smoke benchmark, trusted internal construction) ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytesSlice                         0.040 / 0.065 / 0.151
+constructorBytes                              0.038 / 0.063 / 0.149
+constructorStringRadix                        0.139 / 0.517 / 1.976
+constructorString                             0.158 / 0.612 / 2.252
+factoryInt                                    0.026 / 0.026 / 0.026
+factoryLong                                   0.026 / 0.026 / 0.025
+factoryString                                 0.166 / 0.627 / 2.268

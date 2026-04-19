@@ -13,7 +13,7 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         private set
 
     internal constructor(sign: Int, size: Int, limbs: ULongArray) : this() {
-        initialize(sign, size, limbs)
+        initializeUnchecked(sign, size, limbs)
     }
 
     internal constructor(handle: CPointer<mp_int>) : this() {
@@ -89,6 +89,10 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
             require(limbs[size - 1] != 0UL) { "Magnitude is not normalized" }
         }
 
+        initializeUnchecked(sign, size, limbs)
+    }
+
+    private fun initializeUnchecked(sign: Int, size: Int, limbs: ULongArray) {
         this.sign = sign
         this.size = size
         this.limbs = limbs
