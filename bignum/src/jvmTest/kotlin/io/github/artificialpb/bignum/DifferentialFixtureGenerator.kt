@@ -12,8 +12,8 @@ import kotlin.random.Random
 
 object DifferentialFixtureGenerator {
     private const val OUTPUT_DIR = "src/commonTest/resources/differential"
-    private const val RANDOM_CASES_PER_OPERATION = 1_000
-    private const val RANDOM_SEED_BASE = 0xB16B00B5L
+    private const val RANDOM_CASES_PER_OPERATION = 2_500
+    private const val RANDOM_SEED_BASE = 0xB16B00B4L
 
     private const val MERSENNE_127 = "170141183460469231731687303715884105727"
     private const val MERSENNE_127_SQUARED =
@@ -849,7 +849,7 @@ object DifferentialFixtureGenerator {
 
     private fun randomByteListValue(
         rs: RandomSource,
-        maxSize: Int = 32,
+        maxSize: Int = 512,
     ): List<Int> = when (nextChoice(rs, 4)) {
         0 -> byteListEdgeValues.filter { it.size <= maxSize }.pick(rs)
         else -> List(nextInt(rs, 0, maxSize)) { nextInt(rs, -128, 127) }
@@ -901,7 +901,7 @@ object DifferentialFixtureGenerator {
         )
         val random = Random(0xD311)
         repeat(12) {
-            add(randomDecimalLiteral(random, random.nextInt(1, 90)))
+            add(randomDecimalLiteral(random, random.nextInt(1, 128)))
         }
     }
 
@@ -927,7 +927,7 @@ object DifferentialFixtureGenerator {
         addAll(byteListEdgeValues)
         val random = Random(0xD333)
         repeat(8) {
-            add(randomByteList(random, random.nextInt(1, 16)))
+            add(randomByteList(random, random.nextInt(1, 256)))
         }
     }
 
@@ -944,7 +944,7 @@ object DifferentialFixtureGenerator {
         add(Triple(emptyList(), 0, 0))
         val random = Random(0xD344)
         repeat(6) {
-            val bytes = randomByteList(random, random.nextInt(1, 12))
+            val bytes = randomByteList(random, random.nextInt(1, 256))
             val off = random.nextInt(-1, bytes.size + 2)
             val len = random.nextInt(-1, bytes.size + 2)
             add(Triple(bytes, off, len))
@@ -974,7 +974,7 @@ object DifferentialFixtureGenerator {
         }
     }
 
-    private fun arithmeticValues(): List<String> = sampleValues(commonCanonicalValues(), 22, 0xA101)
+    private fun arithmeticValues(): List<String> = sampleValues(commonCanonicalValues(), 64, 0xA101)
 
     private fun bitwiseValues(): List<String> = buildList {
         addAll(
