@@ -613,25 +613,12 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
 
     actual override fun hashCode(): Int {
         // Match java.math.BigInteger.hashCode():
-        // fold the big-endian magnitude into 32-bit words, then multiply by signum
+        // fold the big-endian magnitude into 32-bit words, then multiply by signum.
         if (sign == 0) return 0
-        val magnitude = magnitudeToUnsignedBigEndian(this)
+        val wordCount = (magnitudeBitLength(this) + Int.SIZE_BITS - 1) / Int.SIZE_BITS
         var hashCode = 0
-        var index = 0
-        val leadingBytes = magnitude.size % Int.SIZE_BYTES
-        if (leadingBytes != 0) {
-            repeat(leadingBytes) {
-                hashCode = (hashCode shl Byte.SIZE_BITS) or (magnitude[index++].toInt() and 0xFF)
-            }
-        }
-        while (index < magnitude.size) {
-            val word = ((magnitude[index].toInt() and 0xFF) shl 24) or
-                    ((magnitude[index + 1].toInt() and 0xFF) shl 16) or
-                    ((magnitude[index + 2].toInt() and 0xFF) shl 8) or
-                    (magnitude[index + 3].toInt() and 0xFF)
-
-            hashCode = 31 * hashCode + word
-            index += Int.SIZE_BYTES
+        for (wordIndex in wordCount - 1 downTo 0) {
+            hashCode = 31 * hashCode + unsignedMagnitudeIntWord(this, wordIndex)
         }
         return hashCode * sign
     }
@@ -1184,6 +1171,18 @@ private fun magnitudeBitLength(value: BigInteger): Int {
     if (value.size == 0) return 0
     val highDigitBits = ULong.SIZE_BITS - value.limbs[value.size - 1].countLeadingZeroBits()
     return (((value.size - 1).toLong() * CANONICAL_LIMB_BITS) + highDigitBits.toLong()).toInt()
+}
+
+private fun unsignedMagnitudeIntWord(value: BigInteger, wordIndex: Int): Int {
+    val bitOffset = wordIndex.toLong() * Int.SIZE_BITS
+    val limbIndex = (bitOffset / CANONICAL_LIMB_BITS).toInt()
+    val limbShift = (bitOffset % CANONICAL_LIMB_BITS).toInt()
+    var word = value.limbs[limbIndex] shr limbShift
+    val bitsFromCurrentLimb = CANONICAL_LIMB_BITS - limbShift
+    if (bitsFromCurrentLimb < Int.SIZE_BITS && limbIndex + 1 < value.size) {
+        word = word or (value.limbs[limbIndex + 1] shl bitsFromCurrentLimb)
+    }
+    return word.toInt()
 }
 
 private fun magnitudeToString(value: BigInteger, radix: Int): String {

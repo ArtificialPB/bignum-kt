@@ -1,0 +1,55 @@
+=== BASELINE — 2026-04-19 16:27 ===
+Source:
+- `./gradlew :benchmarks:macosArm64ComparisonSmokeBenchmark --rerun-tasks`
+- Baseline numbers copied from the console summary printed before the optimized rerun.
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+compareToMethod                          0.013 / 0.017 / 0.029
+equalsMethod                             0.013 / 0.018 / 0.035
+hashCodeMethod                           0.036 / 0.078 / 0.239
+maxMethod                                0.012 / 0.016 / 0.028
+minMethod                                0.012 / 0.016 / 0.028
+
+Initial target:
+- `hashCode()` was the only clear comparison-suite laggard. The native implementation still built an
+  unsigned big-endian byte array and then folded it back into JVM-style 32-bit words, which added
+  allocation and extra copying to a method that should stay entirely on the canonical limb data.
+
+=== RUN 2 — 2026-04-19 ===
+Change: Replaced the byte-array round-trip in `hashCode()` with direct JVM-compatible 32-bit word
+folding over the canonical 60-bit limb array.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test`
+- `./gradlew :benchmarks:macosArm64ComparisonSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/comparisonSmoke/2026-04-19T16.27.05.273766/macosArm64.json`
+
+compareToMethod: 0.013/0.017/0.029 -> 0.013/0.016/0.029 us/op
+equalsMethod:    0.013/0.018/0.035 -> 0.013/0.018/0.035 us/op
+hashCodeMethod:  0.036/0.078/0.239 -> 0.019/0.035/0.084 us/op
+maxMethod:       0.012/0.016/0.028 -> 0.012/0.016/0.028 us/op
+minMethod:       0.012/0.016/0.028 -> 0.012/0.016/0.028 us/op
+
+Observed effect:
+- `hashCodeMethod` is about 1.9x faster on the small profile, 2.2x faster on medium, and 2.8x
+  faster on large.
+- The rest of the comparison suite stayed flat, which keeps the change tightly scoped to hash
+  folding rather than perturbing comparison semantics.
+- Relative to the current README IonSpin table, the small-profile `hashCode` case has moved from
+  slower to slightly faster, while the medium and large profiles are still behind and may merit a
+  follow-up attempt.
+
+=== FINAL — 2026-04-19 (macosArm64 comparison smoke benchmark) ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test`
+- `./gradlew :benchmarks:macosArm64ComparisonSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/comparisonSmoke/2026-04-19T16.27.05.273766/macosArm64.json`
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+compareToMethod                          0.013 / 0.016 / 0.029
+equalsMethod                             0.013 / 0.018 / 0.035
+hashCodeMethod                           0.019 / 0.035 / 0.084
+maxMethod                                0.012 / 0.016 / 0.028
+minMethod                                0.012 / 0.016 / 0.028
