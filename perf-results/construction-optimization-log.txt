@@ -172,3 +172,40 @@ Notes:
 - the decimal constructor and factory are now materially below the 4 us/op mark on the large profile
 - `factoryInt` small-profile movement regressed relative to the prior full run, but the medium/large
   samples stayed flat and the constructor-focused wins remained strong across the full suite
+
+=== RUN 6 — 2026-04-19 ===
+Change: Removed the boxed ASCII digit path from the native string parser. `digitOrThrow` now
+decodes ASCII digits and letters directly from `Char.code`, which keeps the hot constructor loop
+on primitive `Int` values; non-ASCII characters still fall back to `digitToIntOrNull(radix)` so
+JVM-style Unicode digit handling is preserved outside the fast path.
+
+Validation source:
+- baseline: `./gradlew :benchmarks:macosArm64ConstructionSmokeBenchmark`
+- candidate: `./gradlew :bignum:macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+- note: the baseline numbers below are transcribed from the pre-change console summary captured on
+  2026-04-19 before the parser edit landed
+
+constructorStringRadix: 0.261/1.084/3.916 → 0.138/0.516/1.987 us/op
+constructorString:      0.306/1.297/4.533 → 0.157/0.612/2.250 us/op
+factoryString:          0.303/1.294/4.533 → 0.165/0.627/2.257 us/op
+
+Observed effect:
+- `constructorStringRadix` improved by about 1.9x / 2.1x / 2.0x across small / medium / large
+- `constructorString` improved by about 1.9x / 2.1x / 2.0x
+- `factoryString` moved with the same parsing path, improving by about 1.8x / 2.1x / 2.0x
+- byte constructors and primitive factories stayed within ordinary benchmark noise, which matches
+  the scope of the parser-only change
+
+=== SNAPSHOT — 2026-04-19 (macosArm64 construction smoke benchmark, ASCII digit fast path) ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test :benchmarks:macosArm64ConstructionSmokeBenchmark --rerun-tasks`
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytesSlice                         0.041 / 0.064 / 0.154
+constructorBytes                              0.039 / 0.063 / 0.150
+constructorStringRadix                        0.138 / 0.516 / 1.987
+constructorString                             0.157 / 0.612 / 2.250
+factoryInt                                    0.029 / 0.030 / 0.030
+factoryLong                                   0.029 / 0.030 / 0.031
+factoryString                                 0.165 / 0.627 / 2.257

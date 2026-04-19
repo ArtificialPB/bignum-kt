@@ -477,7 +477,7 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         if (certainty <= 0) return true
         // JVM tests absolute value for primality
         if (sign == 0) return false
-        this@BigInteger.ifMagnitudeFitsInLong { return isPrimeLong(it) }
+        ifMagnitudeFitsInLong { return isPrimeLong(it) }
         val target = if (sign < 0) abs() else this@BigInteger
         // JVM certainty means error probability ≤ 2^(-certainty).
         // Each Miller-Rabin round has error ≤ 1/4 = 2^(-2),
@@ -1057,8 +1057,23 @@ private fun parseDigitGroup(value: String, start: Int, end: Int, radix: Int): UL
     return result
 }
 
-private fun digitOrThrow(char: Char, radix: Int, value: String): Int =
-    char.digitToIntOrNull(radix) ?: throw invalidDigitException(value, radix)
+private fun digitOrThrow(char: Char, radix: Int, value: String): Int {
+    val code = char.code
+    if (code <= 0x7F) {
+        val digit = when {
+            code in '0'.code..'9'.code -> code - '0'.code
+            code in 'A'.code..'Z'.code -> code - 'A'.code + 10
+            code in 'a'.code..'z'.code -> code - 'a'.code + 10
+            else -> -1
+        }
+        if (digit in 0 until radix) return digit
+        throw invalidDigitException(value, radix)
+    }
+
+    val digit = char.digitToIntOrNull(radix)
+    if (digit != null) return digit
+    throw invalidDigitException(value, radix)
+}
 
 private fun invalidDigitException(value: String, radix: Int): NumberFormatException {
     val message = if (radix == 10) {
