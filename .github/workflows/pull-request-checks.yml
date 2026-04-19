@@ -1,0 +1,97 @@
+# For local testing use this: https://github.com/nektos/act
+
+name: Run Pull Request Checks
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  test-jvm:
+    name: Lint, JVM Tests, Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: ./.github/actions/environment-setup
+
+      - name: Gradle ktlint
+        run: >-
+          ./gradlew
+          ktlintKotlinScriptCheck
+          :bignum:ktlintCommonMainSourceSetCheck
+          :bignum:ktlintCommonTestSourceSetCheck
+          :bignum:ktlintJvmMainSourceSetCheck
+          :bignum:ktlintJvmTestSourceSetCheck
+          :benchmarks:ktlintKotlinScriptCheck
+          :benchmarks:ktlintCommonMainSourceSetCheck
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: report-lint
+          path: |
+            build/reports/ktlint
+            bignum/build/reports/ktlint
+            benchmarks/build/reports/ktlint
+
+      - name: Gradle test and coverage (JVM)
+        run: >-
+          ./gradlew
+          :bignum:jvmTest
+          coverage
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: report-jvm-test
+          path: |
+            bignum/build/reports/tests
+            bignum/build/test-results
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: report-jvm-coverage
+          path: bignum/build/reports/kover
+
+  test-native:
+    name: Test (macOS ARM64)
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: ./.github/actions/environment-setup
+
+      - name: Run macOS ARM64 tests
+        run: ./gradlew :bignum:macosArm64Test --no-configuration-cache --no-watch-fs --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: report-native-test
+          path: |
+            bignum/build/reports/tests
+            bignum/build/test-results

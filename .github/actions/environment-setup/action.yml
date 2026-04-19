@@ -1,0 +1,18 @@
+name: Environment setup
+description: Set up Java and Gradle for CI builds
+
+runs:
+  using: composite
+
+  steps:
+    - uses: actions/setup-java@v5
+      with:
+        java-version: 17
+        java-package: jdk
+        distribution: temurin
+        cache: gradle
+
+    - uses: gradle/actions/setup-gradle@v4
+      with:
+        cache-read-only: ${{ github.ref != 'refs/heads/master' }}
+        gradle-home-cache-cleanup: true
