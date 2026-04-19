@@ -1,17 +1,17 @@
 # bignum-kt
 
-High-performance Kotlin Multiplatform `BigInteger` library.
+High-performance Kotlin Multiplatform `BigInteger` library with JVM semantics across JVM, Android, and Apple native.
 
 On the JVM and Android, `BigInteger` is a zero-overhead typealias to `java.math.BigInteger`. On Apple native targets, the implementation is hybrid: hot paths and small-to-medium operations run in pure Kotlin, while larger or specialized work uses LibTomMath through C interop. All targets follow JVM semantics, including two's complement big-endian byte arrays, so behavior stays consistent across platforms.
 
 ## Supported platforms
 
-| Platform | Backend                                                          |
-| --- |------------------------------------------------------------------|
-| JVM | `java.math.BigInteger` typealias                                 |
-| Android (API 21+) | `java.math.BigInteger` typealias                                 |
-| macOS ARM64 | Hybrid: pure Kotlin hot paths + LibTomMath interop               |
-| iOS ARM64 | Hybrid: pure Kotlin hot paths + LibTomMath interop |
+| Platform | Backend |
+| --- | --- |
+| JVM | `java.math.BigInteger` typealias |
+| Android (API 21+) | `java.math.BigInteger` typealias |
+| macOS ARM64 | Pure Kotlin core with LibTomMath acceleration for larger or specialized native ops |
+| iOS ARM64 | Pure Kotlin core with LibTomMath acceleration for larger or specialized native ops |
 
 ## Usage
 
@@ -51,7 +51,7 @@ for (i in bigIntegerOf(0L)..bigIntegerOf(10L)) {
 
 ## Performance
 
-The `:benchmarks` module compares `bignum-kt` against [`kotlin-multiplatform-bignum`](https://github.com/ionspin/kotlin-multiplatform-bignum) on macOS ARM64 across three operand profiles: `small`, `medium`, and `large`. The numbers below come from the full benchmark sweep run on April 19, 2026 using the checked-in benchmark configuration: 2 warmups, 3 measurement iterations, and 1 second per iteration.
+The `:benchmarks` module compares `bignum-kt` against [`kotlin-multiplatform-bignum`](https://github.com/ionspin/kotlin-multiplatform-bignum) on macOS ARM64 across three operand profiles: `small`, `medium`, and `large`. The numbers below come from the latest full benchmark reports generated on April 19, 2026 using the checked-in benchmark configuration: 2 warmups, 3 measurement iterations, and 1 second per iteration.
 
 All timings are in `us/op`. Lower is better.
 
@@ -59,13 +59,13 @@ All timings are in `us/op`. Lower is better.
 | --- | ---: | ---: | ---: | ---: |
 | Arithmetic | 42 | 42 | 0 | 4.74x |
 | Bitwise | 42 | 42 | 0 | 1.60x |
-| Comparison | 15 | 12 | 3 | 2.37x |
+| Comparison | 15 | 12 | 3 | 2.76x |
 | Construction | 15 | 15 | 0 | 9.97x |
-| Conversion | 21 | 14 | 7 | 8.34x |
+| Conversion | 21 | 21 | 0 | 9.61x |
 | Number theory | 3 | 3 | 0 | 10.44x |
-| Overall | 138 | 128 | 10 | 3.79x |
+| Overall | 138 | 135 | 3 | 3.94x |
 
-`bignum-kt` is faster in 128 of 138 comparable macOS ARM64 benchmark cases. The losses are concentrated in `hashCode`, plus the narrowing conversions `toInt` and `toLong`. `signum` is effectively at parity. The biggest wins are large `toString` (339x), large `toDouble` (303x), large radix `toString` (293x), large byte-array construction (73x), and `sqrt` on the small profile (40x).
+`bignum-kt` is faster in 135 of 138 comparable macOS ARM64 benchmark cases. The only remaining losses are the three `hashCode` cells; `toInt`, `toLong`, and `signum` now all beat IonSpin in the latest full conversion run. The biggest wins are large `toString` (333x), large radix `toString` (290x), large `toDouble` (283x), large byte-array construction (73x), and `sqrt` on the small profile (40x).
 
 <details>
 <summary>Full method-by-method results vs `kotlin-multiplatform-bignum` on macOS ARM64</summary>
@@ -114,11 +114,11 @@ Comparable cells are `bignum-kt / kotlin-multiplatform-bignum (speedup)`.
 
 | Method | Small | Medium | Large |
 | --- | --- | --- | --- |
-| compareTo | 0.013 / 0.072 (5.54x) | 0.017 / 0.078 (4.60x) | 0.030 / 0.096 (3.19x) |
-| equals | 0.014 / 0.074 (5.42x) | 0.019 / 0.077 (4.14x) | 0.037 / 0.102 (2.78x) |
-| hashCode | 0.050 / 0.021 (2.45x slower) | 0.098 / 0.022 (4.52x slower) | 0.282 / 0.027 (10.62x slower) |
-| min | 0.012 / 0.072 (5.95x) | 0.016 / 0.079 (4.88x) | 0.029 / 0.100 (3.44x) |
-| max | 0.012 / 0.078 (6.33x) | 0.016 / 0.079 (4.84x) | 0.029 / 0.094 (3.20x) |
+| compareTo | 0.013 / 0.069 (5.51x) | 0.016 / 0.073 (4.45x) | 0.029 / 0.091 (3.18x) |
+| equals | 0.013 / 0.068 (5.25x) | 0.018 / 0.074 (4.17x) | 0.035 / 0.091 (2.64x) |
+| hashCode | 0.017 / 0.012 (1.42x slower) | 0.024 / 0.013 (1.90x slower) | 0.058 / 0.018 (3.26x slower) |
+| min | 0.012 / 0.069 (5.93x) | 0.016 / 0.074 (4.75x) | 0.030 / 0.092 (3.10x) |
+| max | 0.012 / 0.069 (5.94x) | 0.016 / 0.074 (4.77x) | 0.028 / 0.092 (3.27x) |
 
 ### Construction
 
@@ -134,13 +134,13 @@ Comparable cells are `bignum-kt / kotlin-multiplatform-bignum (speedup)`.
 
 | Method | Small | Medium | Large |
 | --- | --- | --- | --- |
-| toByteArray | 0.054 / 0.453 (8.38x) | 0.072 / 1.693 (23.37x) | 0.190 / 4.749 (25.00x) |
-| toInt | 0.021 / 0.014 (1.44x slower) | 0.022 / 0.014 (1.53x slower) | 0.022 / 0.014 (1.54x slower) |
-| toLong | 0.022 / 0.014 (1.50x slower) | 0.020 / 0.014 (1.39x slower) | 0.019 / 0.016 (1.15x slower) |
-| toDouble | 0.862 / 4.969 (5.76x) | 4.352 / 345.547 (79.40x) | 12.320 / 3728.093 (302.61x) |
-| toString | 0.264 / 3.114 (11.79x) | 2.157 / 287.475 (133.28x) | 9.439 / 3203.051 (339.34x) |
-| toString(radix) | 0.207 / 2.819 (13.60x) | 2.067 / 234.938 (113.68x) | 8.859 / 2593.617 (292.75x) |
-| signum | 0.006 / 0.007 (1.04x) | 0.007 / 0.007 (1.01x slower) | 0.006 / 0.007 (1.07x) |
+| toByteArray | 0.031 / 0.281 (9.18x) | 0.050 / 1.156 (23.00x) | 0.145 / 3.601 (24.82x) |
+| toInt | 0.011 / 0.013 (1.16x) | 0.011 / 0.013 (1.16x) | 0.011 / 0.013 (1.15x) |
+| toLong | 0.012 / 0.014 (1.14x) | 0.012 / 0.013 (1.12x) | 0.012 / 0.013 (1.12x) |
+| toDouble | 0.734 / 3.437 (4.68x) | 3.540 / 269.765 (76.21x) | 10.466 / 2962.341 (283.05x) |
+| toString | 0.227 / 2.936 (12.95x) | 1.864 / 266.351 (142.88x) | 8.802 / 2931.252 (333.00x) |
+| toString(radix) | 0.186 / 2.640 (14.16x) | 1.869 / 219.516 (117.45x) | 8.308 / 2410.336 (290.12x) |
+| signum | 0.006 / 0.007 (1.08x) | 0.006 / 0.007 (1.07x) | 0.006 / 0.007 (1.08x) |
 
 ### Number theory
 
