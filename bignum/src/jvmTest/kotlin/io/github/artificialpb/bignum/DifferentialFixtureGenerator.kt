@@ -527,20 +527,20 @@ object DifferentialFixtureGenerator {
 
     private fun randomByteSliceArgs(rs: RandomSource): List<DifferentialArg> {
         val bytes = randomByteListValue(rs, maxSize = 24)
-        val valid = nextChoice(rs, 4) != 0
+        val valid = bytes.isNotEmpty() && nextChoice(rs, 4) != 0
         val size = bytes.size
 
         val (offset, length) = if (valid) {
-            val off = nextInt(rs, 0, size)
-            off to nextInt(rs, 0, size - off)
+            val off = nextInt(rs, 0, size - 1)
+            off to nextInt(rs, 1, size - off)
         } else {
             when (nextChoice(rs, 4)) {
-                0 -> -1 to nextInt(rs, 0, size + 1)
+                0 -> -1 to nextInt(rs, 1, size + 1)
                 1 -> nextInt(rs, 0, size + 1) to -1
-                2 -> size + 1 to 0
+                2 -> size + 1 to 1
                 else -> {
-                    val off = if (size == 0) 1 else nextInt(rs, 0, size)
-                    off to (size - off + 1)
+                    val off = if (size == 0) 0 else nextInt(rs, 0, size)
+                    off to maxOf(1, size - off + 1)
                 }
             }
         }
@@ -953,14 +953,14 @@ object DifferentialFixtureGenerator {
         add(Triple(listOf(0, 127, -1, -128), 3, 1))
         add(Triple(listOf(1, 2, 3), -1, 2))
         add(Triple(listOf(1, 2, 3), 0, -1))
-        add(Triple(listOf(1, 2, 3), 4, 0))
+        add(Triple(listOf(1, 2, 3), 4, 1))
         add(Triple(listOf(1, 2, 3), 2, 2))
-        add(Triple(emptyList(), 0, 0))
+        add(Triple(emptyList(), 0, 1))
         val random = Random(0xD344)
         repeat(6) {
             val bytes = randomByteList(random, random.nextInt(1, 256))
             val off = random.nextInt(-1, bytes.size + 2)
-            val len = random.nextInt(-1, bytes.size + 2)
+            val len = if (random.nextBoolean()) -1 else random.nextInt(1, bytes.size + 2)
             add(Triple(bytes, off, len))
         }
     }

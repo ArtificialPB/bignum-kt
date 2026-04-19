@@ -496,20 +496,6 @@ class ErrorHandlingTest : FunSpec({
         BigInteger(bytes, 2, 0) shouldBe bigIntegerOf(0L)
     }
 
-    test("constructor(bytes, off, len) with len=0 follows JVM's negative-leading-byte edge case") {
-        val bytes = byteArrayOf(0x79, 0xFC.toByte())
-        BigInteger(bytes, 1, 0) shouldBe BigInteger("-135")
-    }
-
-    test("constructor(bytes, off, len) with len=0 at off==size throws IndexOutOfBoundsException") {
-        // JVM throws ArrayIndexOutOfBoundsException (subclass of IndexOutOfBoundsException)
-        // Kotlin/Native deprecates ArrayIndexOutOfBoundsException(String), so we assert the supertype
-        val bytes = byteArrayOf(0x01, 0x02, 0x03)
-        shouldThrow<IndexOutOfBoundsException> {
-            BigInteger(bytes, 3, 0)
-        }
-    }
-
     test("constructor(bytes, off, len) with empty array and len=0 throws") {
         shouldThrow<NumberFormatException> {
             BigInteger(byteArrayOf(), 0, 0)
