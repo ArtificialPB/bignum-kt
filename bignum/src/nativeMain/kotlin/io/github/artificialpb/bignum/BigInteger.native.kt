@@ -627,106 +627,22 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
 
         for (limbIndex in 0 until size) {
             val limb = limbs[limbIndex]
-            when (carryBits) {
-                0 -> {
-                    hashCode += factor * limb.toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr Int.SIZE_BITS
-                    carryBits = 28
-                }
-
-                28 -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0xFUL).toInt() shl 28))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 4).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr 36
-                    carryBits = 24
-                }
-
-                24 -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0xFFUL).toInt() shl 24))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 8).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr 40
-                    carryBits = 20
-                }
-
-                20 -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFUL).toInt() shl 20))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 12).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr 44
-                    carryBits = 16
-                }
-
-                16 -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFFUL).toInt() shl 16))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 16).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr 48
-                    carryBits = 12
-                }
-
-                12 -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFFFUL).toInt() shl 12))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 20).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr 52
-                    carryBits = 8
-                }
-
-                8 -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0xFFFFFFUL).toInt() shl 8))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 24).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = limb shr 56
-                    carryBits = 4
-                }
-
-                else -> {
-                    hashCode += factor * (carry.toInt() or ((limb and 0x0FFFFFFFUL).toInt() shl 4))
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    hashCode += factor * (limb shr 28).toInt()
-                    factor *= 31
-                    emittedWords++
-                    if (emittedWords == wordCount) return hashCode * sign
-                    carry = 0UL
-                    carryBits = 0
-                }
+            if (carryBits == 0) {
+                hashCode += factor * limb.toInt()
+                factor *= 31
+                if (++emittedWords == wordCount) return hashCode * sign
+                carry = limb shr 32
+                carryBits = 28
+            } else {
+                hashCode += factor * (carry or (limb shl carryBits)).toInt()
+                factor *= 31
+                if (++emittedWords == wordCount) return hashCode * sign
+                val consumed = 32 - carryBits
+                hashCode += factor * (limb shr consumed).toInt()
+                factor *= 31
+                if (++emittedWords == wordCount) return hashCode * sign
+                carry = limb shr (consumed + 32)
+                carryBits -= 4
             }
         }
         if (emittedWords < wordCount) {
