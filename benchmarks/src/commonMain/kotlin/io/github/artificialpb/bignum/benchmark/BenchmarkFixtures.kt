@@ -72,11 +72,10 @@ data class BenchmarkFixture(
     val rangeEnd: BigInteger,
 )
 
-internal fun decimalPattern(pattern: String, repeats: Int, suffix: String): String =
-    buildString {
-        repeat(repeats) { append(pattern) }
-        append(suffix)
-    }
+internal fun decimalPattern(pattern: String, repeats: Int, suffix: String): String = buildString {
+    repeat(repeats) { append(pattern) }
+    append(suffix)
+}
 
 val benchmarkProfiles = mapOf(
     "small" to BenchmarkProfile(

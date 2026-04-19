@@ -33,14 +33,14 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
 
     context("and with negative operands") {
         withData(
-            BitwiseBinaryCase("-1", "255", "255", "and"),          // all 1s & 0xFF = 0xFF
+            BitwiseBinaryCase("-1", "255", "255", "and"), // all 1s & 0xFF = 0xFF
             BitwiseBinaryCase("-1", "-1", "-1", "and"),
-            BitwiseBinaryCase("-256", "255", "0", "and"),          // 0xFFFFFF00 & 0xFF = 0
-            BitwiseBinaryCase("-2", "3", "2", "and"),              // ...1110 & 0011 = 0010
+            BitwiseBinaryCase("-256", "255", "0", "and"), // 0xFFFFFF00 & 0xFF = 0
+            BitwiseBinaryCase("-2", "3", "2", "and"), // ...1110 & 0011 = 0010
             BitwiseBinaryCase("-128", "-128", "-128", "and"),
             BitwiseBinaryCase("-1", "0", "0", "and"),
             BitwiseBinaryCase("-4", "-4", "-4", "and"),
-            BitwiseBinaryCase("-3", "5", "5", "and"),              // ...11111101 & 00000101 = 00000101
+            BitwiseBinaryCase("-3", "5", "5", "and"), // ...11111101 & 00000101 = 00000101
         ) { (a, b, expected, _) ->
             bigIntegerOf(a).and(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
@@ -50,10 +50,10 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
         withData(
             BitwiseBinaryCase("-1", "0", "-1", "or"),
             BitwiseBinaryCase("-1", "255", "-1", "or"),
-            BitwiseBinaryCase("-256", "255", "-1", "or"),          // 0xFFFFFF00 | 0xFF = -1
-            BitwiseBinaryCase("-2", "1", "-1", "or"),              // ...1110 | 0001 = ...1111
+            BitwiseBinaryCase("-256", "255", "-1", "or"), // 0xFFFFFF00 | 0xFF = -1
+            BitwiseBinaryCase("-2", "1", "-1", "or"), // ...1110 | 0001 = ...1111
             BitwiseBinaryCase("-128", "127", "-1", "or"),
-            BitwiseBinaryCase("-4", "3", "-1", "or"),              // ...11111100 | 00000011 = -1
+            BitwiseBinaryCase("-4", "3", "-1", "or"), // ...11111100 | 00000011 = -1
         ) { (a, b, expected, _) ->
             bigIntegerOf(a).or(bigIntegerOf(b)) shouldBe BigInteger(expected)
         }
@@ -63,7 +63,7 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
         withData(
             BitwiseBinaryCase("-1", "0", "-1", "xor"),
             BitwiseBinaryCase("-1", "-1", "0", "xor"),
-            BitwiseBinaryCase("-1", "255", "-256", "xor"),         // all 1s ^ 0xFF = ...1100000000
+            BitwiseBinaryCase("-1", "255", "-256", "xor"), // all 1s ^ 0xFF = ...1100000000
             BitwiseBinaryCase("-256", "255", "-1", "xor"),
             BitwiseBinaryCase("-2", "1", "-1", "xor"),
             BitwiseBinaryCase("-128", "-1", "127", "xor"),
@@ -74,10 +74,10 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
 
     context("andNot with negative operands") {
         withData(
-            BitwiseBinaryCase("255", "-1", "0", "andNot"),         // 0xFF & ~(-1) = 0xFF & 0 = 0
-            BitwiseBinaryCase("-1", "0", "-1", "andNot"),          // -1 & ~0 = -1 & -1 = -1
-            BitwiseBinaryCase("-1", "255", "-256", "andNot"),      // -1 & ~0xFF = ...11100000000
-            BitwiseBinaryCase("-1", "-256", "255", "andNot"),      // -1 & ~(-256) = -1 & 0xFF = 255
+            BitwiseBinaryCase("255", "-1", "0", "andNot"), // 0xFF & ~(-1) = 0xFF & 0 = 0
+            BitwiseBinaryCase("-1", "0", "-1", "andNot"), // -1 & ~0 = -1 & -1 = -1
+            BitwiseBinaryCase("-1", "255", "-256", "andNot"), // -1 & ~0xFF = ...11100000000
+            BitwiseBinaryCase("-1", "-256", "255", "andNot"), // -1 & ~(-256) = -1 & 0xFF = 255
             BitwiseBinaryCase("0", "-1", "0", "andNot"),
         ) { (a, b, expected, _) ->
             bigIntegerOf(a).andNot(bigIntegerOf(b)) shouldBe BigInteger(expected)
@@ -86,9 +86,9 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
 
     context("flipBit on negative numbers") {
         withData(
-            BitwiseUnaryCase("-1", 0, "-2", "flipBit"),    // ...1111 -> ...1110
-            BitwiseUnaryCase("-1", 7, "-129", "flipBit"),  // flip bit 7: ...11111111 -> ...01111111 = -(128+1)
-            BitwiseUnaryCase("-2", 0, "-1", "flipBit"),    // ...1110 -> ...1111
+            BitwiseUnaryCase("-1", 0, "-2", "flipBit"), // ...1111 -> ...1110
+            BitwiseUnaryCase("-1", 7, "-129", "flipBit"), // flip bit 7: ...11111111 -> ...01111111 = -(128+1)
+            BitwiseUnaryCase("-2", 0, "-1", "flipBit"), // ...1110 -> ...1111
             BitwiseUnaryCase("-128", 7, "-256", "flipBit"),
         ) { (input, bit, expected, _) ->
             BigInteger(input).flipBit(bit) shouldBe BigInteger(expected)
@@ -97,9 +97,9 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
 
     context("setBit on negative numbers") {
         withData(
-            BitwiseUnaryCase("-2", 0, "-1", "setBit"),     // ...1110 -> ...1111
-            BitwiseUnaryCase("-1", 0, "-1", "setBit"),     // already set
-            BitwiseUnaryCase("-129", 7, "-1", "setBit"),   // ...01111111 -> ...11111111
+            BitwiseUnaryCase("-2", 0, "-1", "setBit"), // ...1110 -> ...1111
+            BitwiseUnaryCase("-1", 0, "-1", "setBit"), // already set
+            BitwiseUnaryCase("-129", 7, "-1", "setBit"), // ...01111111 -> ...11111111
             BitwiseUnaryCase("-256", 0, "-255", "setBit"),
         ) { (input, bit, expected, _) ->
             BigInteger(input).setBit(bit) shouldBe BigInteger(expected)
@@ -108,9 +108,9 @@ class NegativeBitwiseEdgeCaseTest : FunSpec({
 
     context("clearBit on negative numbers") {
         withData(
-            BitwiseUnaryCase("-1", 0, "-2", "clearBit"),    // ...1111 -> ...1110
-            BitwiseUnaryCase("-2", 0, "-2", "clearBit"),    // already clear
-            BitwiseUnaryCase("-1", 7, "-129", "clearBit"),  // ...11111111 -> ...01111111
+            BitwiseUnaryCase("-1", 0, "-2", "clearBit"), // ...1111 -> ...1110
+            BitwiseUnaryCase("-2", 0, "-2", "clearBit"), // already clear
+            BitwiseUnaryCase("-1", 7, "-129", "clearBit"), // ...11111111 -> ...01111111
             BitwiseUnaryCase("-255", 0, "-256", "clearBit"),
         ) { (input, bit, expected, _) ->
             BigInteger(input).clearBit(bit) shouldBe BigInteger(expected)
@@ -152,13 +152,13 @@ class NegativeShiftEdgeCaseTest : FunSpec({
     context("shiftRight of negative numbers (arithmetic shift)") {
         withData(
             nameFn = { "${it.first} >> ${it.second} = ${it.third}" },
-            Triple("-1", 1, "-1"),       // arithmetic: -1 >> n = -1 always
+            Triple("-1", 1, "-1"), // arithmetic: -1 >> n = -1 always
             Triple("-1", 100, "-1"),
-            Triple("-2", 1, "-1"),       // ...1110 >> 1 = ...1111
-            Triple("-4", 1, "-2"),       // ...11100 >> 1 = ...1110
+            Triple("-2", 1, "-1"), // ...1110 >> 1 = ...1111
+            Triple("-4", 1, "-2"), // ...11100 >> 1 = ...1110
             Triple("-4", 2, "-1"),
             Triple("-128", 7, "-1"),
-            Triple("-129", 1, "-65"),    // ...01111111 >> 1 = ...0111111(1) -> ...10111111(1)
+            Triple("-129", 1, "-65"), // ...01111111 >> 1 = ...0111111(1) -> ...10111111(1)
             Triple("-256", 8, "-1"),
             Triple("-257", 1, "-129"),
             Triple("-1024", 10, "-1"),
@@ -209,14 +209,14 @@ class ByteArrayEdgeCaseTest : FunSpec({
 
     context("toByteArray/fromByteArray round-trip at power-of-two boundaries") {
         withData(
-            "127", "-128",               // 1-byte boundary
-            "128", "-129",               // crosses to 2 bytes
+            "127", "-128", // 1-byte boundary
+            "128", "-129", // crosses to 2 bytes
             "255", "-256",
             "256", "-257",
-            "32767", "-32768",           // 2-byte boundary
-            "32768", "-32769",           // crosses to 3 bytes
+            "32767", "-32768", // 2-byte boundary
+            "32768", "-32769", // crosses to 3 bytes
             "65535", "-65536",
-            "8388607", "-8388608",       // 3-byte boundary
+            "8388607", "-8388608", // 3-byte boundary
             "8388608", "-8388609",
             "2147483647", "-2147483648", // 4-byte boundary (Int.MAX/MIN)
         ) { value ->
@@ -229,23 +229,23 @@ class ByteArrayEdgeCaseTest : FunSpec({
     context("toByteArray produces minimal representation") {
         // Positive: no unnecessary leading 0x00 bytes (except when high bit is set)
         test("positive values have minimal byte length") {
-            BigInteger("1").toByteArray().size shouldBeExactly 1        // [0x01]
-            BigInteger("127").toByteArray().size shouldBeExactly 1      // [0x7F]
-            BigInteger("128").toByteArray().size shouldBeExactly 2      // [0x00, 0x80]
-            BigInteger("255").toByteArray().size shouldBeExactly 2      // [0x00, 0xFF]
-            BigInteger("256").toByteArray().size shouldBeExactly 2      // [0x01, 0x00]
-            BigInteger("32767").toByteArray().size shouldBeExactly 2    // [0x7F, 0xFF]
-            BigInteger("32768").toByteArray().size shouldBeExactly 3    // [0x00, 0x80, 0x00]
+            BigInteger("1").toByteArray().size shouldBeExactly 1 // [0x01]
+            BigInteger("127").toByteArray().size shouldBeExactly 1 // [0x7F]
+            BigInteger("128").toByteArray().size shouldBeExactly 2 // [0x00, 0x80]
+            BigInteger("255").toByteArray().size shouldBeExactly 2 // [0x00, 0xFF]
+            BigInteger("256").toByteArray().size shouldBeExactly 2 // [0x01, 0x00]
+            BigInteger("32767").toByteArray().size shouldBeExactly 2 // [0x7F, 0xFF]
+            BigInteger("32768").toByteArray().size shouldBeExactly 3 // [0x00, 0x80, 0x00]
         }
 
         // Negative: no unnecessary leading 0xFF bytes (except when high bit is clear)
         test("negative values have minimal byte length") {
-            BigInteger("-1").toByteArray().size shouldBeExactly 1       // [0xFF]
-            BigInteger("-128").toByteArray().size shouldBeExactly 1     // [0x80]
-            BigInteger("-129").toByteArray().size shouldBeExactly 2     // [0xFF, 0x7F]
-            BigInteger("-256").toByteArray().size shouldBeExactly 2     // [0xFF, 0x00]
-            BigInteger("-32768").toByteArray().size shouldBeExactly 2   // [0x80, 0x00]
-            BigInteger("-32769").toByteArray().size shouldBeExactly 3   // [0xFF, 0x7F, 0xFF]
+            BigInteger("-1").toByteArray().size shouldBeExactly 1 // [0xFF]
+            BigInteger("-128").toByteArray().size shouldBeExactly 1 // [0x80]
+            BigInteger("-129").toByteArray().size shouldBeExactly 2 // [0xFF, 0x7F]
+            BigInteger("-256").toByteArray().size shouldBeExactly 2 // [0xFF, 0x00]
+            BigInteger("-32768").toByteArray().size shouldBeExactly 2 // [0x80, 0x00]
+            BigInteger("-32769").toByteArray().size shouldBeExactly 3 // [0xFF, 0x7F, 0xFF]
         }
     }
 
@@ -261,9 +261,9 @@ class ByteArrayEdgeCaseTest : FunSpec({
 
     test("constructor(bytes, off, len) slices correctly") {
         val bytes = byteArrayOf(0x00, 0x01, 0x00, 0xFF.toByte())
-        BigInteger(bytes, 1, 2) shouldBe BigInteger("256")  // [0x01, 0x00]
-        BigInteger(bytes, 0, 1) shouldBe bigIntegerOf(0L)    // [0x00]
-        BigInteger(bytes, 3, 1) shouldBe BigInteger("-1")   // [0xFF]
+        BigInteger(bytes, 1, 2) shouldBe BigInteger("256") // [0x01, 0x00]
+        BigInteger(bytes, 0, 1) shouldBe bigIntegerOf(0L) // [0x00]
+        BigInteger(bytes, 3, 1) shouldBe BigInteger("-1") // [0xFF]
     }
 })
 
@@ -641,20 +641,20 @@ class PrimalityStressEdgeCaseTest : FunSpec({
 
     context("isProbablePrime rejects pseudoprimes and handles large values") {
         withData(
-            BoolCase("341", false),             // Fermat pseudoprime to base 2
-            BoolCase("561", false),             // Carmichael
-            BoolCase("645", false),             // Carmichael
-            BoolCase("1105", false),            // Carmichael
-            BoolCase("1729", false),            // Carmichael
-            BoolCase("2465", false),            // Carmichael
-            BoolCase("2821", false),            // Carmichael
-            BoolCase("6601", false),            // Carmichael
-            BoolCase("41041", false),           // Carmichael
-            BoolCase("825265", false),          // Carmichael
-            BoolCase("3215031751", false),      // strong pseudoprime to several small bases
-            BoolCase("2152302898747", false),   // strong pseudoprime to first primes 2,3,5,7,11
+            BoolCase("341", false), // Fermat pseudoprime to base 2
+            BoolCase("561", false), // Carmichael
+            BoolCase("645", false), // Carmichael
+            BoolCase("1105", false), // Carmichael
+            BoolCase("1729", false), // Carmichael
+            BoolCase("2465", false), // Carmichael
+            BoolCase("2821", false), // Carmichael
+            BoolCase("6601", false), // Carmichael
+            BoolCase("41041", false), // Carmichael
+            BoolCase("825265", false), // Carmichael
+            BoolCase("3215031751", false), // strong pseudoprime to several small bases
+            BoolCase("2152302898747", false), // strong pseudoprime to first primes 2,3,5,7,11
             BoolCase(mersenne127, true),
-            BoolCase("-$mersenne127", true),    // JVM tests absolute value
+            BoolCase("-$mersenne127", true), // JVM tests absolute value
             BoolCase(mersenne127Squared, false),
             BoolCase("-$mersenne127Squared", false),
         ) { (input, expected) ->
@@ -739,19 +739,19 @@ class BitCountNegativeTest : FunSpec({
     context("bitCount for negative values matches known results") {
         withData(
             nameFn = { "bitCount(${it.first}) = ${it.second}" },
-            "-1" to 0,           // two's complement: all 1s, 0 bits differ from sign
-            "-2" to 1,           // ...1110 → one 0
-            "-3" to 1,           // ...1101 → one 0
-            "-4" to 2,           // ...1100 → two 0s
-            "-5" to 1,           // ...1011 → one 0
-            "-7" to 2,           // ...1001 → two 0s (|7|-1=6=110, popcount=2)
-            "-8" to 3,           // ...11000 → three 0s (|8|-1=7=111)
-            "-9" to 1,           // ...10111 → one 0 (|9|-1=8=1000)
-            "-128" to 7,         // ...10000000 → seven 0s (127=1111111)
-            "-129" to 1,         // ...01111111 → one 0 (128=10000000)
-            "-255" to 7,         // (254=11111110, popcount=7)
-            "-256" to 8,         // (255=11111111)
-            "-257" to 1,         // (256=100000000)
+            "-1" to 0, // two's complement: all 1s, 0 bits differ from sign
+            "-2" to 1, // ...1110 → one 0
+            "-3" to 1, // ...1101 → one 0
+            "-4" to 2, // ...1100 → two 0s
+            "-5" to 1, // ...1011 → one 0
+            "-7" to 2, // ...1001 → two 0s (|7|-1=6=110, popcount=2)
+            "-8" to 3, // ...11000 → three 0s (|8|-1=7=111)
+            "-9" to 1, // ...10111 → one 0 (|9|-1=8=1000)
+            "-128" to 7, // ...10000000 → seven 0s (127=1111111)
+            "-129" to 1, // ...01111111 → one 0 (128=10000000)
+            "-255" to 7, // (254=11111110, popcount=7)
+            "-256" to 8, // (255=11111111)
+            "-257" to 1, // (256=100000000)
         ) { (input, expected) ->
             BigInteger(input).bitCount() shouldBeExactly expected
         }
@@ -1099,8 +1099,8 @@ class BitLengthNegativePowersOfTwoTest : FunSpec({
     // bitLength(-2^n) = n, because |(-2^n)| - 1 = 2^n - 1 which has bitLength n
     context("bitLength of -2^n equals n") {
         withData(
-            nameFn = { "bitLength(-2^${it}) = ${it}" },
-            1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64, 100, 128
+            nameFn = { "bitLength(-2^$it) = $it" },
+            1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64, 100, 128,
         ) { n ->
             val value = -(bigIntegerOf(2L).pow(n))
             value.bitLength() shouldBeExactly n
@@ -1110,8 +1110,8 @@ class BitLengthNegativePowersOfTwoTest : FunSpec({
     // bitLength(-(2^n + 1)) = n + 1
     context("bitLength of -(2^n + 1) equals n + 1") {
         withData(
-            nameFn = { "bitLength(-(2^${it}+1)) = ${it + 1}" },
-            1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64
+            nameFn = { "bitLength(-(2^$it+1)) = ${it + 1}" },
+            1, 2, 3, 4, 7, 8, 15, 16, 31, 32, 63, 64,
         ) { n ->
             val value = -(bigIntegerOf(2L).pow(n) + bigIntegerOf(1L))
             value.bitLength() shouldBeExactly (n + 1)
@@ -1193,8 +1193,8 @@ class NativeThresholdRegressionTest : FunSpec({
 
     test("divideAndRemainder stays correct at the 7-limb schoolbook division boundary") {
         val limbBoundary = 180
-        val divisor = twoPow(limbBoundary) - bigIntegerOf(1L)      // 3 limbs
-        val quotient = twoPow(limbBoundary) + bigIntegerOf(1L)     // 4 limbs
+        val divisor = twoPow(limbBoundary) - bigIntegerOf(1L) // 3 limbs
+        val quotient = twoPow(limbBoundary) + bigIntegerOf(1L) // 4 limbs
         val remainder = BigInteger("12345678901234567890")
         val dividend = twoPow(limbBoundary * 2) - bigIntegerOf(1L) + remainder
 
@@ -1205,7 +1205,7 @@ class NativeThresholdRegressionTest : FunSpec({
 
     test("divideAndRemainder stays correct above the 7-limb schoolbook division boundary") {
         val limbBoundary = 480
-        val divisor = twoPow(limbBoundary) - bigIntegerOf(1L)      // 8 limbs
+        val divisor = twoPow(limbBoundary) - bigIntegerOf(1L) // 8 limbs
         val quotient = twoPow(limbBoundary) + bigIntegerOf(1L)
         val remainder = BigInteger("123456789012345678901234567890")
         val dividend = twoPow(limbBoundary * 2) - bigIntegerOf(1L) + remainder

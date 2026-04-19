@@ -8,12 +8,11 @@ internal inline fun <R> withBorrowedHandles(
     first: BigInteger,
     second: BigInteger,
     block: (CPointer<mp_int>, CPointer<mp_int>) -> R,
-): R =
-    first.withBorrowedHandle { firstHandle ->
-        second.withBorrowedHandle { secondHandle ->
-            block(firstHandle, secondHandle)
-        }
+): R = first.withBorrowedHandle { firstHandle ->
+    second.withBorrowedHandle { secondHandle ->
+        block(firstHandle, secondHandle)
     }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 internal inline fun <R> withBorrowedHandles(
@@ -21,14 +20,13 @@ internal inline fun <R> withBorrowedHandles(
     second: BigInteger,
     third: BigInteger,
     block: (CPointer<mp_int>, CPointer<mp_int>, CPointer<mp_int>) -> R,
-): R =
-    first.withBorrowedHandle { firstHandle ->
-        second.withBorrowedHandle { secondHandle ->
-            third.withBorrowedHandle { thirdHandle ->
-                block(firstHandle, secondHandle, thirdHandle)
-            }
+): R = first.withBorrowedHandle { firstHandle ->
+    second.withBorrowedHandle { secondHandle ->
+        third.withBorrowedHandle { thirdHandle ->
+            block(firstHandle, secondHandle, thirdHandle)
         }
     }
+}
 
 @OptIn(ExperimentalForeignApi::class)
 internal inline fun <R> BigInteger.withBorrowedHandle(block: (CPointer<mp_int>) -> R): R {

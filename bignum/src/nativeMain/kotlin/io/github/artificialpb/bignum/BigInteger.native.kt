@@ -163,8 +163,7 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         }
     }
 
-    actual fun abs(): BigInteger =
-        if (sign >= 0) this else BigInteger(1, size, limbs)
+    actual fun abs(): BigInteger = if (sign >= 0) this else BigInteger(1, size, limbs)
 
     actual fun pow(exponent: Int): BigInteger {
         when {
@@ -578,11 +577,9 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
 
     // Comparison
 
-    actual fun min(other: BigInteger): BigInteger =
-        if (compareTo(other) <= 0) this else other
+    actual fun min(other: BigInteger): BigInteger = if (compareTo(other) <= 0) this else other
 
-    actual fun max(other: BigInteger): BigInteger =
-        if (compareTo(other) >= 0) this else other
+    actual fun max(other: BigInteger): BigInteger = if (compareTo(other) >= 0) this else other
 
     actual override fun compareTo(other: BigInteger): Int {
         if (sign != other.sign) return sign.compareTo(other.sign)
@@ -669,8 +666,7 @@ actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     }
 }
 
-actual operator fun BigInteger.unaryMinus(): BigInteger =
-    if (signum() == 0) this else BigInteger(-signum(), size, limbs)
+actual operator fun BigInteger.unaryMinus(): BigInteger = if (signum() == 0) this else BigInteger(-signum(), size, limbs)
 
 // inc/dec
 
@@ -918,19 +914,24 @@ private fun multiplyModULong(left: ULong, right: ULong, modulus: ULong): ULong {
     return result
 }
 
-private fun addModULong(left: ULong, right: ULong, modulus: ULong): ULong =
-    if (left >= modulus - right) {
-        left - (modulus - right)
-    } else {
-        left + right
-    }
+private fun addModULong(left: ULong, right: ULong, modulus: ULong): ULong = if (left >= modulus - right) {
+    left - (modulus - right)
+} else {
+    left + right
+}
 
 private val SMALL_PRIME_PRETESTS = intArrayOf(
-    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37
+    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37,
 )
 
 private val LONG_MILLER_RABIN_BASES = ulongArrayOf(
-    2UL, 325UL, 9375UL, 28178UL, 450775UL, 9780504UL, 1795265022UL
+    2UL,
+    325UL,
+    9375UL,
+    28178UL,
+    450775UL,
+    9780504UL,
+    1795265022UL,
 )
 
 private const val STRING_PARSE_WORD_BITS = 32
@@ -990,7 +991,7 @@ private val STRING_FORMAT_GROUP_RADIX = ULongArray(37).also { groupRadix ->
 private inline fun fromStringConstructor(
     value: String,
     radix: Int,
-    init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit
+    init: (sign: Int, size: Int, magnitude: ULongArray) -> Unit,
 ) {
     withStringMetadata(value, radix) { sign, metaCursor, numDigits ->
         if (numDigits == 0) {
@@ -1034,7 +1035,7 @@ private inline fun fromStringConstructor(
 private inline fun withStringMetadata(
     value: String,
     radix: Int,
-    consumer: (sign: Int, cursor: Int, numDigits: Int) -> Unit
+    consumer: (sign: Int, cursor: Int, numDigits: Int) -> Unit,
 ) {
     if (radix !in 2..36) throw NumberFormatException("Radix out of range: $radix")
     val length = value.length

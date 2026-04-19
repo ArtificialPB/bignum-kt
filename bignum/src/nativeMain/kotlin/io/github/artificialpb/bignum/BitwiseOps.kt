@@ -275,50 +275,41 @@ private inline fun combinePositiveWithNegativePayloadToNegative(
     return BigInteger(-1, lastNonZero, result)
 }
 
-internal fun andPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit and (negativePayload.inv() and CANONICAL_LIMB_MASK)
-    }
+internal fun andPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger = combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
+    positiveDigit and (negativePayload.inv() and CANONICAL_LIMB_MASK)
+}
 
-internal fun andNotPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit and negativePayload
-    }
+internal fun andNotPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger = combinePositiveWithNegativePayloadToPositive(positive, negative) { positiveDigit, negativePayload ->
+    positiveDigit and negativePayload
+}
 
-internal fun xorPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit xor negativePayload
-    }
+internal fun xorPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger = combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
+    positiveDigit xor negativePayload
+}
 
-internal fun orPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
-        negativePayload and (positiveDigit.inv() and CANONICAL_LIMB_MASK)
-    }
+internal fun orPositiveNegative(positive: BigInteger, negative: BigInteger): BigInteger = combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
+    negativePayload and (positiveDigit.inv() and CANONICAL_LIMB_MASK)
+}
 
-internal fun andNotNegativePositive(negative: BigInteger, positive: BigInteger): BigInteger =
-    combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
-        positiveDigit or negativePayload
-    }
+internal fun andNotNegativePositive(negative: BigInteger, positive: BigInteger): BigInteger = combinePositiveWithNegativePayloadToNegative(positive, negative) { positiveDigit, negativePayload ->
+    positiveDigit or negativePayload
+}
 
-internal fun andNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
-        leftPayload or rightPayload
-    }
+internal fun andNegativeNegative(left: BigInteger, right: BigInteger): BigInteger = combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
+    leftPayload or rightPayload
+}
 
-internal fun orNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
-        leftPayload and rightPayload
-    }
+internal fun orNegativeNegative(left: BigInteger, right: BigInteger): BigInteger = combineNegativePayloadsToNegative(left, right) { leftPayload, rightPayload ->
+    leftPayload and rightPayload
+}
 
-internal fun xorNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
-        leftPayload xor rightPayload
-    }
+internal fun xorNegativeNegative(left: BigInteger, right: BigInteger): BigInteger = combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
+    leftPayload xor rightPayload
+}
 
-internal fun andNotNegativeNegative(left: BigInteger, right: BigInteger): BigInteger =
-    combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
-        rightPayload and (leftPayload.inv() and CANONICAL_LIMB_MASK)
-    }
+internal fun andNotNegativeNegative(left: BigInteger, right: BigInteger): BigInteger = combineNegativePayloadsToPositive(left, right) { leftPayload, rightPayload ->
+    rightPayload and (leftPayload.inv() and CANONICAL_LIMB_MASK)
+}
 
 internal fun addSingleBitMagnitude(sign: Int, value: BigInteger, n: Int): BigInteger {
     val digitIndex = n / CANONICAL_LIMB_BITS

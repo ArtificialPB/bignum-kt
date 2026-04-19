@@ -349,7 +349,7 @@ class BigIntegerArithmeticTest : FunSpec({
             BinaryOpCase("7", "13", "2"),
             BinaryOpCase("2", "17", "9"),
             BinaryOpCase("10", "7", "5"),
-            BinaryOpCase("3", "1", "0"),     // x.modInverse(1) == 0
+            BinaryOpCase("3", "1", "0"), // x.modInverse(1) == 0
             BinaryOpCase("0", "1", "0"),
             BinaryOpCase("100", "1", "0"),
         ) { (a, m, expected) ->
@@ -604,7 +604,7 @@ class BigIntegerPredicatesTest : FunSpec({
             BoolCase("4", false),
             BoolCase("100", false),
             BoolCase("1000000006", false),
-            BoolCase("-7", true),       // JVM tests absolute value
+            BoolCase("-7", true), // JVM tests absolute value
         ) { (input, expected) ->
             bi(input).isProbablePrime(10) shouldBe expected
         }

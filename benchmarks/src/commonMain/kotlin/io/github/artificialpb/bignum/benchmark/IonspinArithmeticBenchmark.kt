@@ -44,8 +44,7 @@ open class IonspinArithmeticBenchmark : IonspinProfiledBenchmarkState() {
     fun gcdMethod(): BigInteger = fixture.left.gcd(fixture.right)
 
     @Benchmark
-    fun divideAndRemainderMethod(): Pair<BigInteger, BigInteger> =
-        fixture.dividend.divideAndRemainder(fixture.divisor)
+    fun divideAndRemainderMethod(): Pair<BigInteger, BigInteger> = fixture.dividend.divideAndRemainder(fixture.divisor)
 
     @Benchmark
     fun unaryMinusMethod(): BigInteger = fixture.left.negate()

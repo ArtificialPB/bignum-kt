@@ -6,6 +6,8 @@ agp = "8.11.2"
 serialization = "1.9.0"
 benchmark = "0.4.14"
 kover = "0.9.8"
+ktlint-tool = "1.8.0"
+ktlint-gradle = "13.1.0"
 
 [libraries]
 ionspin-bignum = { module = "com.ionspin.kotlin:bignum", version = "0.3.10" }
@@ -24,3 +26,4 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAllOpen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
 kotlinxBenchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "benchmark" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }

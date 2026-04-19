@@ -78,8 +78,7 @@ expect operator fun BigInteger.inc(): BigInteger
 expect operator fun BigInteger.dec(): BigInteger
 
 // Range support for idiomatic loops: for (i in a..b)
-operator fun BigInteger.rangeTo(other: BigInteger): BigIntegerRange =
-    BigIntegerRange(this, other)
+operator fun BigInteger.rangeTo(other: BigInteger): BigIntegerRange = BigIntegerRange(this, other)
 
 class BigIntegerRange(
     override val start: BigInteger,

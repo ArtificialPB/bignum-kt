@@ -44,7 +44,7 @@ kotlin {
 
     targets.withType<KotlinNativeTarget>().configureEach {
         check(konanTarget.name in pinnedTommathTargets) {
-            "Native target '${name}' (${konanTarget.name}) is not pinned for LibTomMath. " +
+            "Native target '$name' (${konanTarget.name}) is not pinned for LibTomMath. " +
                 "Add an explicit entry to pinnedTommathTargets before enabling it."
         }
         compilations.getByName("main") {

@@ -18,8 +18,7 @@ open class IonspinConstructionBenchmark : IonspinProfiledBenchmarkState() {
     fun parseString(): BigInteger = BigInteger.parseString(fixture.constructorString, 10)
 
     @Benchmark
-    fun parseStringRadix(): BigInteger =
-        BigInteger.parseString(fixture.constructorRadixString, fixture.constructorRadix)
+    fun parseStringRadix(): BigInteger = BigInteger.parseString(fixture.constructorRadixString, fixture.constructorRadix)
 
     @Benchmark
     fun fromByteArray(): BigInteger = BigInteger.fromByteArray(fixture.byteArrayInput, Sign.POSITIVE)

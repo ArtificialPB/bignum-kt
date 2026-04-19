@@ -51,6 +51,8 @@ bignum-kt/
 ## Build Commands
 
 ```bash
+./gradlew ktlintCheck              # Kotlin + Gradle Kotlin DSL lint
+./gradlew ktlintFormat             # Apply ktlint formatting
 ./gradlew jvmTest                 # JVM tests only
 ./gradlew macosArm64Test          # Native tests (macOS ARM64)
 ./gradlew allTests                # All platform tests

@@ -18,19 +18,17 @@ open class ConstructionBenchmark : ProfiledBenchmarkState() {
     fun constructorString(): BigInteger = BigInteger(fixture.constructorString)
 
     @Benchmark
-    fun constructorStringRadix(): BigInteger =
-        BigInteger(fixture.constructorRadixString, fixture.constructorRadix)
+    fun constructorStringRadix(): BigInteger = BigInteger(fixture.constructorRadixString, fixture.constructorRadix)
 
     @Benchmark
     fun constructorBytes(): BigInteger = BigInteger(fixture.byteArrayInput)
 
     @Benchmark
-    fun constructorBytesSlice(): BigInteger =
-        BigInteger(
-            fixture.slicedByteArrayInput,
-            fixture.sliceOffset,
-            fixture.sliceLength,
-        )
+    fun constructorBytesSlice(): BigInteger = BigInteger(
+        fixture.slicedByteArrayInput,
+        fixture.sliceOffset,
+        fixture.sliceLength,
+    )
 
     @Benchmark
     fun factoryString(): BigInteger = bigIntegerOf(fixture.factoryString)

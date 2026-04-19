@@ -184,7 +184,7 @@ private inline fun <R> divRemHalfLimbs(
     val MASK: ULong = B - 1UL
 
     val uOrig = toHalfLimbs(dividend) // MSB first, leading zeros stripped
-    val vOrig = toHalfLimbs(divisor)  // MSB first, leading zeros stripped
+    val vOrig = toHalfLimbs(divisor) // MSB first, leading zeros stripped
     val n = vOrig.size
     val m = uOrig.size - n
 

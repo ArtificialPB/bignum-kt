@@ -187,7 +187,7 @@ object DifferentialFixtureGenerator {
         when (this@randomArgsArb) {
             DifferentialOperation.CONSTRUCTOR_STRING,
             DifferentialOperation.FACTORY_OF_STRING,
-                -> listOf(constructorStringArgArb.next(rs = rs))
+            -> listOf(constructorStringArgArb.next(rs = rs))
 
             DifferentialOperation.CONSTRUCTOR_STRING_RADIX ->
                 randomRadixConstructorArgs(rs)
@@ -202,7 +202,7 @@ object DifferentialFixtureGenerator {
             DifferentialOperation.CONSTANT_ONE,
             DifferentialOperation.CONSTANT_TWO,
             DifferentialOperation.CONSTANT_TEN,
-                -> emptyList()
+            -> emptyList()
 
             DifferentialOperation.FACTORY_OF_LONG ->
                 listOf(longArgArb.next(rs = rs))
@@ -219,12 +219,12 @@ object DifferentialFixtureGenerator {
             DifferentialOperation.MAX,
             DifferentialOperation.COMPARE_TO,
             DifferentialOperation.EQUALS_BIGINT,
-                -> listOf(generalBigIntArgArb.next(rs = rs), generalBigIntArgArb.next(rs = rs))
+            -> listOf(generalBigIntArgArb.next(rs = rs), generalBigIntArgArb.next(rs = rs))
 
             DifferentialOperation.DIVIDE,
             DifferentialOperation.REM,
             DifferentialOperation.DIVIDE_AND_REMAINDER,
-                -> listOf(generalBigIntArgArb.next(rs = rs), divisorBigIntArgArb.next(rs = rs))
+            -> listOf(generalBigIntArgArb.next(rs = rs), divisorBigIntArgArb.next(rs = rs))
 
             DifferentialOperation.ABS,
             DifferentialOperation.UNARY_MINUS,
@@ -238,7 +238,7 @@ object DifferentialFixtureGenerator {
             DifferentialOperation.SIGNUM,
             DifferentialOperation.HASH_CODE,
             DifferentialOperation.EQUALS_NULL,
-                -> listOf(generalBigIntArgArb.next(rs = rs))
+            -> listOf(generalBigIntArgArb.next(rs = rs))
 
             DifferentialOperation.POW ->
                 listOf(powBaseBigIntArgArb.next(rs = rs), IntArg(randomPowExponent(rs)))
@@ -260,23 +260,23 @@ object DifferentialFixtureGenerator {
             DifferentialOperation.OR,
             DifferentialOperation.XOR,
             DifferentialOperation.AND_NOT,
-                -> listOf(bitwiseBigIntArgArb.next(rs = rs), bitwiseBigIntArgArb.next(rs = rs))
+            -> listOf(bitwiseBigIntArgArb.next(rs = rs), bitwiseBigIntArgArb.next(rs = rs))
 
             DifferentialOperation.NOT,
             DifferentialOperation.GET_LOWEST_SET_BIT,
             DifferentialOperation.BIT_LENGTH,
             DifferentialOperation.BIT_COUNT,
-                -> listOf(bitwiseBigIntArgArb.next(rs = rs))
+            -> listOf(bitwiseBigIntArgArb.next(rs = rs))
 
             DifferentialOperation.SHIFT_LEFT,
             DifferentialOperation.SHIFT_RIGHT,
-                -> listOf(bitwiseBigIntArgArb.next(rs = rs), IntArg(randomShiftAmount(rs)))
+            -> listOf(bitwiseBigIntArgArb.next(rs = rs), IntArg(randomShiftAmount(rs)))
 
             DifferentialOperation.TEST_BIT,
             DifferentialOperation.SET_BIT,
             DifferentialOperation.CLEAR_BIT,
             DifferentialOperation.FLIP_BIT,
-                -> listOf(bitwiseBigIntArgArb.next(rs = rs), IntArg(randomBitIndex(rs)))
+            -> listOf(bitwiseBigIntArgArb.next(rs = rs), IntArg(randomBitIndex(rs)))
 
             DifferentialOperation.IS_PROBABLE_PRIME ->
                 randomProbablePrimeArgs(rs)
@@ -574,8 +574,7 @@ object DifferentialFixtureGenerator {
         else -> randomCanonicalBigInt(rs, maxDigits = 96)
     }
 
-    private fun randomDivisor(rs: RandomSource): String =
-        if (nextChoice(rs, 8) == 0) "0" else randomNonZeroBigInt(rs, maxDigits = 80)
+    private fun randomDivisor(rs: RandomSource): String = if (nextChoice(rs, 8) == 0) "0" else randomNonZeroBigInt(rs, maxDigits = 80)
 
     private fun randomNonZeroBigInt(
         rs: RandomSource,
@@ -674,8 +673,7 @@ object DifferentialFixtureGenerator {
         }
     }
 
-    private fun randomCompositeCertainty(rs: RandomSource): Int =
-        listOf(-5, -1, 0, 10, 25, 50, 100, 128).pick(rs)
+    private fun randomCompositeCertainty(rs: RandomSource): Int = listOf(-5, -1, 0, 10, 25, 50, 100, 128).pick(rs)
 
     private fun randomSqrtInput(rs: RandomSource): String = when (nextChoice(rs, 7)) {
         0 -> "-${randomPositiveBigInt(rs, maxDigits = 32)}"
@@ -1349,8 +1347,7 @@ object DifferentialFixtureGenerator {
         size: Int,
     ): List<Int> = List(size) { random.nextInt(-128, 128) }
 
-    private fun List<String>.pickFrom(fallbackSeed: String): String =
-        if (contains(fallbackSeed) && fallbackSeed != "0") fallbackSeed else first()
+    private fun List<String>.pickFrom(fallbackSeed: String): String = if (contains(fallbackSeed) && fallbackSeed != "0") fallbackSeed else first()
 }
 
 private class CorpusBuilder {
@@ -1373,6 +1370,5 @@ private class CorpusBuilder {
         )
     }
 
-    fun build(): Map<DifferentialOperation, List<DifferentialCase>> =
-        casesByOperation.mapValues { (_, cases) -> cases.toList() }
+    fun build(): Map<DifferentialOperation, List<DifferentialCase>> = casesByOperation.mapValues { (_, cases) -> cases.toList() }
 }

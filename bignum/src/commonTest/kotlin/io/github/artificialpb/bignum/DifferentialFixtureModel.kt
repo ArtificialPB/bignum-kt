@@ -90,7 +90,7 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.CONSTRUCTOR_STRING_RADIX,
         DifferentialOperation.CONSTRUCTOR_BYTES,
         DifferentialOperation.CONSTRUCTOR_BYTES_SLICE,
-            -> DifferentialGroup.CONSTRUCTION
+        -> DifferentialGroup.CONSTRUCTION
 
         DifferentialOperation.CONSTANT_ZERO,
         DifferentialOperation.CONSTANT_ONE,
@@ -99,7 +99,7 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.FACTORY_OF_STRING,
         DifferentialOperation.FACTORY_OF_LONG,
         DifferentialOperation.FACTORY_OF_INT,
-            -> DifferentialGroup.FACTORY
+        -> DifferentialGroup.FACTORY
 
         DifferentialOperation.ADD,
         DifferentialOperation.SUBTRACT,
@@ -117,7 +117,7 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.INC,
         DifferentialOperation.DEC,
         DifferentialOperation.LCM,
-            -> DifferentialGroup.ARITHMETIC
+        -> DifferentialGroup.ARITHMETIC
 
         DifferentialOperation.AND,
         DifferentialOperation.OR,
@@ -133,12 +133,12 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.GET_LOWEST_SET_BIT,
         DifferentialOperation.BIT_LENGTH,
         DifferentialOperation.BIT_COUNT,
-            -> DifferentialGroup.BITWISE
+        -> DifferentialGroup.BITWISE
 
         DifferentialOperation.IS_PROBABLE_PRIME,
         DifferentialOperation.NEXT_PROBABLE_PRIME,
         DifferentialOperation.SQRT,
-            -> DifferentialGroup.NUMBER_THEORY
+        -> DifferentialGroup.NUMBER_THEORY
 
         DifferentialOperation.TO_BYTE_ARRAY,
         DifferentialOperation.TO_INT,
@@ -147,7 +147,7 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.TO_STRING,
         DifferentialOperation.TO_STRING_RADIX,
         DifferentialOperation.SIGNUM,
-            -> DifferentialGroup.CONVERSION
+        -> DifferentialGroup.CONVERSION
 
         DifferentialOperation.MIN,
         DifferentialOperation.MAX,
@@ -156,7 +156,7 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.EQUALS_NULL,
         DifferentialOperation.EQUALS_STRING,
         DifferentialOperation.HASH_CODE,
-            -> DifferentialGroup.COMPARISON
+        -> DifferentialGroup.COMPARISON
 
         DifferentialOperation.RANGE_TO_LIST ->
             DifferentialGroup.RANGE
@@ -237,8 +237,7 @@ object DifferentialFixtureJsonCodec {
         prettyPrint = true
     }
 
-    fun encode(file: DifferentialFixtureFile): String =
-        json.encodeToString(JsonElement.serializer(), file.toJson())
+    fun encode(file: DifferentialFixtureFile): String = json.encodeToString(JsonElement.serializer(), file.toJson())
 
     fun decode(text: String): DifferentialFixtureFile {
         val root = json.parseToJsonElement(text).jsonObject
@@ -254,16 +253,22 @@ object DifferentialFixtureJsonCodec {
     private fun DifferentialFixtureFile.toJson(): JsonObject = buildJsonObject {
         put("operation", JsonPrimitive(operation.name))
         put("group", JsonPrimitive(operation.group.name))
-        put("cases", buildJsonArray {
-            cases.forEach { add(it.toJson()) }
-        })
+        put(
+            "cases",
+            buildJsonArray {
+                cases.forEach { add(it.toJson()) }
+            },
+        )
     }
 
     private fun DifferentialCase.toJson(): JsonObject = buildJsonObject {
         put("id", JsonPrimitive(id))
-        put("args", buildJsonArray {
-            args.forEach { add(it.toJson()) }
-        })
+        put(
+            "args",
+            buildJsonArray {
+                args.forEach { add(it.toJson()) }
+            },
+        )
         put("expected", expected.toJson())
     }
 
@@ -290,9 +295,12 @@ object DifferentialFixtureJsonCodec {
 
         is ByteListArg -> buildJsonObject {
             put("type", JsonPrimitive("byte_list"))
-            put("bytes", buildJsonArray {
-                bytes.forEach { add(JsonPrimitive(it)) }
-            })
+            put(
+                "bytes",
+                buildJsonArray {
+                    bytes.forEach { add(JsonPrimitive(it)) }
+                },
+            )
         }
     }
 
@@ -329,23 +337,32 @@ object DifferentialFixtureJsonCodec {
 
         is ByteListExpected -> buildJsonObject {
             put("type", JsonPrimitive("byte_list"))
-            put("bytes", buildJsonArray {
-                bytes.forEach { add(JsonPrimitive(it)) }
-            })
+            put(
+                "bytes",
+                buildJsonArray {
+                    bytes.forEach { add(JsonPrimitive(it)) }
+                },
+            )
         }
 
         is BigIntListExpected -> buildJsonObject {
             put("type", JsonPrimitive("big_int_list"))
-            put("values", buildJsonArray {
-                decimals.forEach { add(JsonPrimitive(it)) }
-            })
+            put(
+                "values",
+                buildJsonArray {
+                    decimals.forEach { add(JsonPrimitive(it)) }
+                },
+            )
         }
 
         is StringListExpected -> buildJsonObject {
             put("type", JsonPrimitive("string_list"))
-            put("values", buildJsonArray {
-                values.forEach { add(JsonPrimitive(it)) }
-            })
+            put(
+                "values",
+                buildJsonArray {
+                    values.forEach { add(JsonPrimitive(it)) }
+                },
+            )
         }
 
         is FailureExpected -> buildJsonObject {
@@ -388,23 +405,17 @@ object DifferentialFixtureJsonCodec {
         else -> error("Unknown differential expected type")
     }
 
-    private fun JsonObject.requireArray(name: String): JsonArray =
-        requireNotNull(this[name]) { "Missing JSON array: $name" }.jsonArray
+    private fun JsonObject.requireArray(name: String): JsonArray = requireNotNull(this[name]) { "Missing JSON array: $name" }.jsonArray
 
-    private fun JsonObject.requireObject(name: String): JsonObject =
-        requireNotNull(this[name]) { "Missing JSON object: $name" }.jsonObject
+    private fun JsonObject.requireObject(name: String): JsonObject = requireNotNull(this[name]) { "Missing JSON object: $name" }.jsonObject
 
-    private fun JsonObject.requireString(name: String): String =
-        requireNotNull(this[name]) { "Missing JSON string: $name" }.jsonPrimitive.content
+    private fun JsonObject.requireString(name: String): String = requireNotNull(this[name]) { "Missing JSON string: $name" }.jsonPrimitive.content
 
-    private fun JsonObject.requireInt(name: String): Int =
-        requireString(name).toInt()
+    private fun JsonObject.requireInt(name: String): Int = requireString(name).toInt()
 
-    private fun JsonObject.requireLong(name: String): Long =
-        requireString(name).toLong()
+    private fun JsonObject.requireLong(name: String): Long = requireString(name).toLong()
 
-    private fun JsonObject.requireBoolean(name: String): Boolean =
-        requireNotNull(this[name]) { "Missing JSON boolean: $name" }.jsonPrimitive.content.toBooleanStrict()
+    private fun JsonObject.requireBoolean(name: String): Boolean = requireNotNull(this[name]) { "Missing JSON boolean: $name" }.jsonPrimitive.content.toBooleanStrict()
 }
 
 expect object DifferentialFixtureTextLoader {
@@ -414,17 +425,15 @@ expect object DifferentialFixtureTextLoader {
 object DifferentialFixtureRepository {
     private val cache = mutableMapOf<DifferentialOperation, List<DifferentialCase>>()
 
-    fun loadCases(operation: DifferentialOperation): List<DifferentialCase> =
-        cache.getOrPut(operation) {
-            val decoded = DifferentialFixtureJsonCodec.decode(DifferentialFixtureTextLoader.load(operation))
-            require(decoded.operation == operation) {
-                "Loaded ${decoded.operation} from ${operation.fixtureFileName}"
-            }
-            decoded.cases
+    fun loadCases(operation: DifferentialOperation): List<DifferentialCase> = cache.getOrPut(operation) {
+        val decoded = DifferentialFixtureJsonCodec.decode(DifferentialFixtureTextLoader.load(operation))
+        require(decoded.operation == operation) {
+            "Loaded ${decoded.operation} from ${operation.fixtureFileName}"
         }
+        decoded.cases
+    }
 
-    fun loadAll(): Map<DifferentialOperation, List<DifferentialCase>> =
-        DifferentialOperation.entries.associateWith(::loadCases)
+    fun loadAll(): Map<DifferentialOperation, List<DifferentialCase>> = DifferentialOperation.entries.associateWith(::loadCases)
 }
 
 object DifferentialExecutor {
@@ -686,8 +695,7 @@ object DifferentialExecutor {
             else -> error("No modulus argument for $this")
         }
 
-    private fun isValidSlice(size: Int, off: Int, len: Int): Boolean =
-        off >= 0 && len >= 0 && off <= size && len <= size - off
+    private fun isValidSlice(size: Int, off: Int, len: Int): Boolean = off >= 0 && len >= 0 && off <= size && len <= size - off
 }
 
 private fun List<DifferentialArg>.bigInt(index: Int): BigInteger = when (val arg = get(index)) {
@@ -715,5 +723,4 @@ private fun List<DifferentialArg>.bytes(index: Int): List<Int> = when (val arg =
     else -> error("Expected ByteListArg at $index, found ${arg::class.simpleName}")
 }
 
-private fun List<DifferentialArg>.byteArray(index: Int): ByteArray =
-    bytes(index).map { it.toByte() }.toByteArray()
+private fun List<DifferentialArg>.byteArray(index: Int): ByteArray = bytes(index).map { it.toByte() }.toByteArray()

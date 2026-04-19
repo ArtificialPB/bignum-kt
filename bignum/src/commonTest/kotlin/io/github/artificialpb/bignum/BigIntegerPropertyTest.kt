@@ -14,25 +14,21 @@ import io.kotest.property.checkAll
 // -- Custom generators --
 
 /** Generates BigIntegers from random Long values */
-fun Arb.Companion.bigInteger(): Arb<BigInteger> =
-    Arb.long().map { bigIntegerOf(it) }
+fun Arb.Companion.bigInteger(): Arb<BigInteger> = Arb.long().map { bigIntegerOf(it) }
 
 /** Generates non-zero BigIntegers */
-fun Arb.Companion.nonZeroBigInteger(): Arb<BigInteger> =
-    Arb.long().filter { it != 0L }.map { bigIntegerOf(it) }
+fun Arb.Companion.nonZeroBigInteger(): Arb<BigInteger> = Arb.long().filter { it != 0L }.map { bigIntegerOf(it) }
 
 /** Generates positive BigIntegers (> 0) */
-fun Arb.Companion.positiveBigInteger(): Arb<BigInteger> =
-    Arb.long(1L..Long.MAX_VALUE).map { bigIntegerOf(it) }
+fun Arb.Companion.positiveBigInteger(): Arb<BigInteger> = Arb.long(1L..Long.MAX_VALUE).map { bigIntegerOf(it) }
 
 /** Generates large BigIntegers from string concatenation of random longs */
-fun Arb.Companion.largeBigInteger(): Arb<BigInteger> =
-    Arb.long().map { seed ->
-        // Create a number larger than Long.MAX_VALUE by combining digits
-        val abs = if (seed == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(seed)
-        val sign = if (seed < 0) "-" else ""
-        BigInteger("${sign}${abs}${abs.toString().takeLast(10)}")
-    }
+fun Arb.Companion.largeBigInteger(): Arb<BigInteger> = Arb.long().map { seed ->
+    // Create a number larger than Long.MAX_VALUE by combining digits
+    val abs = if (seed == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(seed)
+    val sign = if (seed < 0) "-" else ""
+    BigInteger("${sign}${abs}${abs.toString().takeLast(10)}")
+}
 
 // -- Immutability helper --
 // Captures snapshots of all inputs, runs the block, and asserts none changed.

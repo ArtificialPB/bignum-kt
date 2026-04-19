@@ -263,6 +263,10 @@ Requires JDK 17+. Xcode is required for Apple targets. The Android SDK is requir
 # Run all tests
 ./gradlew allTests
 
+# Run ktlint
+./gradlew ktlintCheck
+./gradlew ktlintFormat
+
 # Library tests only
 ./gradlew :bignum:jvmTest
 ./gradlew :bignum:macosArm64Test

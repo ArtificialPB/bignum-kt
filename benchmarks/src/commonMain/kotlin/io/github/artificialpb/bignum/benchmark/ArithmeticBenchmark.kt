@@ -59,19 +59,16 @@ open class ArithmeticBenchmark : ProfiledBenchmarkState() {
     fun modMethod(): BigInteger = fixture.negativeLeft.mod(fixture.modulus)
 
     @Benchmark
-    fun modPowMethod(): BigInteger =
-        fixture.left.modPow(fixture.modExponent, fixture.modulus)
+    fun modPowMethod(): BigInteger = fixture.left.modPow(fixture.modExponent, fixture.modulus)
 
     @Benchmark
-    fun modInverseMethod(): BigInteger =
-        fixture.inverseBase.modInverse(fixture.modulus)
+    fun modInverseMethod(): BigInteger = fixture.inverseBase.modInverse(fixture.modulus)
 
     @Benchmark
     fun gcdMethod(): BigInteger = fixture.left.gcd(fixture.right)
 
     @Benchmark
-    fun divideAndRemainderMethod(): Array<BigInteger> =
-        fixture.dividend.divideAndRemainder(fixture.divisor)
+    fun divideAndRemainderMethod(): Array<BigInteger> = fixture.dividend.divideAndRemainder(fixture.divisor)
 
     @Benchmark
     fun unaryMinusOperator(): BigInteger = -fixture.left

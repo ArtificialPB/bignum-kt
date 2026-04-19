@@ -18,8 +18,8 @@ import platform.posix.fopen
 import platform.posix.fread
 import platform.posix.fseek
 import platform.posix.ftell
-import platform.posix.getenv
 import platform.posix.getcwd
+import platform.posix.getenv
 import platform.posix.rewind
 
 actual object DifferentialFixtureTextLoader {
