@@ -10,14 +10,78 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+  workflow_dispatch:
+    inputs:
+      differential_seed:
+        description: Optional custom seed for differential fixture generation and replay.
+        required: false
+        type: string
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  resolve-differential-seed:
+    name: Resolve Differential Seed
+    runs-on: ubuntu-latest
+    outputs:
+      seed: ${{ steps.resolve.outputs.seed }}
+      source: ${{ steps.resolve.outputs.source }}
+      basis: ${{ steps.resolve.outputs.basis }}
+
+    steps:
+      - name: Resolve seed
+        id: resolve
+        env:
+          CUSTOM_SEED: ${{ github.event.inputs.differential_seed || '' }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+          GIT_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -n "${CUSTOM_SEED}" ]]; then
+            seed="${CUSTOM_SEED}"
+            seed_source="manual-input"
+            seed_basis="manual:${CUSTOM_SEED}"
+          elif [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            seed_basis="pr:${PR_NUMBER}"
+            seed_source="derived-from-pr"
+            seed="0x$(printf '%s' "${seed_basis}" | sha256sum | cut -c1-16)"
+          else
+            seed_basis="commit:${GIT_SHA}"
+            seed_source="derived-from-commit"
+            seed="0x$(printf '%s' "${seed_basis}" | sha256sum | cut -c1-16)"
+          fi
+
+          echo "Resolved differential seed: ${seed}"
+          echo "Seed source: ${seed_source}"
+          echo "Seed basis: ${seed_basis}"
+
+          {
+            echo "seed=${seed}"
+            echo "source=${seed_source}"
+            echo "basis=${seed_basis}"
+          } >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "### Differential Seed"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Seed | \`${seed}\` |"
+            echo "| Source | ${seed_source} |"
+            echo "| Basis | \`${seed_basis}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
   test-jvm:
     name: Lint, JVM Tests, Coverage
+    needs: resolve-differential-seed
     runs-on: ubuntu-latest
+    env:
+      BIGNUM_DIFFERENTIAL_SEED: ${{ needs.resolve-differential-seed.outputs.seed }}
 
     steps:
       - uses: actions/checkout@v6
@@ -50,9 +114,13 @@ jobs:
             bignum/build/reports/ktlint
             benchmarks/build/reports/ktlint
 
+      - name: Print differential seed
+        run: echo "Using differential seed ${BIGNUM_DIFFERENTIAL_SEED}"
+
       - name: Gradle test and coverage (JVM)
         run: >-
           ./gradlew
+          :bignum:generateDifferentialFixtures
           :bignum:jvmTest
           coverage
           --no-configuration-cache
@@ -75,7 +143,10 @@ jobs:
 
   test-native:
     name: Test (macOS ARM64)
+    needs: resolve-differential-seed
     runs-on: macos-latest
+    env:
+      BIGNUM_DIFFERENTIAL_SEED: ${{ needs.resolve-differential-seed.outputs.seed }}
 
     steps:
       - uses: actions/checkout@v6
@@ -85,8 +156,17 @@ jobs:
 
       - uses: ./.github/actions/environment-setup
 
+      - name: Print differential seed
+        run: echo "Using differential seed ${BIGNUM_DIFFERENTIAL_SEED}"
+
       - name: Run macOS ARM64 tests
-        run: ./gradlew :bignum:macosArm64Test --no-configuration-cache --no-watch-fs --stacktrace
+        run: >-
+          ./gradlew
+          :bignum:generateDifferentialFixtures
+          :bignum:macosArm64Test
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
 
       - uses: actions/upload-artifact@v7
         if: failure()

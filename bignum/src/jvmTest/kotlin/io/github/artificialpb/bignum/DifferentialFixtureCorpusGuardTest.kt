@@ -1,12 +1,14 @@
 package io.github.artificialpb.bignum
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class DifferentialFixtureCorpusGuardTest : FunSpec({
     test("checked-in differential JSON corpus matches the generator") {
+        val seed = DifferentialFixtureGenerator.configuredSeed()
         val fixtures = DifferentialFixtureRepository.loadAll()
-        val generated = DifferentialFixtureGenerator.generateCasesByOperation()
+        val generated = DifferentialFixtureGenerator.generateCasesByOperation(seed)
         val mismatches = DifferentialOperation.entries.mapNotNull { operation ->
             val fixtureCases = fixtures.getValue(operation)
             val generatedCases = generated.getValue(operation)
@@ -38,5 +40,20 @@ class DifferentialFixtureCorpusGuardTest : FunSpec({
         }
 
         mismatches shouldBe emptyList()
+
+        val duplicates = DifferentialOperation.entries.mapNotNull { operation ->
+            val cases = generated.getValue(operation)
+            operation.takeIf { cases.distinctBy(DifferentialCase::args).size != cases.size }
+        }
+        duplicates shouldBe emptyList()
+    }
+
+    test("generator seed parsing accepts decimal and hex values") {
+        DifferentialFixtureGenerator.configuredSeed("42") shouldBe 42L
+        DifferentialFixtureGenerator.configuredSeed("0x2A") shouldBe 42L
+        DifferentialFixtureGenerator.configuredSeed("1_000") shouldBe 1_000L
+        shouldThrow<IllegalArgumentException> {
+            DifferentialFixtureGenerator.configuredSeed("not-a-seed")
+        }
     }
 })
