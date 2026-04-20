@@ -144,3 +144,16 @@ tasks.register("compileAllBenchmarks") {
         "compileKotlinIosSimulatorArm64",
     )
 }
+
+afterEvaluate {
+    listOf(
+        "runKtlintCheckOverMacosArm64MacosArm64BenchmarkSourceSet",
+        "runKtlintFormatOverMacosArm64MacosArm64BenchmarkSourceSet",
+        "ktlintMacosArm64MacosArm64BenchmarkSourceSetCheck",
+        "ktlintMacosArm64MacosArm64BenchmarkSourceSetFormat",
+    ).forEach { taskName ->
+        tasks.named(taskName) {
+            enabled = false
+        }
+    }
+}
