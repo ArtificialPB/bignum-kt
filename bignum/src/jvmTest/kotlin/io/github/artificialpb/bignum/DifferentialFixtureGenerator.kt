@@ -9,6 +9,7 @@ import io.kotest.property.arbitrary.next
 import java.io.File
 import java.lang.Math.floorMod
 import kotlin.random.Random
+import java.math.BigInteger as JavaBigInteger
 
 object DifferentialFixtureGenerator {
     private const val OUTPUT_DIR = "src/commonTest/resources/differential"
@@ -24,6 +25,8 @@ object DifferentialFixtureGenerator {
 
     private val activeSeed = ThreadLocal.withInitial { DEFAULT_RANDOM_SEED }
     private val canonicalValuePoolsBySeed = mutableMapOf<Long, List<String>>()
+    private val minSignedSeed = JavaBigInteger.valueOf(Long.MIN_VALUE)
+    private val maxUnsignedSeed = JavaBigInteger.ONE.shiftLeft(Long.SIZE_BITS).subtract(JavaBigInteger.ONE)
     private val bitwiseValuePool: List<String> by lazy { bitwiseValues() }
     private val invalidNumericLiterals = listOf(
         "",
@@ -229,8 +232,26 @@ object DifferentialFixtureGenerator {
 
     private fun parseSeed(rawSeed: String?): Long? {
         if (rawSeed.isNullOrBlank()) return null
-        val normalized = rawSeed.replace("_", "")
-        return runCatching { java.lang.Long.decode(normalized) }
+        val normalized = rawSeed.trim().replace("_", "")
+        return runCatching {
+            val negative = normalized.startsWith('-')
+            val unsigned = normalized.removePrefix("+").removePrefix("-")
+            val (radix, digits) = when {
+                unsigned.startsWith("0x", ignoreCase = true) -> 16 to unsigned.drop(2)
+                unsigned.startsWith("#") -> 16 to unsigned.drop(1)
+                else -> 10 to unsigned
+            }
+            require(digits.isNotEmpty()) { "Missing seed digits" }
+
+            val magnitude = JavaBigInteger(digits, radix)
+            val value = if (negative) magnitude.negate() else magnitude
+            if (negative) {
+                require(value >= minSignedSeed) { "Seed is below signed 64-bit range" }
+            } else {
+                require(value <= maxUnsignedSeed) { "Seed is above unsigned 64-bit range" }
+            }
+            value.toLong()
+        }
             .getOrElse { throw IllegalArgumentException("Invalid differential seed '$rawSeed'", it) }
     }
 

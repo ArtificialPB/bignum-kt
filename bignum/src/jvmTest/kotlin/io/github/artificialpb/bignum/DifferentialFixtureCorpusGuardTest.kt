@@ -52,6 +52,8 @@ class DifferentialFixtureCorpusGuardTest : FunSpec({
         DifferentialFixtureGenerator.configuredSeed("42") shouldBe 42L
         DifferentialFixtureGenerator.configuredSeed("0x2A") shouldBe 42L
         DifferentialFixtureGenerator.configuredSeed("1_000") shouldBe 1_000L
+        DifferentialFixtureGenerator.configuredSeed("0xc20f4ab1e7e9506e") shouldBe
+            java.lang.Long.parseUnsignedLong("c20f4ab1e7e9506e", 16)
         shouldThrow<IllegalArgumentException> {
             DifferentialFixtureGenerator.configuredSeed("not-a-seed")
         }
