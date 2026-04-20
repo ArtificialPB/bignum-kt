@@ -144,14 +144,3 @@ tasks.register("compileAllBenchmarks") {
         "compileKotlinIosSimulatorArm64",
     )
 }
-
-afterEvaluate {
-    listOf(
-        "runKtlintCheckOverMacosArm64MacosArm64BenchmarkSourceSet",
-        "runKtlintFormatOverMacosArm64MacosArm64BenchmarkSourceSet",
-    ).forEach { taskName ->
-        tasks.named(taskName) {
-            dependsOn("macosArm64BenchmarkGenerate")
-        }
-    }
-}
