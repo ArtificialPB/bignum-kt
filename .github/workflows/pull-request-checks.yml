@@ -121,6 +121,7 @@ jobs:
         run: >-
           ./gradlew
           :bignum:generateDifferentialFixtures
+          :bignum:generateBigDecimalDifferentialFixtures
           :bignum:jvmTest
           coverage
           --no-configuration-cache
@@ -163,6 +164,7 @@ jobs:
         run: >-
           ./gradlew
           :bignum:generateDifferentialFixtures
+          :bignum:generateBigDecimalDifferentialFixtures
           :bignum:macosArm64Test
           --no-configuration-cache
           --no-watch-fs

@@ -19,6 +19,7 @@ plugins {
 
 val libtommathDir = projectDir.resolve("src/nativeInterop/libtommath")
 val differentialFixtureDir = projectDir.resolve("src/commonTest/resources/differential")
+val bigDecimalDifferentialFixtureDir = projectDir.resolve("src/commonTest/resources/differential-bigdecimal")
 val differentialFixtureSeed = providers.gradleProperty("differentialFixtureSeed")
     .orElse(providers.environmentVariable("BIGNUM_DIFFERENTIAL_SEED"))
 val githubRepoUrl = "https://github.com/ArtificialPB/bignum-kt"
@@ -170,6 +171,7 @@ extensions.configure<PublishingExtension> {
 
 tasks.withType<Test>().configureEach {
     systemProperty("bignum.differential.fixtureDir", differentialFixtureDir.absolutePath)
+    systemProperty("bignum.bigdecimal.differential.fixtureDir", bigDecimalDifferentialFixtureDir.absolutePath)
     differentialFixtureSeed.orNull?.let { systemProperty("bignum.differential.seed", it) }
 }
 
@@ -179,6 +181,7 @@ tasks.named<Test>("jvmTest") {
 
 tasks.withType<KotlinNativeTest>().configureEach {
     environment("BIGNUM_DIFFERENTIAL_FIXTURE_DIR", differentialFixtureDir.absolutePath)
+    environment("BIGNUM_BIGDECIMAL_DIFFERENTIAL_FIXTURE_DIR", bigDecimalDifferentialFixtureDir.absolutePath)
     differentialFixtureSeed.orNull?.let { environment("BIGNUM_DIFFERENTIAL_SEED", it) }
 }
 
@@ -195,6 +198,23 @@ tasks.register<JavaExec>("generateDifferentialFixtures") {
         ),
     )
     mainClass.set("io.github.artificialpb.bignum.DifferentialFixtureGeneratorMainKt")
+    workingDir = projectDir
+    differentialFixtureSeed.orNull?.let { args("--seed", it) }
+}
+
+tasks.register<JavaExec>("generateBigDecimalDifferentialFixtures") {
+    group = "verification"
+    description = "Generates the checked-in JVM BigDecimal differential fuzz corpus. Set differentialFixtureSeed to override the seed."
+    dependsOn("jvmTestClasses")
+    classpath(
+        configurations.getByName("jvmTestRuntimeClasspath"),
+        files(
+            layout.buildDirectory.dir("classes/kotlin/jvm/test"),
+            layout.buildDirectory.dir("processedResources/jvm/test"),
+            layout.buildDirectory.dir("resources/test"),
+        ),
+    )
+    mainClass.set("io.github.artificialpb.bignum.BigDecimalDifferentialFixtureGeneratorMainKt")
     workingDir = projectDir
     differentialFixtureSeed.orNull?.let { args("--seed", it) }
 }

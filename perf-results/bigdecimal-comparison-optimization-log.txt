@@ -1,0 +1,58 @@
+=== BASELINE — 2026-04-22 20:21 ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalComparisonSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalComparisonSmoke/2026-04-22T20.21.12.642283/macosArm64.json`
+
+Benchmark                                               small  / medium / large   us/op
+--------------------------------------------------------------------------------------
+compareToMethod                                         0.017 / 0.021 / 0.034
+equalsMethod                                            0.017 / 0.020 / 0.037
+hashCodeMethod                                          0.018 / 0.026 / 0.044
+maxMethod                                               0.017 / 0.023 / 0.033
+minMethod                                               0.017 / 0.021 / 0.033
+
+Initial target:
+- `compareTo()` / `min()` / `max()`, because the comparison fixture keeps operands at the same
+  scale and the native implementation still pays extra fixed overhead before delegating to
+  `BigInteger.compareTo()`.
+- The local JDK `BigDecimal.compareTo()` implementation uses a same-scale quick path before
+  sign/exponent work, which should translate cleanly to the native representation.
+
+=== RUN 2 — 2026-04-22 20:25 ===
+Change: Added a JVM-style same-scale quick path to native `BigDecimal.compareTo()`. When both
+operands already share a scale, the native path now returns `unscaled.compareTo(other.unscaled)`
+directly instead of repeating sign checks and routing through the generic rescale flow.
+
+Validation source:
+- JDK reference inspected from local source: `jdk1.8.0_161` `java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalComparisonSmokeBenchmark --rerun-tasks --no-daemon`
+- Confirmation rerun of the same smoke benchmark produced the same direction and similar magnitudes
+- `benchmarks/build/reports/benchmarks/bigDecimalComparisonSmoke/2026-04-22T20.25.15.698594/macosArm64.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalComparisonSmoke/2026-04-22T20.26.42.607313/macosArm64.json`
+
+Key deltas versus baseline:
+- `compareToMethod`: 0.017 / 0.021 / 0.034 -> 0.015 / 0.019 / 0.032 us/op
+- `maxMethod`:       0.017 / 0.023 / 0.033 -> 0.015 / 0.019 / 0.031 us/op
+- `minMethod`:       0.017 / 0.021 / 0.033 -> 0.015 / 0.019 / 0.031 us/op
+
+Observed effect:
+- The same-scale fast path consistently improved the benchmarked comparison hot path by about
+  10% on the small profile, 9-18% on medium, and 4-7% on large across the two reruns.
+- `min()` and `max()` track the same improvement because the fixture exercises them as thin
+  wrappers around `compareTo()`.
+- `equals()` and `hashCode()` stayed in the same band, which keeps this change tightly scoped to
+  same-scale ordering instead of perturbing the rest of the comparison surface.
+
+Discarded attempt — 2026-04-22 20:34:
+- Tried a JDK-style compact `BigDecimal.hashCode()` branch for values whose unscaled magnitude
+  fits in 64 bits.
+- Result: regressed `hashCodeMethod` from 0.018/0.024/0.045 to 0.023/0.028/0.049 us/op on the
+  current smoke fixture, so the change was reverted instead of committed.
+
+Discarded attempt — 2026-04-22 20:40:
+- Inlined the same-scale `BigInteger` compare logic directly into native `BigDecimal.compareTo()`
+  to avoid the extra `unscaled.compareTo()` call on the already-optimized quick path.
+- Result: benchmarked in the same band as the committed version (`compareTo` stayed at roughly
+  0.015/0.019/0.032 us/op), so the extra code was reverted as noise rather than kept.

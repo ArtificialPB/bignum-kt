@@ -22,11 +22,21 @@ val benchmarkSuites = listOf(
     BenchmarkSuite("conversion", "io.github.artificialpb.bignum.benchmark.ConversionBenchmark.*"),
     BenchmarkSuite("numberTheory", "io.github.artificialpb.bignum.benchmark.NumberTheoryBenchmark.*"),
     BenchmarkSuite("range", "io.github.artificialpb.bignum.benchmark.RangeBenchmark.*"),
+    BenchmarkSuite("bigDecimalArithmetic", "io.github.artificialpb.bignum.benchmark.BigDecimalArithmeticBenchmark.*"),
+    BenchmarkSuite("bigDecimalComparison", "io.github.artificialpb.bignum.benchmark.BigDecimalComparisonBenchmark.*"),
+    BenchmarkSuite("bigDecimalConstruction", "io.github.artificialpb.bignum.benchmark.BigDecimalConstructionBenchmark.*"),
+    BenchmarkSuite("bigDecimalConversion", "io.github.artificialpb.bignum.benchmark.BigDecimalConversionBenchmark.*"),
+    BenchmarkSuite("bigDecimalScale", "io.github.artificialpb.bignum.benchmark.BigDecimalScaleBenchmark.*"),
 )
 
 val ionspinBenchmarkSuites = listOf(
     BenchmarkSuite("ionspinArithmetic", "io.github.artificialpb.bignum.benchmark.IonspinArithmeticBenchmark.*"),
     BenchmarkSuite("ionspinBitwise", "io.github.artificialpb.bignum.benchmark.IonspinBitwiseBenchmark.*"),
+    BenchmarkSuite("ionspinBigDecimalArithmetic", "io.github.artificialpb.bignum.benchmark.IonspinBigDecimalArithmeticBenchmark.*"),
+    BenchmarkSuite("ionspinBigDecimalComparison", "io.github.artificialpb.bignum.benchmark.IonspinBigDecimalComparisonBenchmark.*"),
+    BenchmarkSuite("ionspinBigDecimalConstruction", "io.github.artificialpb.bignum.benchmark.IonspinBigDecimalConstructionBenchmark.*"),
+    BenchmarkSuite("ionspinBigDecimalConversion", "io.github.artificialpb.bignum.benchmark.IonspinBigDecimalConversionBenchmark.*"),
+    BenchmarkSuite("ionspinBigDecimalScale", "io.github.artificialpb.bignum.benchmark.IonspinBigDecimalScaleBenchmark.*"),
     BenchmarkSuite("ionspinComparison", "io.github.artificialpb.bignum.benchmark.IonspinComparisonBenchmark.*"),
     BenchmarkSuite("ionspinConstruction", "io.github.artificialpb.bignum.benchmark.IonspinConstructionBenchmark.*"),
     BenchmarkSuite("ionspinConversion", "io.github.artificialpb.bignum.benchmark.IonspinConversionBenchmark.*"),

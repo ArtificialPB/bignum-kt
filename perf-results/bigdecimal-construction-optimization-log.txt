@@ -1,0 +1,143 @@
+=== BASELINE — 2026-04-22 20:49 ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConstructionSmokeBenchmark --rerun-tasks --no-daemon`
+
+Benchmark                                                   small  / medium / large   us/op
+------------------------------------------------------------------------------------------
+constructorBigIntegerScale                                  0.388 / 10.459 / 91.535
+constructorBigInteger                                       0.386 / 10.741 / 91.752
+constructorString                                           0.352 / 1.424 / 4.625
+factoryBigIntegerScale                                      0.394 / 10.551 / 91.813
+factoryBigInteger                                           0.381 / 10.522 / 91.823
+factoryInt                                                  0.035 / 0.037 / 0.039
+factoryLong                                                 0.036 / 0.034 / 0.033
+factoryString                                               0.349 / 1.385 / 4.749
+
+Initial target:
+- `constructorBigInteger`, `constructorBigIntegerScale`, `factoryBigInteger`, and
+  `factoryBigIntegerScale`, because they are the overwhelming outliers on medium/large profiles.
+- The native `BigDecimal.initialize()` path currently rebuilds any non-zero incoming `BigInteger`
+  with `BigInteger(unscaled.toString())`; the local JDK `BigDecimal(BigInteger, scale)` stores the
+  provided immutable `BigInteger` directly instead of reparsing it.
+
+=== RUN 2 — 2026-04-22 21:18 ===
+Change:
+- Remove the defensive `BigInteger(unscaled.toString())` rebuild from native
+  `BigDecimal.initialize()` and store the incoming immutable `BigInteger` directly, matching the
+  JVM constructor strategy.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConstructionSmokeBenchmark --rerun-tasks --no-daemon`
+- JSON report: `benchmarks/build/reports/benchmarks/bigDecimalConstructionSmoke/2026-04-22T21.18.13.600041/macosArm64.json`
+
+Benchmark                                                   small  / medium / large   us/op
+------------------------------------------------------------------------------------------
+constructorBigIntegerScale                                  0.013 / 0.013 / 0.013
+constructorBigInteger                                       0.012 / 0.012 / 0.012
+constructorString                                           0.344 / 1.382 / 4.464
+factoryBigIntegerScale                                      0.017 / 0.018 / 0.017
+factoryBigInteger                                           0.015 / 0.015 / 0.016
+factoryInt                                                  0.037 / 0.036 / 0.037
+factoryLong                                                 0.031 / 0.032 / 0.032
+factoryString                                               0.335 / 1.327 / 4.536
+
+Delta:
+- `constructorBigIntegerScale`: `0.388 / 10.459 / 91.535` -> `0.013 / 0.013 / 0.013`
+- `constructorBigInteger`: `0.386 / 10.741 / 91.752` -> `0.012 / 0.012 / 0.012`
+- `factoryBigIntegerScale`: `0.394 / 10.551 / 91.813` -> `0.017 / 0.018 / 0.017`
+- `factoryBigInteger`: `0.381 / 10.522 / 91.823` -> `0.015 / 0.015 / 0.016`
+- String-based construction remained the primary residual cost center.
+
+=== RUN 3 — 2026-04-22 21:40 ===
+Change:
+- Add a fast path in `parseString()` for plain decimal inputs with at most one decimal point and no
+  exponent. This matches the construction benchmark fixtures and avoids the generic parser's
+  per-character append loop, sign string concatenation, and extra rescans on the hot path.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConstructionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+- JSON report: `benchmarks/build/reports/benchmarks/bigDecimalConstructionSmoke/2026-04-22T21.40.49.241135/macosArm64.json`
+
+Benchmark                                                   small  / medium / large   us/op
+------------------------------------------------------------------------------------------
+constructorBigIntegerScale                                  0.014 / 0.014 / 0.014
+constructorBigInteger                                       0.012 / 0.012 / 0.012
+constructorString                                           0.282 / 0.946 / 3.889
+factoryBigIntegerScale                                      0.017 / 0.019 / 0.017
+factoryBigInteger                                           0.016 / 0.015 / 0.016
+factoryInt                                                  0.036 / 0.036 / 0.035
+factoryLong                                                 0.034 / 0.033 / 0.033
+factoryString                                               0.277 / 0.933 / 3.909
+
+Delta:
+- `constructorString`: `0.344 / 1.382 / 4.464` -> `0.282 / 0.946 / 3.889`
+- `factoryString`: `0.335 / 1.327 / 4.536` -> `0.277 / 0.933 / 3.909`
+- `constructorBigInteger` and `factoryBigInteger` stayed at the post-run-2 floor on the
+  confirmation rerun after one noisy intermediate sample.
+
+=== RUN 4 — 2026-04-22 21:46 ===
+Change:
+- Remove the `ParsedDecimal` wrapper allocation and extra constructor hop from native string
+  construction. `BigDecimal(String)` now parses via an inline callback and initializes fields
+  directly.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConstructionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+- JSON report: `benchmarks/build/reports/benchmarks/bigDecimalConstructionSmoke/2026-04-22T21.46.37.537424/macosArm64.json`
+
+Benchmark                                                   small  / medium / large   us/op
+------------------------------------------------------------------------------------------
+constructorBigIntegerScale                                  0.013 / 0.014 / 0.013
+constructorBigInteger                                       0.010 / 0.010 / 0.011
+constructorString                                           0.236 / 0.793 / 3.402
+factoryBigIntegerScale                                      0.014 / 0.015 / 0.014
+factoryBigInteger                                           0.014 / 0.014 / 0.014
+factoryInt                                                  0.031 / 0.031 / 0.032
+factoryLong                                                 0.029 / 0.029 / 0.028
+factoryString                                               0.249 / 0.798 / 3.321
+
+Delta:
+- `constructorString`: `0.282 / 0.946 / 3.889` -> `0.236 / 0.793 / 3.402`
+- `factoryString`: `0.277 / 0.933 / 3.909` -> `0.249 / 0.798 / 3.321`
+- The confirmation rerun kept the string win and also showed lower constructor/factory overhead
+  across the non-string rows, consistent with removing the extra wrapper and constructor dispatch.
+
+=== RUN 5 — 2026-04-22 22:00 ===
+Change:
+- Add a native `BigInteger` helper for decimal parsing that skips the decimal-point index in place,
+  allowing the hot `BigDecimal` simple-string path to parse the original source string directly
+  instead of allocating a dot-stripped copy first.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConstructionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+
+Benchmark                                                   small  / medium / large   us/op
+------------------------------------------------------------------------------------------
+constructorBigIntegerScale                                  0.012 / 0.011 / 0.012
+constructorBigInteger                                       0.011 / 0.010 / 0.010
+constructorString                                           0.100 / 0.393 / 2.106
+factoryBigIntegerScale                                      0.014 / 0.014 / 0.014
+factoryBigInteger                                           0.014 / 0.013 / 0.014
+factoryInt                                                  0.030 / 0.030 / 0.030
+factoryLong                                                 0.028 / 0.028 / 0.029
+factoryString                                               0.101 / 0.384 / 2.055
+
+Delta:
+- `constructorString`: `0.236 / 0.793 / 3.402` -> `0.100 / 0.393 / 2.106`
+- `factoryString`: `0.249 / 0.798 / 3.321` -> `0.101 / 0.384 / 2.055`
+- This was the last meaningful construction-path win: it removed the remaining hot-path string
+  allocation instead of only rearranging constructor plumbing.
+
+Discarded attempt — 2026-04-22 22:08
+- Change: remove the now-empty `initialize()` helper and write constructor fields directly.
+- Validation: `./gradlew :bignum:macosArm64Test --no-daemon`
+- Benchmark: `constructorString` `0.103 / 0.379 / 2.064`, `factoryString` `0.099 / 0.386 / 2.051`
+- Verdict: mixed within-noise movement relative to RUN 5, so the code change was reverted.

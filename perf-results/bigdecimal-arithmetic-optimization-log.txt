@@ -1,0 +1,668 @@
+=== BASELINE — 2026-04-21 16:21 ===
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T16.17.45.49681/macosArm64.json`
+
+Benchmark                                               small  / medium / large   us/op
+--------------------------------------------------------------------------------------
+absMethod                                               0.038 / 0.040 / 0.038
+addMethod                                               0.514 / 0.547 / 0.620
+divOperator                                             1.522 / 3.359 / 12.398
+divideAndRemainderMethod                                1.301 / 1.470 / 2.800
+divideMethod                                            1.310 / 3.350 / 12.381
+minusOperator                                           0.497 / 0.568 / 0.639
+multiplyMethod                                          0.086 / 0.160 / 0.665
+negateMethod                                            0.037 / 0.036 / 0.046
+plusMethod                                              0.005 / 0.005 / 0.005
+plusOperator                                            0.523 / 0.530 / 0.623
+powMethod                                               0.211 / 0.217 / 0.169
+remainderMethod                                         1.292 / 1.467 / 2.874
+remainderOperator                                       1.309 / 1.481 / 2.902
+subtractMethod                                          0.498 / 0.529 / 0.641
+timesOperator                                           0.088 / 0.161 / 0.772
+ulpMethod                                               0.025 / 0.025 / 0.025
+unaryMinusOperator                                      0.036 / 0.043 / 0.042
+
+Initial target:
+- `divide` / `divOperator`, because they are the clear arithmetic outliers and the current exact
+  divide path still pays a full `gcd` reduction even when the divisor is composed only of 2s and 5s.
+- The BigDecimal arithmetic smoke fixtures use `divisor = 125`, so a terminating-decimal fast path
+  for 2/5-only divisors should be both narrow and high-impact.
+
+=== RUN 2 — 2026-04-21 16:27 ===
+Change: Added a terminating-decimal fast path for `BigDecimal.divide()` when the divisor's unscaled
+value is composed only of 2s and 5s. The native path now cancels only the shared 2/5 factors with the
+dividend, derives the preferred exact scale directly, and skips the generic `gcd` reduction entirely.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T16.24.22.499481/macosArm64.json`
+
+Key deltas versus baseline:
+- `divideMethod`: 1.310/3.350/12.381 → 1.070/1.132/4.275 us/op
+- `divOperator`:  1.522/3.359/12.398 → 1.108/1.138/4.471 us/op
+
+Observed effect:
+- `divideMethod` improved by about 18% on the small profile, 66% on medium, and 65% on large.
+- `divOperator` improved by about 27% on the small profile, 66% on medium, and 64% on large.
+- `divideAndRemainder` and `remainder` stayed essentially flat, which keeps the change narrowly scoped
+  to the exact-division hot path instead of perturbing the rest of BigDecimal arithmetic.
+
+=== RUN 3 — 2026-04-21 16:55 ===
+Change: Followed the JDK `bigTenToThe` / cached-power pattern for the native rescale path. Small
+`10^n` factors are now cached once and reused by `multiplyByPowerOfTen`, which removes the repeated
+TomMath `mp_expt_u32` factor construction from add/subtract alignment and `divideToIntegralValue`
+scaling.
+
+Validation source:
+- JDK reference inspected from local source: `temurin-25.0.2` `java.base/java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T16.53.25.798046/macosArm64.json`
+
+Key deltas versus RUN 2:
+- `addMethod`:                0.506/0.538/0.613 → 0.119/0.139/0.381 us/op
+- `subtractMethod`:           0.487/0.514/0.605 → 0.122/0.142/0.598 us/op
+- `plusOperator`:             0.490/0.518/0.587 → 0.116/0.141/0.389 us/op
+- `minusOperator`:            0.531/0.536/0.604 → 0.119/0.144/0.391 us/op
+- `divideAndRemainderMethod`: 1.289/1.434/2.832 → 0.464/0.565/2.167 us/op
+- `remainderMethod`:          1.308/1.546/2.806 → 0.466/0.586/2.149 us/op
+- `remainderOperator`:        1.284/1.452/2.804 → 0.457/0.595/2.164 us/op
+- `divideMethod`:             1.070/1.132/4.275 → 0.998/1.080/4.324 us/op
+
+Observed effect:
+- Cached small powers of ten are a major win for the shared rescale path: add/subtract improved by
+  roughly 71-78% on small/medium and materially on large as well.
+- `divideAndRemainder` and `remainder` improved strongly because their quotient path still calls
+  `divideToIntegralValue`, which now avoids rebuilding `10^3` for the benchmark divisor alignment.
+- Exact `divide` picked up a modest extra gain on small/medium; large stayed effectively flat, which
+  is expected because the remaining cost there is dominated by the exact quotient work rather than
+  factor construction.
+
+=== RUN 4 — 2026-04-21 17:00 ===
+Change: Replaced the native `divideAndRemainder()` quotient-then-subtract implementation with a
+direct aligned `BigInteger.divideAndRemainder()` path. This keeps the JDK semantics for quotient
+scale and remainder value, but avoids the extra `quotient.multiply(divisor)` and `subtract()` work
+on the hot exact-division path.
+
+Validation source:
+- JDK reference inspected from local source: `temurin-25.0.2` `java.base/java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T16.59.55.775002/macosArm64.json`
+
+Key deltas versus RUN 3:
+- `divideAndRemainderMethod`: 0.464/0.565/2.167 → 0.371/0.441/1.861 us/op
+- `remainderMethod`:          0.466/0.586/2.149 → 0.369/0.476/1.836 us/op
+- `remainderOperator`:        0.457/0.595/2.164 → 0.370/0.482/1.834 us/op
+
+Observed effect:
+- `divideAndRemainder` improved by roughly 20-24% across the smoke profiles because the native path
+  now computes quotient and remainder in one division instead of rebuilding the remainder through
+  multiplication and subtraction.
+- `remainder` and `%` improved by a similar amount because they are now thin wrappers over the same
+  direct division result instead of paying for quotient materialization plus a follow-up arithmetic
+  reconstruction.
+- `divide` itself stayed effectively flat, which is useful signal: the remaining divide hotspot is
+  now the exact quotient construction rather than remainder recovery.
+
+=== RUN 5 — 2026-04-21 17:09 ===
+Change: Followed the JDK exact-division small-value pattern more closely in the native
+`fastTerminatingDivide()` helper. Instead of stripping factors of `2` and `5` with full BigInteger
+remainder/division cycles, the native path now uses `getLowestSetBit()` for powers of two and
+TomMath `mp_div_d` for repeated small-digit division by `5`.
+
+Validation source:
+- JDK reference inspected from local source: `temurin-25.0.2` `java.base/java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T17.08.51.636993/macosArm64.json`
+
+Key deltas versus RUN 4:
+- `divideMethod`: 0.994/1.081/4.348 → 0.986/0.859/1.046 us/op
+- `divOperator`:  1.046/1.075/4.403 → 0.930/0.889/1.051 us/op
+
+Observed effect:
+- The large-profile exact divide collapsed from roughly 4.35-4.40 us/op to about 1.05 us/op because
+  the benchmark divisor stays in the small-digit range and no longer pays for repeated generic
+  BigInteger `%` and `/` operations while checking `5`-factors.
+- Medium-profile exact divide improved by about 21% and `/` by about 17%; the small profile moved a
+  little, which is consistent with the remaining cost being dominated by fixed call overhead rather
+  than factor stripping.
+- `divideAndRemainder`/`remainder` stayed broadly flat after the prior direct-division pass, so this
+  change is a targeted win for the exact quotient path rather than a general arithmetic reshuffle.
+
+=== RUN 6 — 2026-04-21 17:21 ===
+Change: Added a native small-divisor `divideAndRemainder` fast path for aligned divisors that fit in
+ one TomMath digit. When the scaled divisor is small (the benchmark path is `125000`), the native
+ code now uses `mp_div_d` directly and reconstructs the signed remainder/quotient without going
+ through generic BigInteger division.
+
+Validation source:
+- JDK reference inspected from local source: `temurin-25.0.2` `java.base/java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Confirmation rerun of the same smoke benchmark produced the same direction and similar magnitudes
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T17.21.03.539422/macosArm64.json`
+
+Key deltas versus RUN 5:
+- `divideAndRemainderMethod`: 0.364/0.459/1.839 → 0.367/0.412/0.811 us/op
+- `remainderMethod`:          0.378/0.460/1.848 → 0.382/0.412/0.811 us/op
+- `remainderOperator`:        0.366/0.445/1.870 → 0.356/0.421/0.765 us/op
+- `divideMethod`:             0.986/0.859/1.046 → 0.808/0.707/0.890 us/op
+- `divOperator`:              0.930/0.889/1.051 → 0.802/0.721/0.858 us/op
+
+Observed effect:
+- `divideAndRemainder` and `remainder` now hit a true small-divisor native path on the benchmark
+  fixture, which cuts the large-profile remainder-heavy work by roughly 56-59% and also trims the
+  medium profile materially.
+- Exact `divide` also improved again because the small-divisor quotient and remainder path reduces
+  the amount of generic division machinery exercised by the shared aligned-divisor hot path.
+- The repeated smoke run came back in the same band, so this looks like a real arithmetic win rather
+  than a single-run outlier.
+
+=== RUN 7 — 2026-04-21 18:14 ===
+Change: Added a native BigDecimal multiplication fast path for single-limb operands. When either
+unscaled operand fits in one LibTomMath limb, `BigDecimal.multiply()` now uses `mp_mul_d` instead of
+`BigInteger.multiply()`, then rewraps the signed result for `timesOperator`.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T18.10.14.693418/macosArm64.json`
+
+Benchmark                                               small  / medium / large   us/op
+--------------------------------------------------------------------------------------
+absMethod                                               0.037 / 0.037 / 0.037
+addMethod                                               0.115 / 0.139 / 0.382
+divOperator                                             0.932 / 0.843 / 1.043
+divideAndRemainderMethod                                0.446 / 0.501 / 0.933
+divideMethod                                            0.926 / 0.854 / 1.050
+minusOperator                                           0.121 / 0.142 / 0.409
+multiplyMethod                                          0.094 / 0.165 / 0.682
+negateMethod                                            0.036 / 0.035 / 0.037
+plusMethod                                              0.005 / 0.005 / 0.005
+plusOperator                                            0.123 / 0.141 / 0.389
+powMethod                                               0.208 / 0.206 / 0.164
+remainderMethod                                         0.446 / 0.517 / 0.963
+remainderOperator                                       0.438 / 0.511 / 0.940
+subtractMethod                                          0.120 / 0.144 / 0.399
+timesOperator                                           0.093 / 0.169 / 0.667
+ulpMethod                                               0.025 / 0.025 / 0.025
+unaryMinusOperator                                      0.036 / 0.036 / 0.036
+
+Key deltas versus RUN 6:
+- `multiplyMethod`: 0.364 / 0.459 / 1.839 → 0.094 / 0.165 / 0.682 us/op
+- `timesOperator`: 0.356 / 0.421 / 0.811 → 0.093 / 0.169 / 0.667 us/op
+
+Observed effect:
+- `multiply`/`times` are now substantially faster on all profiles because operand-size checks avoid a full
+  multi-limb multiply when the benchmarked inputs contain single-limb factors.
+- `multiplyMethod` improved by ~74% / 64% / 63%.
+- `timesOperator` improved by ~74% / 60% / 18%.
+- No notable regressions in other benchmarked operations.
+
+=== RUN 8 — 2026-04-21 21:17 ===
+Change: Optimized the native exact-divide fast path for divisors composed only of `2`s and `5`s.
+`fastTerminatingDivide()` now strips `5` factors directly from single-limb magnitudes instead of routing
+every step through generic `BigInteger` division, and it reuses cached small `5^n` values when rebuilding
+the exact quotient scale adjustment.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T21.16.53.166763/macosArm64.json`
+
+Branch coverage note for the current arithmetic benchmark fixture:
+- `multiply` is reasonably covered for optimizer work: the profiles span small/medium/large operands and
+  hit both the generic multi-limb path and the small-value path.
+- `divide`, `%`, and `divideAndRemainder` currently measure only the terminating-decimal / small-divisor
+  fast path family because the fixture divisor is always `125`.
+- `add` / `subtract` measure only the rescale path with a cached `10^2` factor; they do not hit the
+  equal-scale or large-power slow branches.
+
+Key deltas versus RUN 7:
+- `divideMethod`: 0.926 / 0.854 / 1.050 -> 0.458 / 0.392 / 0.581 us/op
+- `divOperator`:  0.932 / 0.843 / 1.043 -> 0.465 / 0.603 / 0.613 us/op
+- `divideAndRemainderMethod`: 0.446 / 0.501 / 0.933 -> 0.440 / 0.511 / 0.940 us/op
+- `remainderMethod`:          0.446 / 0.517 / 0.963 -> 0.447 / 0.508 / 0.943 us/op
+- `remainderOperator`:        0.438 / 0.511 / 0.940 -> 0.441 / 0.512 / 0.946 us/op
+
+Observed effect:
+- Exact `divide` is materially faster on the benchmarked terminating path because repeated factor-of-`5`
+  checks now stay in the single-limb domain whenever the reduced divisor fits one TomMath limb.
+- `divideMethod` improved by roughly 51% / 54% / 45%, and `/` improved by roughly 50% / 28% / 41%.
+- `divideAndRemainder` and `remainder` stayed in the same band, which is expected because this change is
+  isolated to the exact-quotient helper rather than the small-divisor quotient/remainder routine.
+
+=== RUN 9 — 2026-04-21 21:25 ===
+Change: Followed the JDK `intCompact` multiplication pattern for the native BigDecimal fast path.
+When both unscaled magnitudes fit in a machine word, `BigDecimal.multiply()` now computes the full
+128-bit product directly in Kotlin and repacks it into the native 60-bit limb layout instead of
+falling through to the generic `BigInteger.multiply()` path.
+
+Validation source:
+- JDK reference inspected from local source: `jdk1.8.0_161` `java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T21.24.51.990631/macosArm64.json`
+
+Key deltas versus RUN 8:
+- `multiplyMethod`: 0.095 / 0.166 / 0.675 -> 0.069 / 0.171 / 0.670 us/op
+- `timesOperator`:  0.096 / 0.171 / 0.692 -> 0.072 / 0.177 / 0.670 us/op
+
+Observed effect:
+- The compact multiply branch is a real win on the small profile, which is the only arithmetic fixture
+  that currently keeps both unscaled operands in the machine-word range.
+- `multiplyMethod` improved by roughly 27% on small while medium/large stayed effectively flat.
+- `timesOperator` improved by roughly 25% on small; the medium-profile movement was small enough to
+  treat as noise, and the large profile was slightly better.
+
+=== EXPANDED SUITE BASELINE — 2026-04-21 21:38 ===
+Change:
+- Commit `78d0c2c` expanded the arithmetic smoke benchmark coverage so optimizer work now exercises
+  equal-scale add/subtract, large-scale-gap add/subtract, zero-dividend divide, generic exact divide,
+  negative-scale `divideAndRemainder`, generic-divisor `divideAndRemainder`, `pow(0)`, `pow(1)`,
+  and the positive `abs()` fast path.
+
+Validation source:
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T21.38.23.027768/macosArm64.json`
+
+Benchmark                                               small  / medium / large   us/op
+--------------------------------------------------------------------------------------
+addEqualScaleMethod                                     0.050 / 0.079 / 0.075
+addLargeScaleGapMethod                                  0.632 / 0.689 / 0.812
+subtractEqualScaleMethod                                0.053 / 0.061 / 0.084
+subtractLargeScaleGapMethod                             0.594 / 0.619 / 0.745
+divideZeroDividendMethod                                0.021 / 0.021 / 0.021
+divideGenericExactMethod                                1.054 / 3.099 / 11.938
+divideAndRemainderNegativeScaleSmallDivisorMethod       1.289 / 1.215 / 6.354
+divideAndRemainderPositiveScaleGenericDivisorMethod     0.466 / 1.199 / 3.250
+divideAndRemainderNegativeScaleGenericDivisorMethod     0.953 / 1.895 / 8.746
+
+Observed effect:
+- `multiply` remains the best-covered arithmetic target, but the suite now exposes previously hidden
+  slow branches in add/subtract and both preferred-scale sides of `divideAndRemainder`.
+- The new baseline shows the largest remaining gaps in large-scale add/subtract rescaling and the
+  negative-scale `divideAndRemainder` paths, which makes them good follow-on optimization targets.
+
+=== RUN 10 — 2026-04-21 21:49 ===
+Change: Extended the native cached `10^n` table from `10^18` through `10^32`, following the JDK
+`bigTenToThe` style cached-power approach. This keeps the benchmarked large-scale-gap add/subtract
+fixtures on the cached multiply-by-power-of-ten path instead of rebuilding `10^24` via TomMath on
+every invocation.
+
+Validation source:
+- JDK reference inspected from local source: `jdk1.8.0_161` `java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T21.48.58.137627/macosArm64.json`
+
+Key deltas versus expanded-suite baseline:
+- `addLargeScaleGapMethod`: 0.632 / 0.689 / 0.812 -> 0.139 / 0.153 / 0.418 us/op
+- `subtractLargeScaleGapMethod`: 0.594 / 0.619 / 0.745 -> 0.114 / 0.152 / 0.415 us/op
+- `divideGenericExactMethod`: 1.054 / 3.099 / 11.938 -> 0.910 / 2.694 / 10.368 us/op
+- `divideAndRemainderNegativeScaleSmallDivisorMethod`: 1.289 / 1.215 / 6.354 -> 0.802 / 1.089 / 5.281 us/op
+- `divideAndRemainderPositiveScaleGenericDivisorMethod`: 0.466 / 1.199 / 3.250 -> 0.404 / 1.029 / 2.781 us/op
+- `divideAndRemainderNegativeScaleGenericDivisorMethod`: 0.953 / 1.895 / 8.746 -> 0.817 / 1.622 / 7.878 us/op
+
+Observed effect:
+- Large-scale-gap add/subtract are the primary winners because the native path no longer rebuilds
+  `10^24` for those fixtures.
+- Several divide/remainder cases also improved because they reuse the same power-of-ten scaling
+  helpers, so the cache extension trims factor-construction overhead outside pure addition as well.
+
+=== RUN 11 — 2026-04-21 21:58 ===
+Change: Added a negative-scale `divideAndRemainder()` fast path for divisors whose unscaled value is
+`±1`. In that branch the quotient is just the dividend's unscaled value with the preferred negative
+scale applied, and the remainder is guaranteed to be zero, so the native code now skips the
+multiply-by-`10^k`, divide-by-`1`, and strip-trailing-zeros cycle entirely.
+
+Validation source:
+- JDK reference inspected from local source: `jdk1.8.0_161` `java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T21.58.04.588526/macosArm64.json`
+
+Key deltas versus RUN 10:
+- `divideAndRemainderNegativeScaleSmallDivisorMethod`: 0.802 / 1.089 / 5.281 -> 0.044 / 0.044 / 0.044 us/op
+- `divideAndRemainderNegativeScaleGenericDivisorMethod`: 0.817 / 1.622 / 7.878 -> 0.911 / 1.760 / 7.515 us/op
+- `divideAndRemainderMethod`: 0.390 / 0.432 / 0.804 -> 0.386 / 0.431 / 0.800 us/op
+
+Observed effect:
+- The benchmarked `0.01` divisor branch collapsed by roughly 95% / 96% / 99% because the native
+  path now constructs the final quotient directly instead of round-tripping through a scaled integer
+  division by one.
+- The generic negative-scale branch stayed in the same overall band, which is useful signal that the
+  new shortcut is narrowly scoped to the intended exact `±1` divisor case.
+
+=== RUN 12 — 2026-04-21 22:05 ===
+Change: Added a second negative-scale `divideAndRemainder()` fast path for cases where the original
+unscaled dividend already divides exactly by the divisor's unscaled value. In that branch the native
+code now performs the exact division on the smaller unscaled operands and materializes the quotient
+directly at the preferred negative scale, instead of scaling the dividend up by `10^k` first and
+dividing the larger value afterward.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T22.05.14.905253/macosArm64.json`
+
+Key deltas versus RUN 11:
+- `divideAndRemainderNegativeScaleGenericDivisorMethod`: 0.911 / 1.760 / 7.515 -> 0.261 / 0.818 / 2.395 us/op
+- `divideAndRemainderNegativeScaleSmallDivisorMethod`: 0.044 / 0.044 / 0.044 -> 0.046 / 0.046 / 0.046 us/op
+- `divideAndRemainderMethod`: 0.386 / 0.431 / 0.800 -> 0.391 / 0.438 / 0.810 us/op
+
+Observed effect:
+- The exact generic negative-scale branch improved by roughly 71% / 54% / 68% because the native
+  path now avoids multiplying the dividend by `10^2` before dividing by a full multi-limb operand.
+- The previously optimized `±1` negative-scale branch stayed essentially flat, and the core
+  `divideAndRemainder` benchmark moved only slightly, so the optimization remains focused on the
+  newly covered exact-divisibility branch.
+
+=== RUN 13 — 2026-04-21 22:17 ===
+Change: Added an exact small-divisor fast path in native `BigDecimal.divide()`. After the
+terminating-decimal shortcut fails, divisors that fit in one TomMath digit now try a direct
+`mp_div_d`-backed exact division on the unscaled dividend. When the remainder is zero, the native
+path returns the quotient immediately at the preferred scale instead of paying for the generic
+`gcd` reduction and factor-stripping flow.
+
+Validation source:
+- JDK reference inspected from local source: `jdk1.8.0_161` `java/math/BigDecimal.java`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T22.17.07.569525/macosArm64.json`
+
+Key deltas versus RUN 12:
+- `divideGenericExactMethod`: 0.908 / 2.685 / 10.334 -> 0.262 / 0.309 / 0.418 us/op
+- `divideMethod`: 0.402 / 0.342 / 0.501 -> 0.394 / 0.336 / 0.513 us/op
+- `divOperator`: 0.389 / 0.341 / 0.512 -> 0.389 / 0.331 / 0.510 us/op
+
+Observed effect:
+- The generic exact-divide benchmark collapsed because the benchmark divisor is `3`, so the native
+  path now detects exact divisibility with one small-digit division instead of `gcd` plus trailing
+  factor analysis.
+- The main terminating-divide benchmark stayed in the same band, which is expected because it still
+  exits earlier through the dedicated factor-of-`2`/`5` exact-division path.
+
+=== RUN 14 — 2026-04-21 23:16 ===
+Change: Optimized the positive-scale small-divisor `divideAndRemainder()` path. When the aligned
+divisor still fits in one TomMath digit, the native helper now scales the quotient inside the
+`mp_div_d` flow and materializes the result directly at the preferred scale, instead of routing the
+quotient through `integerToBigDecimal()` and paying for an extra `multiplyByPowerOfTen`.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Confirmation rerun of the same smoke benchmark kept the same direction and similar magnitudes
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T23.15.50.998196/macosArm64.json`
+
+Key deltas versus RUN 13:
+- `divideAndRemainderMethod`: 0.386 / 0.459 / 0.840 -> 0.382 / 0.418 / 0.606 us/op
+- `remainderMethod`:          0.380 / 0.443 / 0.830 -> 0.397 / 0.414 / 0.590 us/op
+- `remainderOperator`:        0.395 / 0.468 / 0.807 -> 0.403 / 0.426 / 0.637 us/op
+
+Observed effect:
+- The direct quotient-scaling fast path is a clear win for the medium and large aligned
+  small-divisor cases because the native code no longer rebuilds `quotient * 10^preferredScale`
+  after every `mp_div_d`.
+- `divideAndRemainder` improved by roughly 9% on medium and 28% on large in the confirmation run.
+- The remainder wrappers improved materially on medium/large as well; the small-profile movement was
+  mixed across reruns and looks like benchmark noise rather than a semantic issue.
+
+=== RUN 15 — 2026-04-21 23:23 ===
+Change: Removed the remaining aligned-divisor allocation from the positive-scale small-divisor
+`divideAndRemainder()` branch. When `other.unscaled * 10^preferredScale` still fits in one TomMath
+digit, the native path now computes that scaled digit directly and jumps straight into the
+`mp_div_d` quotient-scaling helper instead of first materializing the scaled divisor as a
+`BigInteger`.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Confirmation rerun of the same smoke benchmark kept the same direction on the targeted branches
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-21T23.22.42.173645/macosArm64.json`
+
+Key deltas versus RUN 14:
+- `divideAndRemainderMethod`: 0.382 / 0.418 / 0.606 -> 0.353 / 0.369 / 0.537 us/op
+- `remainderMethod`:          0.397 / 0.414 / 0.590 -> 0.345 / 0.372 / 0.556 us/op
+- `divideAndRemainderPositiveScaleGenericDivisorMethod`: 0.439 / 1.047 / 2.953 -> 0.388 / 0.995 / 2.636 us/op
+
+Observed effect:
+- The aligned positive-scale `divideAndRemainder` branch improved again because the native code now
+  skips the temporary `other.unscaled * 10^preferredScale` allocation when the fully scaled divisor
+  still fits in a single limb.
+- The covered positive-scale generic-divisor branch improved too, which matches the intended scope:
+  both hot paths were paying the same temporary scaled-divisor construction cost.
+- A confirmation rerun was noisier overall, but it preserved the same direction on the changed
+  branches, so this looks like a real branch-local win rather than a one-off outlier.
+
+=== RUN 16 — 2026-04-22 11:05 ===
+Change: Replaced the native `BigDecimal` one-sided single-limb multiply helper with a pure Kotlin
+canonical-limb multiply. Instead of routing `BigInteger * unsigned digit` through `mp_mul_d` and
+re-wrapping the result, the helper now multiplies each 60-bit canonical limb by the digit using
+30-bit halves, propagates carry directly in Kotlin, and returns early for zero and unit digits.
+
+Validation source:
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Same-checkout baseline rerun with the helper temporarily restored to the previous `mp_mul_d`
+  implementation
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T10.46.37.180783/macosArm64.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T10.59.19.914685/macosArm64.json`
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+
+Key deltas versus the same-checkout baseline rerun:
+- `multiplySingleLimbLeftMethod`: 0.212 / 0.215 / 0.249 -> 0.080 / 0.090 / 0.121 us/op
+- `multiplySingleLimbRightMethod`: 0.299 / 0.224 / 0.253 -> 0.081 / 0.093 / 0.124 us/op
+- `multiplyMethod`: 0.072 / 0.173 / 0.675 -> 0.070 / 0.174 / 0.677 us/op
+- `timesOperator`: 0.069 / 0.172 / 0.678 -> 0.072 / 0.173 / 0.683 us/op
+
+Observed effect:
+- The one-sided single-limb multiply branches dropped materially because the native `BigDecimal`
+  fast path no longer pays the FFI and temporary `mp_int` allocation cost for `mp_mul_d`.
+- The general `multiply` and `times` benchmarks stayed within the same noise band, which matches
+  the fixture layout: those benchmarks do not exercise the edited helper.
+- An unrelated positive-scale `divideAndRemainder` sentinel moved only slightly across the same
+  A/B pair, which confirms the suite was still noisy enough that only the branch-local multiply
+  deltas should be treated as signal here.
+
+=== RUN 17 — 2026-04-22 11:20 ===
+Change: Reused the new pure Kotlin single-limb multiply helper inside
+`divideAndRemainderByDigitWithScaledQuotient()`. After the native `mp_div_d` quotient step, the
+preferred-scale power-of-ten multiply now converts the quotient once and scales it through
+`multiplyByUnsignedMagnitude(...)` instead of allocating a second `mp_int` and calling `mp_mul_d`
+again.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Same-checkout baseline rerun with the helper temporarily restored to the previous
+  `mp_mul_d`-scaled quotient implementation
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T11.11.11.620992/macosArm64.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T11.16.10.880976/macosArm64.json`
+
+Key deltas versus the same-checkout baseline rerun:
+- `divideAndRemainderMethod`: 0.376 / 0.379 / 0.562 -> 0.315 / 0.360 / 0.545 us/op
+- `remainderMethod`:          0.375 / 0.391 / 0.572 -> 0.318 / 0.361 / 0.569 us/op
+- `remainderOperator`:        0.350 / 0.397 / 0.583 -> 0.324 / 0.362 / 0.550 us/op
+- `divideAndRemainderPositiveScaleGenericDivisorMethod`: 0.427 / 1.025 / 2.982 -> 0.425 / 1.036 / 2.812 us/op
+
+Observed effect:
+- The aligned positive-scale small-divisor branch improved because quotient scaling no longer pays
+  for a second native temporary and FFI round-trip after `mp_div_d`.
+- The user-facing remainder wrappers benefited too, which is expected because they share the same
+  quotient-scaling helper when the divisor aligns into a single digit.
+- The covered positive-scale generic-divisor branch was effectively flat on small, slightly slower
+  on medium, and materially faster on large, so the net win is concentrated in the hot aligned
+  quotient-scaling path rather than the broader generic division flow.
+
+=== RUN 18 — 2026-04-22 11:46 ===
+Change: Routed small `10^n` scaling through the native single-limb multiply helper. When
+`multiplyByPowerOfTen()` sees a power of ten that still fits in one canonical limb, it now calls
+`multiplyByUnsignedMagnitude(...)` directly instead of constructing `SMALL_TEN_POWERS[n]` and going
+through generic `BigInteger.multiply()`.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Same-checkout baseline rerun with `multiplyByPowerOfTen()` temporarily restored to the previous
+  `value * SMALL_TEN_POWERS[power]` implementation
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T11.37.27.027133/macosArm64.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T11.41.08.014476/macosArm64.json`
+
+Key deltas versus the same-checkout baseline rerun:
+- `divideAndRemainderPositiveScaleGenericDivisorMethod`: 0.452 / 1.044 / 2.794 -> 0.390 / 0.985 / 2.432 us/op
+- `addMethod`:                                      0.102 / 0.120 / 0.330 -> 0.085 / 0.098 / 0.138 us/op
+- `subtractMethod`:                                 0.104 / 0.122 / 0.335 -> 0.086 / 0.101 / 0.147 us/op
+- `addLargeScaleGapMethod`:                         0.116 / 0.155 / 0.428 -> 0.118 / 0.156 / 0.424 us/op
+- `subtractLargeScaleGapMethod`:                    0.114 / 0.150 / 0.429 -> 0.116 / 0.152 / 0.422 us/op
+
+Observed effect:
+- The positive-scale generic `divideAndRemainder` branch improved because both aligned divisor
+  construction and quotient materialization now avoid the generic small-power `BigInteger`
+  multiplication path.
+- The common add/subtract benchmarks improved materially on the mixed-scale fixtures because the
+  same helper also handles their `10^2` rescale step.
+- The large-scale-gap add/subtract branches moved only slightly, which fits the implementation:
+  they already spend most of their time in the large generic `10^n` multiplication path rather than
+  the single-limb case.
+
+=== RUN 19 — 2026-04-22 12:07 ===
+Change: Added a dedicated exact-division helper for native `BigDecimal` negative-scale fast paths.
+Instead of routing exact `unscaled / other.unscaled` checks through `BigInteger.divideAndRemainder()`
+and then wrapping the array result back into `SmallDigitDivision`, the native path now probes exact
+division directly and only materializes the quotient when the remainder is zero. The helper keeps the
+existing small-digit shortcut, uses schoolbook `divRemMagnitude(...)` for small operands, and uses
+`mp_div` without constructing a remainder `BigInteger` on larger operands unless it needs to fall
+back.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Same-checkout baseline rerun with the exact negative-scale branch temporarily restored to the
+  previous `BigInteger.divideAndRemainder()` + `SmallDigitDivision` flow
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T12.01.52.216628/macosArm64.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-22T11.57.58.819642/macosArm64.json`
+
+Key deltas versus the same-checkout baseline rerun:
+- `divideAndRemainderNegativeScaleGenericDivisorMethod`: 0.281 / 0.812 / 2.330 -> 0.235 / 0.777 / 2.289 us/op
+- `divideAndRemainderMethod`:                         0.306 / 0.388 / 0.577 -> 0.294 / 0.360 / 0.542 us/op
+- `remainderMethod`:                                  0.326 / 0.359 / 0.545 -> 0.301 / 0.345 / 0.535 us/op
+- `remainderOperator`:                                0.300 / 0.380 / 0.542 -> 0.291 / 0.353 / 0.602 us/op
+
+Observed effect:
+- The exact negative-scale generic-divisor branch improved across all three profiles because the
+  native code now skips the array allocation and remainder-object materialization on successful exact
+  division.
+- The shared `divideAndRemainder` and `remainder` wrappers improved as a follow-on effect because
+  they still cover that exact early-exit branch in the arithmetic fixture mix.
+- `remainderOperator` improved on small/medium but regressed on the large profile in this A/B pair,
+  so the kept optimization should be treated as targeted to the exact negative-scale divide path
+  rather than a broad remainder rewrite.
+
+=== DISCARDED ATTEMPTS — 2026-04-22 13:10 ===
+Notes:
+- The entries below are intentionally kept even though the code was reverted. They are here to stop
+  future autoresearch passes from retrying the same ideas without new evidence or benchmark coverage.
+
+Discarded change: dedicated native `remainderOnly()` helper that bypassed `divideAndRemainder()[1]`
+and reimplemented the positive-scale / negative-scale branches directly.
+- Result: not kept.
+- Reason: the extra quotient-scale and remainder-scale reconstruction duplicated too much of the
+  existing `divideAndRemainder()` logic, and the smoke runs did not show a stable enough win to pay
+  for that complexity. The observed movement was mixed and too noisy to treat as a reliable
+  arithmetic improvement.
+
+Discarded change: equal-scale / one-sided-rescale `add` and `subtract` shortcuts.
+- Result: not kept.
+- Reason: against the clean `RUN 19` baseline (`2026-04-22T11.57.58.819642`), the dedicated
+  equal-scale fast path regressed the broader add/subtract benchmarks materially:
+  - `addMethod`:                  `0.082 / 0.097 / 0.141 -> 0.104 / 0.113 / 0.153`
+  - `subtractMethod`:             `0.084 / 0.094 / 0.156 -> 0.107 / 0.116 / 0.166`
+  - `addLargeScaleGapMethod`:     `0.114 / 0.149 / 0.438 -> 0.137 / 0.175 / 0.484`
+  - `subtractLargeScaleGapMethod` `0.117 / 0.153 / 0.429 -> 0.136 / 0.175 / 0.481`
+- Even the targeted equal-scale methods only moved by a few nanoseconds, so the branch was not
+  worth keeping.
+
+Discarded change: small-power `divideByPowerOfTen()` digit fast path using
+`divideAndRemainderByDigit(...)` for `10^n` divisors that fit in one native digit.
+- Result: not kept.
+- Reason: against the clean `RUN 19` baseline (`2026-04-22T11.57.58.819642`), it regressed the
+  covered negative-scale and remainder-heavy branches:
+  - `divideAndRemainderNegativeScaleSmallDivisorMethod`:
+    `0.043 / 0.043 / 0.043 -> 0.051 / 0.053 / 0.052`
+  - `divideAndRemainderNegativeScaleGenericDivisorMethod`:
+    `0.235 / 0.777 / 2.289 -> 0.271 / 0.920 / 2.683`
+  - `divideAndRemainderPositiveScaleGenericDivisorMethod`:
+    `0.352 / 0.958 / 2.264 -> 0.437 / 1.123 / 2.909`
+  - `remainderMethod`:
+    `0.301 / 0.345 / 0.535 -> 0.349 / 0.403 / 0.622`
+- Conclusion: building the full `10^n` divisor is still cheaper on the current native path than
+  routing these branches through the digit-division helper plus manual half-comparison logic.
+
+Deferred idea: post-`gcd` exact `divide()` factor-stripping cleanup.
+- Status: not attempted for a kept change.
+- Reason: the current arithmetic smoke suite does not cover the post-`gcd` exact-divide branch in
+  `BigDecimal.divide()`. The existing covered divide branches either exit via `fastTerminatingDivide`
+  or via the small-digit exact-divisor shortcut, so changing the post-`gcd` cleanup now would be a
+  blind optimization without benchmark evidence.
+
+=== DISCARDED ATTEMPT — 2026-04-23 13:29 ===
+Discarded change: eagerly precomputed `10^n` cache expanded all the way to `10^512` and reused the
+full table from `divideByPowerOfTen()` and `decimalDigitLength()`.
+- Result: not kept.
+- Reason: the broad eager table did improve the targeted math-context and rounding-heavy branches,
+  but it also regressed too many plain arithmetic methods in the same smoke run to justify the extra
+  resident state. Against the 2026-04-23 baseline run (`2026-04-23T13.21.54.142859`), the discarded
+  eager cache moved these covered branches in the wrong direction:
+  - `subtractMethod`:       `0.101 / 0.123 / 0.165 -> 0.340 / 0.363 / 0.501`
+  - `timesOperator`:        `0.073 / 0.179 / 0.684 -> 0.242 / 0.441 / 1.563`
+  - `ulpMethod`:            `0.026 / 0.028 / 0.026 -> 0.058 / 0.080 / 0.090`
+  - `unaryMinusOperator`:   `0.036 / 0.037 / 0.037 -> 0.124 / 0.156 / 0.093`
+- Conclusion: keep the caching idea, but only materialize the larger powers lazily so the rounding
+  hot paths can reuse them without paying for a giant eager table up front.
+
+=== RUN 20 — 2026-04-23 13:37 ===
+Change: Reworked the large-`10^n` cache into a lazy native cache instead of an eager one. The native
+`BigDecimal` path now precomputes only the existing small powers of ten, materializes larger powers
+on demand the first time `divideByPowerOfTen()` or `decimalDigitLength()` needs them, and reuses
+those cached values for the rest of the benchmark process. This keeps the hot math-context rounding
+paths from rebuilding `10^n` with `mp_expt_u32` on every call, but avoids the broad regressions from
+the discarded eager `10^512` table.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-daemon`
+- Baseline report: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-23T13.21.54.142859/macosArm64.json`
+- Discarded eager-cache probe: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-23T13.29.18.050568/macosArm64.json`
+- Accepted lazy-cache run: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-04-23T13.36.50.116903/macosArm64.json`
+
+Key deltas versus the 2026-04-23 baseline:
+- `addMathContextMethod`:                  `0.747 / 2.391 / 4.076 -> 0.742 / 0.984 / 1.593`
+- `subtractMathContextMethod`:             `0.456 / 2.241 / 4.059 -> 0.446 / 1.072 / 1.555`
+- `multiplyMathContextMethod`:             `1.501 / 2.928 / 6.516 -> 0.799 / 1.036 / 4.874`
+- `divideMathContextMethod`:               `0.426 / 2.278 / 3.786 -> 0.416 / 0.633 / 1.706`
+- `divideAndRemainderMathContextMethod`:   `2.395 / 6.402 / 16.092 -> 1.682 / 3.473 / 12.797`
+- `divideToIntegralValueMathContextMethod` `2.281 / 6.193 / 15.159 -> 1.525 / 3.100 / 11.658`
+- `remainderMathContextMethod`:            `2.454 / 6.521 / 16.215 -> 1.735 / 3.367 / 12.346`
+- `roundMathContextMethod`:                `0.348 / 1.776 / 2.758 -> 0.332 / 0.936 / 1.530`
+- `plusMathContextMethod`:                 `0.331 / 1.767 / 2.767 -> 0.330 / 0.956 / 1.526`
+- `negateMathContextMethod`:               `0.393 / 2.453 / 4.035 -> 0.380 / 0.982 / 1.568`
+- `absMathContextMethod`:                  `0.378 / 2.456 / 4.142 -> 0.406 / 0.980 / 1.546`
+- `sqrtMathContextMethod`:                 `7.860 / 20.588 / 75.511 -> 4.551 / 9.435 / 39.495`
+
+Observed effect:
+- The lazy cache preserves the core win from the rejected eager attempt: repeated native
+  `roundToMathContext()` work no longer rebuilds the same large powers of ten for precision probing
+  and `10^n` division, so the medium and large math-context branches improved materially across the
+  board.
+- Plain arithmetic stayed in the same band or improved slightly, which is the key difference from
+  the eager-cache probe. The simple add/subtract/multiply/divide operator and method benchmarks all
+  remained stable enough to keep.
+- One small-profile outlier remained noisy: `remainderOperator` moved from `0.369` to `0.501 us/op`
+  even though the underlying `remainderMethod` improved to `0.346 us/op` and the medium/large `%`
+  profiles stayed near baseline. Treat that one wrapper reading as noise unless a future rerun shows
+  the same isolated regression consistently.

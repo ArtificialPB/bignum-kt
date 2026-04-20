@@ -593,7 +593,22 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
     actual fun toString(radix: Int): String {
         // JVM semantics: invalid radix falls back to radix 10
         val effectiveRadix = if (radix in 2..36) radix else 10
-        return magnitudeToString(this, effectiveRadix)
+        if (sign == 0) return "0"
+        if (effectiveRadix == 10) return magnitudeToString(this, 10)
+        ifMagnitudeFitsInULong { magnitude ->
+            val digits = magnitude.toString(effectiveRadix)
+            return if (sign < 0) "-$digits" else digits
+        }
+        return withBorrowedHandle { handle ->
+            memScoped {
+                val size = alloc<IntVar>()
+                checkMp(mp_radix_size(handle, effectiveRadix, size.ptr))
+                val buffer = allocArray<ByteVar>(size.value)
+                checkMp(mp_to_radix(handle, buffer, size.value.toULong(), null, effectiveRadix))
+                val digits = buffer.toKString()
+                if (effectiveRadix > 10) digits.lowercase() else digits
+            }
+        }
     }
 
     actual override fun toString(): String = toString(10)
@@ -739,6 +754,54 @@ actual fun bigIntegerOf(value: String): BigInteger = when (value) {
     "10" -> TEN
     "100" -> HUNDRED
     else -> BigInteger(value)
+}
+
+internal fun parseDecimalBigIntegerSkippingIndex(
+    value: String,
+    digitsStart: Int,
+    digitsEnd: Int,
+    skippedIndex: Int,
+    sign: Int,
+    digitCount: Int,
+): BigInteger {
+    if (digitCount == 0) return ZERO
+
+    val numBits = ((digitCount.toLong() * STRING_BITS_PER_DIGIT[10]) ushr 10) + 1L
+    if (numBits > MAX_BIT_LENGTH) {
+        throw ArithmeticException("BigInteger would overflow supported range")
+    }
+
+    val estimatedLimbs = ((numBits + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt()
+    val magnitude = ULongArray(estimatedLimbs + 1)
+    var size = 1
+    var cursor = digitsStart
+    val digitsPerGroup = STRING_DIGITS_PER_LIMB[10]
+    var firstGroupLen = digitCount % digitsPerGroup
+    if (firstGroupLen == 0) {
+        firstGroupLen = digitsPerGroup
+    }
+
+    fun parseGroup(groupDigits: Int): ULong {
+        var parsed = 0
+        var result = 0UL
+        while (parsed < groupDigits) {
+            if (cursor == skippedIndex) cursor++
+            result = result * 10UL + (value[cursor] - '0').toULong()
+            cursor++
+            parsed++
+        }
+        return result
+    }
+
+    magnitude[0] = parseGroup(firstGroupLen)
+    var remainingDigits = digitCount - firstGroupLen
+    while (remainingDigits > 0) {
+        size = destructiveMulAdd(magnitude, size, STRING_LIMB_RADIX[10], parseGroup(digitsPerGroup))
+        remainingDigits -= digitsPerGroup
+    }
+
+    val normalizedSize = normalizeMagnitudeSize(size, magnitude)
+    return if (normalizedSize == 0) ZERO else BigInteger(sign, normalizedSize, magnitude)
 }
 
 actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
@@ -1209,26 +1272,84 @@ private fun magnitudeToString(value: BigInteger, radix: Int): String {
         val digits = magnitude.toString(radix)
         return if (sign < 0) "-$digits" else digits
     }
+    if (radix == 10) return magnitudeToDecimalString(value, sign)
 
     val digitsPerGroup = STRING_FORMAT_DIGITS_PER_GROUP[radix]
     val groupRadix = STRING_FORMAT_GROUP_RADIX[radix]
     val magnitude = value.limbs.copyOf(value.size)
     var size = value.size
     val groups = ArrayList<String>()
+    var totalLength = if (sign < 0) 1 else 0
     while (size > 0) {
         val remainder = destructiveDivRemMagnitudeByGroup(magnitude, size, groupRadix)
         while (size > 0 && magnitude[size - 1] == 0UL) {
             size--
         }
         val digits = remainder.toString(radix)
-        groups.add(if (size == 0) digits else digits.padStart(digitsPerGroup, '0'))
+        groups.add(digits)
+        totalLength += if (size == 0) digits.length else digitsPerGroup
     }
 
-    return buildString(groups.sumOf { it.length } + if (sign < 0) 1 else 0) {
+    return buildString(totalLength) {
         if (sign < 0) append('-')
-        for (index in groups.indices.reversed()) {
-            append(groups[index])
+        val lastIndex = groups.lastIndex
+        append(groups[lastIndex])
+        for (index in lastIndex - 1 downTo 0) {
+            val digits = groups[index]
+            repeat(digitsPerGroup - digits.length) { append('0') }
+            append(digits)
         }
+    }
+}
+
+private fun magnitudeToDecimalString(value: BigInteger, sign: Int): String {
+    val digitsPerGroup = STRING_FORMAT_DIGITS_PER_GROUP[10]
+    val groupRadix = STRING_FORMAT_GROUP_RADIX[10]
+    val magnitude = value.limbs.copyOf(value.size)
+    var size = value.size
+    var groups = IntArray(maxOf(4, value.size * 3))
+    var groupCount = 0
+    var totalLength = if (sign < 0) 1 else 0
+    while (size > 0) {
+        val remainder = destructiveDivRemMagnitudeByGroup(magnitude, size, groupRadix).toInt()
+        while (size > 0 && magnitude[size - 1] == 0UL) {
+            size--
+        }
+        if (groupCount == groups.size) {
+            groups = groups.copyOf(groups.size * 2)
+        }
+        groups[groupCount++] = remainder
+        totalLength += if (size == 0) decimalLength(remainder) else digitsPerGroup
+    }
+
+    return buildString(totalLength) {
+        if (sign < 0) append('-')
+        append(groups[groupCount - 1])
+        for (index in groupCount - 2 downTo 0) {
+            appendPaddedDecimalGroup(groups[index])
+        }
+    }
+}
+
+private fun decimalLength(value: Int): Int = when {
+    value >= 100_000_000 -> 9
+    value >= 10_000_000 -> 8
+    value >= 1_000_000 -> 7
+    value >= 100_000 -> 6
+    value >= 10_000 -> 5
+    value >= 1_000 -> 4
+    value >= 100 -> 3
+    value >= 10 -> 2
+    else -> 1
+}
+
+private fun StringBuilder.appendPaddedDecimalGroup(value: Int) {
+    var remaining = value
+    var divisor = 100_000_000
+    while (divisor > 0) {
+        append(('0'.code + (remaining / divisor)).toChar())
+        remaining %= divisor
+        divisor /= 10
     }
 }
 

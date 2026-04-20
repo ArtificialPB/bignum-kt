@@ -1,0 +1,15 @@
+{
+    "environment": [
+        {
+            "type": "env",
+            "key": "EXAMPLE_KEY",
+            "value": "example_value"
+        }
+    ],
+    "setup": {
+        "macos": [
+            "git submodule update --init --recursive bignum/src/nativeInterop/libtommath",
+            "echo \\\"Setup ran successfully with $EXAMPLE_KEY!\\\" > /tmp/setup-test.txt"
+        ]
+    }
+}

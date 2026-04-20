@@ -1,0 +1,154 @@
+=== BASELINE — 2026-04-22 23:22 ===
+Setup:
+- Comment out native `BigDecimal` string-side caches (`toString()`, `toPlainString()`,
+  `toEngineeringString()`, `toFloat()`, `toDouble()`) so the benchmark measures rendering again.
+- Keep unrelated integer-truncation caching unchanged for this pass.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConversionSmokeBenchmark --rerun-tasks --no-daemon`
+- JSON report: `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.24.42.037465/macosArm64.json`
+
+Benchmark                                                   small  / medium / large   us/op
+------------------------------------------------------------------------------------------
+toBigInteger                                                0.007 / 0.007 / 0.007
+toDouble                                                    0.776 / 10.100 / 80.469
+toEngineeringString                                         0.311 / 8.502 / 77.547
+toFloat                                                     0.772 / 9.234 / 78.268
+toInt                                                       0.014 / 0.015 / 0.014
+toLong                                                      0.014 / 0.015 / 0.014
+toPlainString                                               0.308 / 8.532 / 77.751
+toString                                                    0.320 / 8.506 / 74.646
+
+Notes:
+- `toBigIntegerExactMethod` still throws `ArithmeticException("Rounding necessary")` for all smoke
+  profiles because the benchmark fixture carries fractional digits.
+- With caches disabled, the dominant shared cost is decimal digit materialization plus the extra
+  substring/concatenation work in `plainString()` and the scientific/engineering coefficient
+  builders.
+
+Discarded attempt:
+- Rewrote `plainString()` with `buildString` plus substring-free appends. Small and some medium
+  rows improved, but `toPlainString()` and `toString()` were flat to slightly worse on large
+  inputs, so I treated it as noise and reverted it.
+- Bypassed the intermediate Kotlin digit string by calling `mp_to_radix` directly inside
+  `toPlainString()` and building the decimal result from the C buffer. It helped some shared
+  rendering rows, but `toPlainString()` small regressed from `0.308` to `1.657 us/op`, so the
+  change was reverted.
+
+=== KEPT RUN 2 — 2026-04-22 23:40 ===
+Change:
+- Replace the plain positive-scale in-string decimal-point path in `plainString()` with a single
+  `StringBuilder(digits).insert(point, '.')` path instead of two substrings plus concatenation.
+- This follows the same basic idea as the JVM `getValueString` helper: mutate one builder instead
+  of creating multiple intermediate strings for the common `digits.length > scale` case.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConversionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+- JSON reports:
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.38.34.80448/macosArm64.json`
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.40.14.436801/macosArm64.json`
+
+Benchmark                                                   baseline                  kept run
+----------------------------------------------------------------------------------------------
+toEngineeringString                                         0.311 / 8.502 / 77.547 -> 0.251 / 8.185 / 76.377
+toPlainString                                               0.308 / 8.532 / 77.751 -> 0.249 / 8.202 / 74.090
+toString                                                    0.320 / 8.506 / 74.646 -> 0.253 / 8.178 / 74.272
+
+Notes:
+- The conversion smoke fixture routes all three string benchmarks through the same
+  `digits.length > scale` `plainString()` branch, so this isolated change hits the actual hot
+  formatting path rather than cache behavior.
+- The confirmation rerun removed the mixed first-pass noise and showed the three string rows all
+  improving versus the no-cache baseline.
+
+=== KEPT RUN 3 — 2026-04-22 23:46 ===
+Change:
+- Switch native `BigInteger.toString(10)` over to the existing pure-Kotlin `magnitudeToString()`
+  formatter instead of the LibTomMath `mp_to_radix` bridge.
+- This keeps the `ULong` fast path for small magnitudes, but avoids the cinterop buffer round-trip
+  on the medium and large decimal strings that dominate native `BigDecimal` rendering.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConversionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+- JSON reports:
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.44.28.611009/macosArm64.json`
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.46.00.971217/macosArm64.json`
+
+Benchmark                                                   kept run 2                kept run 3
+----------------------------------------------------------------------------------------------
+toDouble                                                    0.705 / 9.780 / 76.354 -> 0.729 / 3.428 / 9.986
+toEngineeringString                                         0.251 / 8.185 / 76.377 -> 0.255 / 1.763 / 8.262
+toFloat                                                     0.723 / 8.658 / 75.464 -> 0.702 / 2.323 / 9.466
+toPlainString                                               0.249 / 8.202 / 74.090 -> 0.249 / 1.745 / 8.041
+toString                                                    0.253 / 8.178 / 74.272 -> 0.253 / 1.861 / 8.052
+
+Notes:
+- The change is benchmark-real rather than cache-real: string-side caches remain commented out,
+  and the speedup lands in the actual digit materialization layer.
+- Small-profile string rows stayed roughly flat because they already use the `ULong` decimal fast
+  path; the big wins come from medium and large magnitudes where the old path crossed the FFI
+  boundary and allocated a decimal buffer in LibTomMath.
+- `toDouble()` and `toFloat()` speed up as a downstream effect because the native implementations
+  still parse `toString()` output.
+
+=== KEPT RUN 4 — 2026-04-22 23:51 ===
+Change:
+- Remove per-group `padStart()` allocations from the pure-Kotlin decimal formatter.
+- Track the final output length during group extraction, keep the raw group strings, and insert the
+  leading zeros only while appending the final result.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConversionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+- JSON reports:
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.50.03.010357/macosArm64.json`
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.51.35.432695/macosArm64.json`
+
+Benchmark                                                   kept run 3                kept run 4
+----------------------------------------------------------------------------------------------
+toDouble                                                    0.729 / 3.428 / 9.986 -> 0.727 / 3.071 / 9.204
+toEngineeringString                                         0.255 / 1.763 / 8.262 -> 0.252 / 1.510 / 7.392
+toFloat                                                     0.702 / 2.323 / 9.466 -> 0.705 / 1.988 / 8.713
+toPlainString                                               0.249 / 1.745 / 8.041 -> 0.249 / 1.499 / 7.476
+toString                                                    0.253 / 1.861 / 8.052 -> 0.251 / 1.557 / 7.314
+
+Notes:
+- The small profile stayed flat, which is consistent with the hot cost already being the `ULong`
+  fast path rather than group padding.
+- The remaining gains are concentrated in medium and large values, where the old formatter was
+  still allocating one padded string per group.
+
+=== KEPT RUN 5 — 2026-04-22 23:57 ===
+Change:
+- Add a decimal-only specialization below `magnitudeToString()` that stores numeric radix chunks in
+  an `IntArray` and writes the padded 9-digit groups directly into the final builder.
+- This removes the remaining per-group `String` allocations from the decimal formatter.
+
+Validation source:
+- `./gradlew :bignum:macosArm64Test --no-daemon`
+- `./gradlew :benchmarks:macosArm64BigDecimalConversionSmokeBenchmark --rerun-tasks --no-daemon`
+- confirmation rerun of the same smoke benchmark
+- JSON reports:
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.55.43.975727/macosArm64.json`
+  - `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-04-22T23.57.20.798598/macosArm64.json`
+
+Benchmark                                                   kept run 4                kept run 5
+----------------------------------------------------------------------------------------------
+toDouble                                                    0.727 / 3.071 / 9.204 -> 0.723 / 2.357 / 6.045
+toEngineeringString                                         0.252 / 1.510 / 7.392 -> 0.260 / 0.809 / 4.441
+toFloat                                                     0.705 / 1.988 / 8.713 -> 0.705 / 1.342 / 7.243
+toPlainString                                               0.249 / 1.499 / 7.476 -> 0.248 / 0.821 / 4.470
+toString                                                    0.251 / 1.557 / 7.314 -> 0.252 / 0.889 / 4.617
+
+Notes:
+- This was the last clean, isolated string-path win I found. The remaining ideas are much riskier:
+  larger-radix regrouping, avoiding the magnitude copy entirely, or porting the JVM floating-point
+  conversion algorithm to stop parsing strings for `toFloat()` and `toDouble()`.
+- I stopped after this run because those remaining directions are no longer small local formatter
+  changes; they would be broader algorithm rewrites with a different risk profile.

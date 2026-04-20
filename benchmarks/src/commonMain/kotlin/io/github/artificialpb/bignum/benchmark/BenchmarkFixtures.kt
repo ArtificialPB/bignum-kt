@@ -1,6 +1,10 @@
 package io.github.artificialpb.bignum.benchmark
 
+import io.github.artificialpb.bignum.BigDecimal
 import io.github.artificialpb.bignum.BigInteger
+import io.github.artificialpb.bignum.MathContext
+import io.github.artificialpb.bignum.RoundingMode
+import io.github.artificialpb.bignum.bigDecimalOf
 import io.github.artificialpb.bignum.bigIntegerOf
 import io.github.artificialpb.bignum.div
 import io.github.artificialpb.bignum.inc
@@ -70,6 +74,49 @@ data class BenchmarkFixture(
     val sqrtInput: BigInteger,
     val rangeStart: BigInteger,
     val rangeEnd: BigInteger,
+)
+
+data class BigDecimalBenchmarkFixture(
+    val constructorString: String,
+    val constructorBigInteger: BigInteger,
+    val constructorScale: Int,
+    val factoryString: String,
+    val factoryInt: Int,
+    val factoryLong: Long,
+    val factoryBigInteger: BigInteger,
+    val factoryBigIntegerScale: Int,
+    val left: BigDecimal,
+    val right: BigDecimal,
+    val negativeLeft: BigDecimal,
+    val zeroDividend: BigDecimal,
+    val equalLeft: BigDecimal,
+    val compareTarget: BigDecimal,
+    val equalScaleLeft: BigDecimal,
+    val equalScaleRight: BigDecimal,
+    val largeScaleGapLeft: BigDecimal,
+    val largeScaleGapRight: BigDecimal,
+    val singleLimbOperand: BigDecimal,
+    val multiLimbOperand: BigDecimal,
+    val dividend: BigDecimal,
+    val divisor: BigDecimal,
+    val genericExactDividend: BigDecimal,
+    val genericExactDivisor: BigDecimal,
+    val negativeScaleSmallDividend: BigDecimal,
+    val negativeScaleSmallDivisor: BigDecimal,
+    val positiveScaleGenericDividend: BigDecimal,
+    val positiveScaleGenericDivisor: BigDecimal,
+    val negativeScaleGenericDividend: BigDecimal,
+    val negativeScaleGenericDivisor: BigDecimal,
+    val roundedDivideDividend: BigDecimal,
+    val roundedDivideDivisor: BigDecimal,
+    val powBase: BigDecimal,
+    val sqrtInput: BigDecimal,
+    val powExponent: Int,
+    val mathContext: MathContext,
+    val integralMathContext: MathContext,
+    val scaleTarget: Int,
+    val scaleMoveAmount: Int,
+    val roundingMode: RoundingMode,
 )
 
 internal fun decimalPattern(pattern: String, repeats: Int, suffix: String): String = buildString {
@@ -220,6 +267,127 @@ internal object BenchmarkFixtures {
     }
 }
 
+internal object BigDecimalBenchmarkFixtures {
+    private val one = bigIntegerOf(1)
+    private val three = bigIntegerOf(3)
+    private val seven = bigIntegerOf(7)
+    private val nine = bigIntegerOf(9)
+    private val hundred = bigIntegerOf(100)
+    private val tenToTwenty = bigIntegerOf(10).pow(20)
+
+    fun create(profileName: String): BigDecimalBenchmarkFixture {
+        val profile = benchmarkProfiles[profileName]
+            ?: error("Unknown benchmark profile: $profileName")
+
+        val constructorString = decimalOperand(profile.operandA, 6)
+        val factoryString = decimalOperand(profile.operandB, 4)
+        val left = BigDecimal(constructorString)
+        val right = BigDecimal(factoryString)
+        val negativeLeft = -left
+        val equalLeft = BigDecimal(left.toString())
+        val compareTarget = left + left.ulp()
+
+        val constructorScale = 6
+        val constructorBigInteger = BigInteger(profile.operandA)
+        val factoryBigInteger = BigInteger(profile.operandB)
+        val factoryBigIntegerScale = 4
+
+        val zeroDividend = bigDecimalOf(0)
+        val divisor = bigDecimalOf(125)
+        val dividend = left.movePointRight(3)
+        val equalScaleLeft = bigDecimalOf(constructorBigInteger, constructorScale)
+        val equalScaleRight = bigDecimalOf(factoryBigInteger, constructorScale)
+        val largeScaleGapLeft = bigDecimalOf(constructorBigInteger, constructorScale)
+        val largeScaleGapRight = bigDecimalOf(factoryBigInteger, 30)
+        val singleLimbOperand = bigDecimalOf(nine)
+        val multiLimbOperand = bigDecimalOf(
+            constructorBigInteger.abs() * tenToTwenty + seven,
+            0,
+        )
+        val genericExactDividend = bigDecimalOf((constructorBigInteger.abs() + one) * three, 0)
+        val genericExactDivisor = bigDecimalOf(three)
+        val negativeScaleSmallDividend = bigDecimalOf(constructorBigInteger.abs() + seven, 0)
+        val negativeScaleSmallDivisor = bigDecimalOf(one, 2)
+
+        val genericDivisorUnscaled = factoryBigInteger.abs() + nine
+        val positiveScaleGenericDivisor = bigDecimalOf(genericDivisorUnscaled, 0)
+        val positiveScaleGenericDividend = bigDecimalOf(
+            (constructorBigInteger.abs() + one) * genericDivisorUnscaled * hundred + seven,
+            2,
+        )
+        val negativeScaleGenericDivisor = bigDecimalOf(genericDivisorUnscaled, 2)
+        val negativeScaleGenericDividend = bigDecimalOf(
+            (constructorBigInteger.abs() + one) * genericDivisorUnscaled,
+            0,
+        )
+        val roundedDivideDividend = left
+        val roundedDivideDivisor = bigDecimalOf(three)
+        val powBase = BigDecimal(decimalOperand(profile.powBase, 3))
+        val sqrtInput = left.abs() + bigDecimalOf(2)
+        val roundingMode = RoundingMode.HALF_EVEN
+        val mathContextPrecision = (maxOf(left.precision(), right.precision()) / 2).coerceAtLeast(16)
+        val mathContext = MathContext(mathContextPrecision, roundingMode)
+        val integralMathContext = MathContext(
+            maxOf(positiveScaleGenericDividend.precision(), positiveScaleGenericDivisor.precision()) + 4,
+            roundingMode,
+        )
+        val scaleTarget = (left.scale() + 2).coerceAtMost(18)
+        val scaleMoveAmount = (profile.shiftAmount / 2).coerceAtLeast(1)
+
+        return BigDecimalBenchmarkFixture(
+            constructorString = constructorString,
+            constructorBigInteger = constructorBigInteger,
+            constructorScale = constructorScale,
+            factoryString = factoryString,
+            factoryInt = profile.intValue,
+            factoryLong = profile.longValue,
+            factoryBigInteger = factoryBigInteger,
+            factoryBigIntegerScale = factoryBigIntegerScale,
+            left = left,
+            right = right,
+            negativeLeft = negativeLeft,
+            zeroDividend = zeroDividend,
+            equalLeft = equalLeft,
+            compareTarget = compareTarget,
+            equalScaleLeft = equalScaleLeft,
+            equalScaleRight = equalScaleRight,
+            largeScaleGapLeft = largeScaleGapLeft,
+            largeScaleGapRight = largeScaleGapRight,
+            singleLimbOperand = singleLimbOperand,
+            multiLimbOperand = multiLimbOperand,
+            dividend = dividend,
+            divisor = divisor,
+            genericExactDividend = genericExactDividend,
+            genericExactDivisor = genericExactDivisor,
+            negativeScaleSmallDividend = negativeScaleSmallDividend,
+            negativeScaleSmallDivisor = negativeScaleSmallDivisor,
+            positiveScaleGenericDividend = positiveScaleGenericDividend,
+            positiveScaleGenericDivisor = positiveScaleGenericDivisor,
+            negativeScaleGenericDividend = negativeScaleGenericDividend,
+            negativeScaleGenericDivisor = negativeScaleGenericDivisor,
+            roundedDivideDividend = roundedDivideDividend,
+            roundedDivideDivisor = roundedDivideDivisor,
+            powBase = powBase,
+            sqrtInput = sqrtInput,
+            powExponent = profile.powExponent,
+            mathContext = mathContext,
+            integralMathContext = integralMathContext,
+            scaleTarget = scaleTarget,
+            scaleMoveAmount = scaleMoveAmount,
+            roundingMode = roundingMode,
+        )
+    }
+
+    private fun decimalOperand(digits: String, scale: Int): String {
+        val wholeDigits = digits.length - scale
+        return if (wholeDigits > 0) {
+            digits.substring(0, wholeDigits) + "." + digits.substring(wholeDigits)
+        } else {
+            "0." + "0".repeat(-wholeDigits) + digits
+        }
+    }
+}
+
 @State(Scope.Benchmark)
 abstract class ProfiledBenchmarkState {
     @Param("small", "medium", "large")
@@ -230,5 +398,18 @@ abstract class ProfiledBenchmarkState {
     @Setup
     fun setupFixture() {
         fixture = BenchmarkFixtures.create(profile)
+    }
+}
+
+@State(Scope.Benchmark)
+abstract class BigDecimalProfiledBenchmarkState {
+    @Param("small", "medium", "large")
+    var profile: String = "small"
+
+    protected lateinit var fixture: BigDecimalBenchmarkFixture
+
+    @Setup
+    fun setupFixture() {
+        fixture = BigDecimalBenchmarkFixtures.create(profile)
     }
 }
