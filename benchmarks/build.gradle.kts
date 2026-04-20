@@ -145,15 +145,16 @@ tasks.register("compileAllBenchmarks") {
     )
 }
 
-afterEvaluate {
-    listOf(
-        "runKtlintCheckOverMacosArm64MacosArm64BenchmarkSourceSet",
-        "runKtlintFormatOverMacosArm64MacosArm64BenchmarkSourceSet",
-        "ktlintMacosArm64MacosArm64BenchmarkSourceSetCheck",
-        "ktlintMacosArm64MacosArm64BenchmarkSourceSetFormat",
-    ).forEach { taskName ->
-        tasks.named(taskName) {
-            enabled = false
-        }
+// ktlint generates tasks for these source sets automatically, even if we exclude their paths via config
+tasks.configureEach {
+    if (
+        name in setOf(
+            "runKtlintCheckOverMacosArm64MacosArm64BenchmarkSourceSet",
+            "runKtlintFormatOverMacosArm64MacosArm64BenchmarkSourceSet",
+            "ktlintMacosArm64MacosArm64BenchmarkSourceSetCheck",
+            "ktlintMacosArm64MacosArm64BenchmarkSourceSetFormat",
+        )
+    ) {
+        enabled = false
     }
 }
