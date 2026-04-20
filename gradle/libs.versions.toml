@@ -6,6 +6,8 @@ agp = "8.11.2"
 serialization = "1.9.0"
 benchmark = "0.4.14"
 kover = "0.9.8"
+dokka = "2.2.0"
+jreleaser = "1.23.0"
 ktlint-tool = "1.8.0"
 ktlint-gradle = "13.1.0"
 
@@ -26,4 +28,6 @@ androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAllOpen = { id = "org.jetbrains.kotlin.plugin.allopen", version.ref = "kotlin" }
 kotlinxBenchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "benchmark" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+jreleaser = { id = "org.jreleaser", version.ref = "jreleaser" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }

@@ -250,7 +250,7 @@ The library is tested at several levels:
 
 Tests live in `commonTest`, so the same cases run across JVM, Android, and Apple native targets.
 
-Coverage reports are generated with Kover for the JVM target, which means `commonMain` and `jvmMain` code exercised by JVM tests is reported. Apple native tests still run via the normal test tasks, but Kotlin-native coverage is not collected by the current JetBrains coverage tooling.
+Coverage reports are generated with Kover for the JVM target, which means `commonMain` and `jvmAndroidMain` code exercised by JVM tests is reported. Apple native tests still run via the normal test tasks, but Kotlin-native coverage is not collected by the current JetBrains coverage tooling.
 
 ## Build, test, and benchmark
 

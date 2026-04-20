@@ -1,17 +1,25 @@
+import org.gradle.api.Action
+import org.gradle.api.artifacts.dsl.RepositoryHandler
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPom
+import org.gradle.api.publish.maven.MavenPublication
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.dokka)
     alias(libs.plugins.kover)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotest)
     alias(libs.plugins.androidLibrary)
+    `maven-publish`
 }
 
 val libtommathDir = projectDir.resolve("src/nativeInterop/libtommath")
 val differentialFixtureDir = projectDir.resolve("src/commonTest/resources/differential")
+val githubRepoUrl = "https://github.com/ArtificialPB/bignum-kt"
 val tommathPinnedDefines = listOf(
     "MP_NO_FILE",
     "MP_USE_ENUMS",
@@ -35,7 +43,9 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     jvm()
-    androidTarget()
+    androidTarget {
+        publishLibraryVariants("release")
+    }
 
     macosArm64()
     iosArm64()
@@ -63,26 +73,96 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
+        val commonMain by getting {
+            dependencies {
+            }
         }
 
-        commonTest.dependencies {
-            implementation(libs.kotest.framework.engine)
-            implementation(libs.kotest.assertions.core)
-            implementation(libs.kotest.property)
-            implementation(libs.kotlinx.serialization.json)
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotest.framework.engine)
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.property)
+                implementation(libs.kotlinx.serialization.json)
+            }
         }
 
-        jvmTest.dependencies {
-            implementation(libs.kotest.runner.junit5)
+        val jvmAndroidMain by creating {
+            dependsOn(commonMain)
         }
 
-        androidMain {
-            kotlin.srcDir("src/jvmMain/kotlin")
+        val jvmMain by getting {
+            dependsOn(jvmAndroidMain)
         }
 
-        nativeMain.dependencies {
+        val androidMain by getting {
+            dependsOn(jvmAndroidMain)
         }
+
+        val jvmTest by getting {
+            dependencies {
+                implementation(libs.kotest.runner.junit5)
+            }
+        }
+
+        val nativeMain by getting {
+            dependencies {
+            }
+        }
+    }
+}
+
+val configurePublishingRepositories: Action<RepositoryHandler> = Action {
+    maven {
+        name = "localStaging"
+        url = uri(rootProject.layout.buildDirectory.dir("staging-deploy"))
+    }
+    mavenLocal()
+}
+
+val configurePom = Action<MavenPom> {
+    name.set("bignum-kt")
+    description.set("High-performance Kotlin Multiplatform BigInteger library with JVM semantics across JVM, Android, and Apple native.")
+    url.set(githubRepoUrl)
+
+    licenses {
+        license {
+            name.set("Apache-2.0 License")
+            url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+            distribution.set("repo")
+        }
+    }
+
+    developers {
+        developer {
+            id.set("artificialpb")
+            name.set("ArtificialPB")
+            organization.set("ArtificialPB")
+            organizationUrl.set("https://github.com/ArtificialPB")
+        }
+    }
+
+    scm {
+        url.set(githubRepoUrl)
+        connection.set("scm:git:git://github.com/ArtificialPB/bignum-kt.git")
+        developerConnection.set("scm:git:ssh://git@github.com/ArtificialPB/bignum-kt.git")
+    }
+}
+
+val dokkaGeneratePublicationHtml by tasks.getting
+
+val javadocJar by tasks.registering(Jar::class) {
+    dependsOn(dokkaGeneratePublicationHtml)
+    archiveClassifier.set("javadoc")
+    from(layout.buildDirectory.dir("dokka/html"))
+}
+
+extensions.configure<PublishingExtension> {
+    repositories(configurePublishingRepositories)
+
+    publications.withType(MavenPublication::class.java).configureEach {
+        artifact(javadocJar)
+        pom(configurePom)
     }
 }
 

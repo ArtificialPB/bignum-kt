@@ -37,7 +37,7 @@ bignum-kt/
 │   ├── src/
 │   │   ├── commonMain/                  # expect class BigInteger + operators
 │   │   ├── commonTest/                  # Shared test suite
-│   │   ├── jvmMain/                     # actual typealias to java.math.BigInteger
+│   │   ├── jvmAndroidMain/              # shared actuals for JVM + Android
 │   │   ├── nativeMain/                  # actual class backed by LibTomMath
 │   │   └── nativeInterop/
 │   │       ├── cinterop/tommath.def     # cinterop definition
@@ -60,13 +60,27 @@ bignum-kt/
 ./gradlew coverage                # JVM/common HTML + XML coverage reports
 ./gradlew coverageHtml            # JVM/common HTML coverage report
 ./gradlew coverageXml             # JVM/common XML coverage report
+./gradlew publishToMavenLocal     # Publish artifacts to your local Maven cache
+./gradlew publish                 # Stage artifacts for Maven Central deployment
 ```
 
 Coverage is reported through Kover for the JVM target. That includes `commonMain` and `jvmMain` code exercised by JVM tests, but it does not include Kotlin/Native execution coverage.
 
+## Publishing
+
+GitHub Actions publishes from [publish-library.yml](.github/workflows/publish-library.yml) using JReleaser and the Central Publisher API. Configure these repository secrets before enabling releases:
+
+- `MAVEN_CENTRAL_USERNAME`
+- `MAVEN_CENTRAL_PASSWORD`
+- `JRELEASER_GPG_PUBLIC_KEY`
+- `JRELEASER_GPG_SECRET_KEY`
+- `JRELEASER_GPG_PASSPHRASE`
+
+The build version comes from `VERSION_NAME` in [gradle.properties](gradle.properties). Use a `-SNAPSHOT` version for snapshot publishing from `master`, and update it to the release version before pushing a matching `v*` tag.
+
 ## Architecture
 
-### JVM — `actual typealias BigInteger = java.math.BigInteger`
+### JVM and Android — `actual typealias BigInteger = java.math.BigInteger`
 
 Zero-overhead: our `BigInteger` IS `java.math.BigInteger` on JVM. This means:
 - Only methods that exist on `java.math.BigInteger` can go inside the `expect class` body
@@ -83,7 +97,7 @@ Supported native targets: macOS ARM64, iOS ARM64, iOS x64, iOS Simulator ARM64.
 
 1. Check that `java.math.BigInteger` has the method (otherwise it must be an extension function)
 2. Add the declaration to `commonMain/.../BigInteger.kt`
-3. JVM: the typealias picks it up automatically (for class body members) or implement the `actual` extension
+3. JVM/Android: the shared `jvmAndroidMain` typealias implementation picks it up automatically (for class body members) or implement the `actual` extension there
 4. Native: implement using LibTomMath functions in `nativeMain/.../BigInteger.native.kt`
 5. Add tests in `commonTest/.../BigIntegerTest.kt`
 6. Run `./gradlew jvmTest macosArm64Test` to verify both platforms
