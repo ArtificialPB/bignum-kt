@@ -9,17 +9,24 @@ import io.kotest.property.arbitrary.next
 import java.io.File
 import java.lang.Math.floorMod
 import kotlin.random.Random
+import java.math.BigInteger as JavaBigInteger
 
 object DifferentialFixtureGenerator {
     private const val OUTPUT_DIR = "src/commonTest/resources/differential"
     private const val RANDOM_CASES_PER_OPERATION = 2_500
-    private const val RANDOM_SEED_BASE = 0xB16B00B4L
+    private const val MAX_RANDOM_GENERATION_ATTEMPTS = RANDOM_CASES_PER_OPERATION * 32
+    private const val MAX_RANDOM_DUPLICATE_STREAK = 2_048
+    const val SEED_PROPERTY = "bignum.differential.seed"
+    private const val DEFAULT_RANDOM_SEED = 0xB16B00B4L
 
     private const val MERSENNE_127 = "170141183460469231731687303715884105727"
     private const val MERSENNE_127_SQUARED =
         "28948022309329048855892746252171976962977213799489202546401021394546514198529"
 
-    private val canonicalValuePool: List<String> by lazy { commonCanonicalValues() }
+    private val activeSeed = ThreadLocal.withInitial { DEFAULT_RANDOM_SEED }
+    private val canonicalValuePoolsBySeed = mutableMapOf<Long, List<String>>()
+    private val minSignedSeed = JavaBigInteger.valueOf(Long.MIN_VALUE)
+    private val maxUnsignedSeed = JavaBigInteger.ONE.shiftLeft(Long.SIZE_BITS).subtract(JavaBigInteger.ONE)
     private val bitwiseValuePool: List<String> by lazy { bitwiseValues() }
     private val invalidNumericLiterals = listOf(
         "",
@@ -128,7 +135,11 @@ object DifferentialFixtureGenerator {
         BigIntArg(randomSqrtInput(rs))
     }
 
-    fun generateCasesByOperation(): Map<DifferentialOperation, List<DifferentialCase>> {
+    fun defaultSeed(): Long = DEFAULT_RANDOM_SEED
+
+    fun configuredSeed(rawSeed: String? = System.getProperty(SEED_PROPERTY)): Long = parseSeed(rawSeed) ?: DEFAULT_RANDOM_SEED
+
+    fun generateCasesByOperation(seed: Long = DEFAULT_RANDOM_SEED): Map<DifferentialOperation, List<DifferentialCase>> = withSeed(seed) {
         val builder = CorpusBuilder()
         populateConstructionCases(builder)
         populateFactoryCases(builder)
@@ -139,20 +150,25 @@ object DifferentialFixtureGenerator {
         populateComparisonCases(builder)
         populateRangeCases(builder)
         populateRandomCases(builder)
-        return builder.build().also(::validateCoverage)
+        builder.build().also(::validateCoverage)
     }
 
-    fun writeTo(projectDir: File) {
-        val outputDir = projectDir.resolve(OUTPUT_DIR)
-        outputDir.mkdirs()
-        outputDir.listFiles()
-            ?.filter { it.extension == "json" }
-            ?.forEach(File::delete)
+    fun writeTo(
+        projectDir: File,
+        seed: Long = DEFAULT_RANDOM_SEED,
+        outputDir: File = projectDir.resolve(OUTPUT_DIR),
+    ) {
+        withSeed(seed) {
+            outputDir.mkdirs()
+            outputDir.listFiles()
+                ?.filter { it.extension == "json" }
+                ?.forEach(File::delete)
 
-        val casesByOperation = generateCasesByOperation()
-        DifferentialOperation.entries.forEach { operation ->
-            val fixture = DifferentialFixtureFile(operation, casesByOperation.getValue(operation))
-            outputDir.resolve(operation.fixtureFileName).writeText(DifferentialFixtureJsonCodec.encode(fixture))
+            val casesByOperation = generateCasesByOperation(seed)
+            DifferentialOperation.entries.forEach { operation ->
+                val fixture = DifferentialFixtureFile(operation, casesByOperation.getValue(operation))
+                outputDir.resolve(operation.fixtureFileName).writeText(DifferentialFixtureJsonCodec.encode(fixture))
+            }
         }
     }
 
@@ -160,20 +176,32 @@ object DifferentialFixtureGenerator {
         val missing = DifferentialOperation.entries.filter { casesByOperation.getValue(it).isEmpty() }
         require(missing.isEmpty()) { "Missing differential fixtures for $missing" }
 
-        val underfilled = DifferentialOperation.entries.filter {
-            casesByOperation.getValue(it).size < RANDOM_CASES_PER_OPERATION
+        val duplicates = DifferentialOperation.entries.filter { operation ->
+            val cases = casesByOperation.getValue(operation)
+            cases.distinctBy(DifferentialCase::args).size != cases.size
         }
-        require(underfilled.isEmpty()) {
-            "Differential fixtures below $RANDOM_CASES_PER_OPERATION cases for $underfilled"
-        }
+        require(duplicates.isEmpty()) { "Duplicate differential fixtures for $duplicates" }
     }
 
     private fun populateRandomCases(builder: CorpusBuilder) {
         DifferentialOperation.entries.forEach { operation ->
             val arb = operation.randomArgsArb()
-            repeat(RANDOM_CASES_PER_OPERATION) { index ->
-                val args = arb.next(rs = RandomSource.seeded(randomSeed(operation, index)))
-                builder.add(operation, *args.toTypedArray())
+            var uniqueAdded = 0
+            var duplicateStreak = 0
+            var attempt = 0
+
+            while (uniqueAdded < RANDOM_CASES_PER_OPERATION &&
+                duplicateStreak < MAX_RANDOM_DUPLICATE_STREAK &&
+                attempt < MAX_RANDOM_GENERATION_ATTEMPTS
+            ) {
+                val args = arb.next(rs = RandomSource.seeded(randomSeed(operation, attempt)))
+                if (builder.add(operation, *args.toTypedArray())) {
+                    uniqueAdded++
+                    duplicateStreak = 0
+                } else {
+                    duplicateStreak++
+                }
+                attempt++
             }
         }
     }
@@ -181,7 +209,51 @@ object DifferentialFixtureGenerator {
     private fun randomSeed(
         operation: DifferentialOperation,
         index: Int,
-    ): Long = RANDOM_SEED_BASE + operation.ordinal * 10_000L + index.toLong()
+    ): Long = seedFactory().seed("random:${operation.name}", index.toLong())
+
+    private inline fun <T> withSeed(
+        seed: Long,
+        block: () -> T,
+    ): T {
+        val previousSeed = activeSeed.get()
+        activeSeed.set(seed)
+        return try {
+            block()
+        } finally {
+            activeSeed.set(previousSeed)
+        }
+    }
+
+    private fun seedFactory(): SeedFactory = SeedFactory(activeSeed.get())
+
+    private fun canonicalValuePool(): List<String> = canonicalValuePoolsBySeed.getOrPut(activeSeed.get()) {
+        commonCanonicalValues()
+    }
+
+    private fun parseSeed(rawSeed: String?): Long? {
+        if (rawSeed.isNullOrBlank()) return null
+        val normalized = rawSeed.trim().replace("_", "")
+        return runCatching {
+            val negative = normalized.startsWith('-')
+            val unsigned = normalized.removePrefix("+").removePrefix("-")
+            val (radix, digits) = when {
+                unsigned.startsWith("0x", ignoreCase = true) -> 16 to unsigned.drop(2)
+                unsigned.startsWith("#") -> 16 to unsigned.drop(1)
+                else -> 10 to unsigned
+            }
+            require(digits.isNotEmpty()) { "Missing seed digits" }
+
+            val magnitude = JavaBigInteger(digits, radix)
+            val value = if (negative) magnitude.negate() else magnitude
+            if (negative) {
+                require(value >= minSignedSeed) { "Seed is below signed 64-bit range" }
+            } else {
+                require(value <= maxUnsignedSeed) { "Seed is above unsigned 64-bit range" }
+            }
+            value.toLong()
+        }
+            .getOrElse { throw IllegalArgumentException("Invalid differential seed '$rawSeed'", it) }
+    }
 
     private fun DifferentialOperation.randomArgsArb(): Arb<List<DifferentialArg>> = arbitrary { rs ->
         when (this@randomArgsArb) {
@@ -350,7 +422,7 @@ object DifferentialFixtureGenerator {
         val values = arithmeticValues()
         val nonZeroValues = values.filter { it != "0" }
 
-        samplePairs(values, 16, 0xA11A).forEach { (a, b) ->
+        samplePairs(values, 16, "arithmetic-pairs").forEach { (a, b) ->
             builder.add(DifferentialOperation.ADD, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.SUBTRACT, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.MULTIPLY, BigIntArg(a), BigIntArg(b))
@@ -358,14 +430,14 @@ object DifferentialFixtureGenerator {
             builder.add(DifferentialOperation.LCM, BigIntArg(a), BigIntArg(b))
         }
 
-        sampleValues(values, 14, 0xA12B).forEach { value ->
+        sampleValues(values, 14, "arithmetic-unary").forEach { value ->
             builder.add(DifferentialOperation.ABS, BigIntArg(value))
             builder.add(DifferentialOperation.UNARY_MINUS, BigIntArg(value))
             builder.add(DifferentialOperation.INC, BigIntArg(value))
             builder.add(DifferentialOperation.DEC, BigIntArg(value))
         }
 
-        samplePairs(values, 14, 0xA13C).forEach { (a, b) ->
+        samplePairs(values, 14, "arithmetic-divisors").forEach { (a, b) ->
             val divisor = nonZeroValues.pickFrom(b)
             builder.add(DifferentialOperation.DIVIDE, BigIntArg(a), BigIntArg(divisor))
             builder.add(DifferentialOperation.REM, BigIntArg(a), BigIntArg(divisor))
@@ -404,14 +476,14 @@ object DifferentialFixtureGenerator {
     private fun populateBitwiseCases(builder: CorpusBuilder) {
         val values = bitwiseValues()
 
-        samplePairs(values, 14, 0xB17A).forEach { (a, b) ->
+        samplePairs(values, 14, "bitwise-pairs").forEach { (a, b) ->
             builder.add(DifferentialOperation.AND, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.OR, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.XOR, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.AND_NOT, BigIntArg(a), BigIntArg(b))
         }
 
-        sampleValues(values, 16, 0xB18B).forEach { value ->
+        sampleValues(values, 16, "bitwise-unary").forEach { value ->
             builder.add(DifferentialOperation.NOT, BigIntArg(value))
             builder.add(DifferentialOperation.GET_LOWEST_SET_BIT, BigIntArg(value))
             builder.add(DifferentialOperation.BIT_LENGTH, BigIntArg(value))
@@ -461,7 +533,7 @@ object DifferentialFixtureGenerator {
             builder.add(DifferentialOperation.SIGNUM, BigIntArg(value))
         }
 
-        sampleValues(conversionValues(), 12, 0xC019).forEachIndexed { index, value ->
+        sampleValues(conversionValues(), 12, "conversion-radix-values").forEachIndexed { index, value ->
             val radix = listOf(2, 8, 10, 16, 36)[index % 5]
             builder.add(DifferentialOperation.TO_STRING_RADIX, BigIntArg(value), IntArg(radix))
         }
@@ -472,14 +544,14 @@ object DifferentialFixtureGenerator {
     private fun populateComparisonCases(builder: CorpusBuilder) {
         val values = comparisonValues()
 
-        samplePairs(values, 16, 0xD041).forEach { (a, b) ->
+        samplePairs(values, 16, "comparison-pairs").forEach { (a, b) ->
             builder.add(DifferentialOperation.MIN, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.MAX, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.COMPARE_TO, BigIntArg(a), BigIntArg(b))
             builder.add(DifferentialOperation.EQUALS_BIGINT, BigIntArg(a), BigIntArg(b))
         }
 
-        sampleValues(values, 10, 0xD052).forEach { value ->
+        sampleValues(values, 10, "comparison-unary").forEach { value ->
             builder.add(DifferentialOperation.EQUALS_NULL, BigIntArg(value))
             builder.add(
                 DifferentialOperation.EQUALS_STRING,
@@ -510,7 +582,7 @@ object DifferentialFixtureGenerator {
 
     private fun randomDecimalConstructorLiteral(rs: RandomSource): String = when (nextChoice(rs, 8)) {
         0, 1, 2 -> randomSignedDecimalLiteral(rs, nextInt(rs, 1, 120))
-        3 -> canonicalValuePool.pick(rs)
+        3 -> canonicalValuePool().pick(rs)
         4 -> renderSignedValue(randomCanonicalBigInt(rs, maxDigits = 120), rs)
         else -> invalidNumericLiterals.pick(rs)
     }
@@ -562,7 +634,7 @@ object DifferentialFixtureGenerator {
         rs: RandomSource,
         maxDigits: Int = 96,
     ): String = when (nextChoice(rs, 7)) {
-        0 -> canonicalValuePool.pick(rs)
+        0 -> canonicalValuePool().pick(rs)
         1 -> Arb.long().next(rs = rs).toString()
         2 -> randomPowerVariant(rs, maxShift = minOf(maxDigits * 3, 256))
         else -> BigInteger(randomSignedDecimalLiteral(rs, nextInt(rs, 1, maxDigits))).toString()
@@ -913,15 +985,15 @@ object DifferentialFixtureGenerator {
                 "0x10",
             ),
         )
-        val random = Random(0xD311)
+        val random = seedFactory().random("decimal-constructor-literals")
         repeat(12) {
             add(randomDecimalLiteral(random, random.nextInt(1, 128)))
         }
     }
 
     private fun radixConstructorLiterals(): List<Pair<String, Int>> = buildList {
-        val random = Random(0xD322)
-        val values = sampleValues(commonCanonicalValues(), 14, 0xD323)
+        val random = seedFactory().random("radix-constructor-literals")
+        val values = sampleValues(canonicalValuePool(), 14, "radix-constructor-values")
         val radices = listOf(2, 8, 10, 16, 36)
         values.forEachIndexed { index, decimal ->
             val radix = radices[index % radices.size]
@@ -939,7 +1011,7 @@ object DifferentialFixtureGenerator {
 
     private fun byteConstructorLiterals(): List<List<Int>> = buildList {
         addAll(byteListEdgeValues)
-        val random = Random(0xD333)
+        val random = seedFactory().random("byte-constructor-literals")
         repeat(8) {
             add(randomByteList(random, random.nextInt(1, 256)))
         }
@@ -956,7 +1028,7 @@ object DifferentialFixtureGenerator {
         add(Triple(listOf(1, 2, 3), 4, 1))
         add(Triple(listOf(1, 2, 3), 2, 2))
         add(Triple(emptyList(), 0, 1))
-        val random = Random(0xD344)
+        val random = seedFactory().random("byte-slice-constructor-literals")
         repeat(6) {
             val bytes = randomByteList(random, random.nextInt(1, 256))
             val off = random.nextInt(-1, bytes.size + 2)
@@ -982,7 +1054,7 @@ object DifferentialFixtureGenerator {
                 Long.MAX_VALUE,
             ),
         )
-        val random = Random(0xF111)
+        val random = seedFactory().random("long-factory-values")
         repeat(8) {
             add(random.nextLong())
         }
@@ -1011,13 +1083,13 @@ object DifferentialFixtureGenerator {
                 Int.MAX_VALUE,
             ),
         )
-        val random = Random(0xF110)
+        val random = seedFactory().random("int-factory-values")
         repeat(8) {
             add(random.nextInt())
         }
     }
 
-    private fun arithmeticValues(): List<String> = sampleValues(commonCanonicalValues(), 64, 0xA101)
+    private fun arithmeticValues(): List<String> = sampleValues(canonicalValuePool(), 64, "arithmetic-values")
 
     private fun bitwiseValues(): List<String> = buildList {
         addAll(
@@ -1085,7 +1157,7 @@ object DifferentialFixtureGenerator {
         )
     }
 
-    private fun comparisonValues(): List<String> = sampleValues(commonCanonicalValues(), 20, 0xD101)
+    private fun comparisonValues(): List<String> = sampleValues(canonicalValuePool(), 20, "comparison-values")
 
     private fun probablePrimeCases(): List<Pair<String, Int>> = listOf(
         "0" to 10,
@@ -1275,7 +1347,7 @@ object DifferentialFixtureGenerator {
             values += (-(power + bigIntegerOf(1L))).toString()
         }
 
-        val random = Random(0xC0FFEE)
+        val random = seedFactory().random("common-canonical-values")
         repeat(24) {
             addCanonical(randomDecimalLiteral(random, random.nextInt(1, 100)))
         }
@@ -1286,15 +1358,15 @@ object DifferentialFixtureGenerator {
     private fun sampleValues(
         values: List<String>,
         count: Int,
-        seed: Int,
-    ): List<String> = values.shuffled(Random(seed)).take(count.coerceAtMost(values.size))
+        scope: String,
+    ): List<String> = values.shuffled(seedFactory().random(scope)).take(count.coerceAtMost(values.size))
 
     private fun samplePairs(
         values: List<String>,
         count: Int,
-        seed: Int,
+        scope: String,
     ): List<Pair<String, String>> {
-        val random = Random(seed)
+        val random = seedFactory().random(scope)
         return buildList {
             repeat(count) {
                 add(values[random.nextInt(values.size)] to values[random.nextInt(values.size)])
@@ -1350,17 +1422,46 @@ object DifferentialFixtureGenerator {
     private fun List<String>.pickFrom(fallbackSeed: String): String = if (contains(fallbackSeed) && fallbackSeed != "0") fallbackSeed else first()
 }
 
+private class SeedFactory(private val rootSeed: Long) {
+    fun seed(
+        scope: String,
+        salt: Long = 0L,
+    ): Long {
+        var value = rootSeed - 7046029254386353131L + salt
+        scope.forEach { character ->
+            value = mix64(value.xor(character.code.toLong()))
+        }
+        return mix64(value.xor(salt))
+    }
+
+    fun random(scope: String): Random = Random(seed(scope))
+
+    private fun mix64(value: Long): Long {
+        var mixed = value
+        mixed = mixed.xor(mixed ushr 30) * -4658895280553007687L
+        mixed = mixed.xor(mixed ushr 27) * -7723592293110705685L
+        return mixed.xor(mixed ushr 31)
+    }
+}
+
 private class CorpusBuilder {
     private val casesByOperation = DifferentialOperation.entries.associateWith { mutableListOf<DifferentialCase>() }
+        .toMutableMap()
+    private val signaturesByOperation = DifferentialOperation.entries.associateWith { mutableSetOf<List<DifferentialArg>>() }
         .toMutableMap()
 
     fun add(
         operation: DifferentialOperation,
         vararg args: DifferentialArg,
-    ) {
+    ): Boolean {
+        val arguments = args.toList()
+        val signatures = signaturesByOperation.getValue(operation)
+        if (!signatures.add(arguments)) {
+            return false
+        }
+
         val cases = casesByOperation.getValue(operation)
         val id = "${operation.name.lowercase()}_${cases.size.toString().padStart(4, '0')}"
-        val arguments = args.toList()
         cases += DifferentialCase(
             id = id,
             group = operation.group,
@@ -1368,6 +1469,7 @@ private class CorpusBuilder {
             args = arguments,
             expected = DifferentialExecutor.evaluate(operation, arguments),
         )
+        return true
     }
 
     fun build(): Map<DifferentialOperation, List<DifferentialCase>> = casesByOperation.mapValues { (_, cases) -> cases.toList() }

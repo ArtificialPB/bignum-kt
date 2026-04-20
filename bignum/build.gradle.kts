@@ -19,6 +19,8 @@ plugins {
 
 val libtommathDir = projectDir.resolve("src/nativeInterop/libtommath")
 val differentialFixtureDir = projectDir.resolve("src/commonTest/resources/differential")
+val differentialFixtureSeed = providers.gradleProperty("differentialFixtureSeed")
+    .orElse(providers.environmentVariable("BIGNUM_DIFFERENTIAL_SEED"))
 val githubRepoUrl = "https://github.com/ArtificialPB/bignum-kt"
 val tommathPinnedDefines = listOf(
     "MP_NO_FILE",
@@ -168,6 +170,7 @@ extensions.configure<PublishingExtension> {
 
 tasks.withType<Test>().configureEach {
     systemProperty("bignum.differential.fixtureDir", differentialFixtureDir.absolutePath)
+    differentialFixtureSeed.orNull?.let { systemProperty("bignum.differential.seed", it) }
 }
 
 tasks.named<Test>("jvmTest") {
@@ -176,11 +179,12 @@ tasks.named<Test>("jvmTest") {
 
 tasks.withType<KotlinNativeTest>().configureEach {
     environment("BIGNUM_DIFFERENTIAL_FIXTURE_DIR", differentialFixtureDir.absolutePath)
+    differentialFixtureSeed.orNull?.let { environment("BIGNUM_DIFFERENTIAL_SEED", it) }
 }
 
 tasks.register<JavaExec>("generateDifferentialFixtures") {
     group = "verification"
-    description = "Generates the checked-in JVM differential fuzz corpus."
+    description = "Generates the checked-in JVM differential fuzz corpus. Set differentialFixtureSeed to override the seed."
     dependsOn("jvmTestClasses")
     classpath(
         configurations.getByName("jvmTestRuntimeClasspath"),
@@ -192,6 +196,7 @@ tasks.register<JavaExec>("generateDifferentialFixtures") {
     )
     mainClass.set("io.github.artificialpb.bignum.DifferentialFixtureGeneratorMainKt")
     workingDir = projectDir
+    differentialFixtureSeed.orNull?.let { args("--seed", it) }
 }
 
 android {

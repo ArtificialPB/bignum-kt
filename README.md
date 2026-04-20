@@ -279,6 +279,9 @@ Requires JDK 17+. Xcode is required for Apple targets. The Android SDK is requir
 # Regenerate differential fuzz fixtures
 ./gradlew :bignum:generateDifferentialFixtures
 
+# Regenerate differential fuzz fixtures with a custom seed
+./gradlew :bignum:generateDifferentialFixtures -PdifferentialFixtureSeed=0xB16B00B4
+
 # Compile benchmark sources for every benchmark target
 ./gradlew :benchmarks:compileAllBenchmarks
 
