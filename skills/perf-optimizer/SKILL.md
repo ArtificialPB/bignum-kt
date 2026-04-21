@@ -138,6 +138,7 @@ Avoid patterns where an operation that could be done once is repeated `n + 1` ti
 - Add **caching** for expensive computations that are called repeatedly with the same inputs
 - Prefer in-place mutation over copy-and-modify when the API allows it
 - **Avoid boxing primitives** — primitives get boxed (allocated on the heap) when used as generic type parameters (e.g., `List<Int>`) or returned as nullable values (e.g., `Int?`). Prefer non-nullable return types and specialized collections where possible
+- **Avoid wrapper allocations for multiple return values** — when a function needs to return multiple values, don't allocate a wrapper class/data class just to hold the results. Instead, make the function `inline` and accept a callback parameter that receives the multiple values as arguments. The `inline` keyword ensures the lambda is erased at compile time, so no allocation occurs. Example: instead of `fun divRem(a: BigInteger, b: BigInteger): DivResult` returning a `DivResult(quotient, remainder)`, use `inline fun divRem(a: BigInteger, b: BigInteger, action: (quotient: BigInteger, remainder: BigInteger) -> T): T`.
 
 ### Use Optimal Algorithms
 - Know the algorithmic complexity of what you're using — replace O(n²) with O(n log n) where possible
