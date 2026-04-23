@@ -1,11 +1,11 @@
 package io.github.artificialpb.bignum.benchmark
 
-import com.ionspin.kotlin.bignum.decimal.BigDecimal as IonspinBigDecimal
-import com.ionspin.kotlin.bignum.integer.BigInteger as IonspinBigInteger
 import kotlinx.benchmark.Param
 import kotlinx.benchmark.Scope
 import kotlinx.benchmark.Setup
 import kotlinx.benchmark.State
+import com.ionspin.kotlin.bignum.decimal.BigDecimal as IonspinBigDecimal
+import com.ionspin.kotlin.bignum.integer.BigInteger as IonspinBigInteger
 
 data class IonspinBigDecimalBenchmarkFixture(
     val constructorString: String,

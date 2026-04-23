@@ -22,8 +22,7 @@ actual fun bigDecimalOf(value: BigInteger): BigDecimal = when (value) {
     else -> java.math.BigDecimal(value)
 }
 
-actual fun bigDecimalOf(value: BigInteger, scale: Int): BigDecimal =
-    java.math.BigDecimal(value, scale)
+actual fun bigDecimalOf(value: BigInteger, scale: Int): BigDecimal = java.math.BigDecimal(value, scale)
 
 actual fun bigDecimalOf(value: Long): BigDecimal = when (value) {
     0L -> BIG_DECIMAL_ZERO

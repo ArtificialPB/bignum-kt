@@ -42,8 +42,7 @@ fun Arb.Companion.bigDecimal(): Arb<BigDecimal> = arbitrary { rs ->
     }
 }
 
-fun Arb.Companion.nonZeroBigDecimal(): Arb<BigDecimal> =
-    Arb.bigDecimal().filter { it.signum() != 0 }
+fun Arb.Companion.nonZeroBigDecimal(): Arb<BigDecimal> = Arb.bigDecimal().filter { it.signum() != 0 }
 
 private fun bigDecimalFromSeed(seed: Long): BigDecimal {
     val magnitude = when {

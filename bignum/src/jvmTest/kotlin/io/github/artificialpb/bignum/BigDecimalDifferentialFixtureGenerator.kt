@@ -1,8 +1,8 @@
 package io.github.artificialpb.bignum
 
 import java.io.File
-import java.math.BigInteger as JavaBigInteger
 import kotlin.random.Random
+import java.math.BigInteger as JavaBigInteger
 
 object BigDecimalDifferentialFixtureGenerator {
     private const val OUTPUT_DIR = "src/commonTest/resources/differential-bigdecimal"
@@ -82,13 +82,12 @@ object BigDecimalDifferentialFixtureGenerator {
         }
     }
 
-    fun generateCasesByOperation(seed: Long = DEFAULT_RANDOM_SEED): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> =
-        withSeed(seed) {
-            val builder = Builder()
-            populateEdgeCases(builder)
-            populateRandomCases(builder)
-            builder.build().also(::validateCoverage)
-        }
+    fun generateCasesByOperation(seed: Long = DEFAULT_RANDOM_SEED): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> = withSeed(seed) {
+        val builder = Builder()
+        populateEdgeCases(builder)
+        populateRandomCases(builder)
+        builder.build().also(::validateCoverage)
+    }
 
     private fun validateCoverage(casesByOperation: Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>>) {
         val missing = BigDecimalDifferentialOperation.entries.filter { casesByOperation.getValue(it).isEmpty() }
@@ -278,10 +277,10 @@ object BigDecimalDifferentialFixtureGenerator {
 
         // Multi-limb x multi-limb division edge cases
         val multiLimbDivisionPairs = listOf(
-            "200000000000000000000" to "100000000000000000000",  // exact multi-limb division
-            "100000000000000000000" to "300000000000000000000",  // non-terminating multi-limb
-            "999999999999999999999999999" to "7",                // large dividend / small divisor
-            "7" to "999999999999999999999999999",                // small dividend / large divisor
+            "200000000000000000000" to "100000000000000000000", // exact multi-limb division
+            "100000000000000000000" to "300000000000000000000", // non-terminating multi-limb
+            "999999999999999999999999999" to "7", // large dividend / small divisor
+            "7" to "999999999999999999999999999", // small dividend / large divisor
             "123456789012345678901234" to "987654321098765432109", // two distinct multi-limb values
         )
         for ((left, right) in multiLimbDivisionPairs) {
@@ -540,8 +539,7 @@ object BigDecimalDifferentialFixtureGenerator {
         else -> random.nextInt(-3_000, 3_001)
     }
 
-    private fun seedFor(operation: BigDecimalDifferentialOperation, index: Int): Long =
-        activeSeed.get() xor (operation.ordinal.toLong() shl 32) xor index.toLong()
+    private fun seedFor(operation: BigDecimalDifferentialOperation, index: Int): Long = activeSeed.get() xor (operation.ordinal.toLong() shl 32) xor index.toLong()
 
     private inline fun <T> withSeed(seed: Long, block: () -> T): T {
         val previous = activeSeed.get()
@@ -591,7 +589,6 @@ object BigDecimalDifferentialFixtureGenerator {
             return true
         }
 
-        fun build(): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> =
-            casesByOperation.mapValues { (_, cases) -> cases.values.toList() }
+        fun build(): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> = casesByOperation.mapValues { (_, cases) -> cases.values.toList() }
     }
 }

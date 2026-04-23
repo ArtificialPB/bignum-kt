@@ -251,8 +251,7 @@ data class BigDecimalDifferentialFixtureFile(
 object BigDecimalDifferentialFixtureJsonCodec {
     private val json = Json { prettyPrint = true }
 
-    fun encode(file: BigDecimalDifferentialFixtureFile): String =
-        json.encodeToString(JsonElement.serializer(), file.toJson())
+    fun encode(file: BigDecimalDifferentialFixtureFile): String = json.encodeToString(JsonElement.serializer(), file.toJson())
 
     fun decode(text: String): BigDecimalDifferentialFixtureFile {
         val root = json.parseToJsonElement(text).jsonObject
@@ -366,8 +365,7 @@ object BigDecimalDifferentialFixtureRepository {
         decoded.cases
     }
 
-    fun loadAll(): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> =
-        BigDecimalDifferentialOperation.entries.associateWith(::loadCases)
+    fun loadAll(): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> = BigDecimalDifferentialOperation.entries.associateWith(::loadCases)
 }
 
 object BigDecimalDifferentialExecutor {

@@ -1,6 +1,5 @@
 package io.github.artificialpb.bignum.benchmark
 
-import com.ionspin.kotlin.bignum.integer.BigInteger as IonspinBigInteger
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
 import kotlinx.benchmark.BenchmarkTimeUnit
@@ -8,6 +7,7 @@ import kotlinx.benchmark.Mode
 import kotlinx.benchmark.OutputTimeUnit
 import kotlinx.benchmark.Scope
 import kotlinx.benchmark.State
+import com.ionspin.kotlin.bignum.integer.BigInteger as IonspinBigInteger
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)

@@ -32,7 +32,7 @@ class BigDecimalMultiplyPathTest : FunSpec({
     test("single-limb optimization - one operand multi-limb other single") {
         // 21-digit unscaled value is multi-limb (>60 bits), 6-digit is single limb
         val multiLimb = "100000000000000000000" // 10^20, ~67 bits
-        val singleLimb = "100000"               // 10^5
+        val singleLimb = "100000" // 10^5
         (bd(multiLimb) * bd(singleLimb)).toString() shouldBe "10000000000000000000000000"
         // Symmetric: single-limb on left
         (bd(singleLimb) * bd(multiLimb)).toString() shouldBe "10000000000000000000000000"
@@ -46,8 +46,8 @@ class BigDecimalMultiplyPathTest : FunSpec({
 
     test("multiply paths preserve scale correctly") {
         // scale(a) + scale(b)
-        val a = BigDecimal(bi("10000000000000000000"), 5)   // multi-limb, scale 5
-        val b = BigDecimal(bi("200000000000000000000"), 7)  // multi-limb, scale 7
+        val a = BigDecimal(bi("10000000000000000000"), 5) // multi-limb, scale 5
+        val b = BigDecimal(bi("200000000000000000000"), 7) // multi-limb, scale 7
         val result = a * b
         result.scale() shouldBeExactly 12
     }
@@ -105,9 +105,9 @@ class BigDecimalDivisionPathTest : FunSpec({
     }
 
     test("fastTerminatingDivide - mixed 2 and 5 factors") {
-        (bd("7") / bd("40")).toString() shouldBe "0.175"   // 40 = 2^3 * 5
-        (bd("3") / bd("200")).toString() shouldBe "0.015"  // 200 = 2^3 * 5^2
-        (bd("1") / bd("50")).toString() shouldBe "0.02"    // 50 = 2 * 5^2
+        (bd("7") / bd("40")).toString() shouldBe "0.175" // 40 = 2^3 * 5
+        (bd("3") / bd("200")).toString() shouldBe "0.015" // 200 = 2^3 * 5^2
+        (bd("1") / bd("50")).toString() shouldBe "0.02" // 50 = 2 * 5^2
     }
 
     test("digit division path - prime single-limb divisor divides evenly") {

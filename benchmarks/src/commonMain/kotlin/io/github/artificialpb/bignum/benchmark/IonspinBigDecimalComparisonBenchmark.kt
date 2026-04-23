@@ -1,6 +1,5 @@
 package io.github.artificialpb.bignum.benchmark
 
-import com.ionspin.kotlin.bignum.decimal.BigDecimal as IonspinBigDecimal
 import kotlinx.benchmark.Benchmark
 import kotlinx.benchmark.BenchmarkMode
 import kotlinx.benchmark.BenchmarkTimeUnit
@@ -8,6 +7,7 @@ import kotlinx.benchmark.Mode
 import kotlinx.benchmark.OutputTimeUnit
 import kotlinx.benchmark.Scope
 import kotlinx.benchmark.State
+import com.ionspin.kotlin.bignum.decimal.BigDecimal as IonspinBigDecimal
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -23,10 +23,8 @@ open class IonspinBigDecimalComparisonBenchmark : IonspinBigDecimalProfiledBench
     fun hashCodeMethod(): Int = fixture.left.hashCode()
 
     @Benchmark
-    fun minMethod(): IonspinBigDecimal =
-        if (fixture.left.compareTo(fixture.compareTarget) <= 0) fixture.left else fixture.compareTarget
+    fun minMethod(): IonspinBigDecimal = if (fixture.left.compareTo(fixture.compareTarget) <= 0) fixture.left else fixture.compareTarget
 
     @Benchmark
-    fun maxMethod(): IonspinBigDecimal =
-        if (fixture.left.compareTo(fixture.compareTarget) >= 0) fixture.left else fixture.compareTarget
+    fun maxMethod(): IonspinBigDecimal = if (fixture.left.compareTo(fixture.compareTarget) >= 0) fixture.left else fixture.compareTarget
 }

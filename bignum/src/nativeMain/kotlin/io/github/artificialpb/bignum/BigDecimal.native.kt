@@ -66,8 +66,7 @@ actual class MathContext {
 
     actual fun getRoundingMode(): RoundingMode = roundingModeValue
 
-    override fun equals(other: Any?): Boolean =
-        other is MathContext && precision == other.precision && roundingMode == other.roundingMode
+    override fun equals(other: Any?): Boolean = other is MathContext && precision == other.precision && roundingMode == other.roundingMode
 
     override fun hashCode(): Int = 31 * precision + roundingMode.hashCode()
 
@@ -120,8 +119,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         return bigDecimalOfInternal(left + right, targetScale)
     }
 
-    actual fun add(other: BigDecimal, mathContext: MathContext): BigDecimal =
-        if (mathContext.precision == 0) add(other) else roundToMathContext(add(other), mathContext)
+    actual fun add(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) add(other) else roundToMathContext(add(other), mathContext)
 
     actual fun subtract(other: BigDecimal): BigDecimal {
         val targetScale = maxOf(scaleValue, other.scaleValue)
@@ -130,8 +128,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         return bigDecimalOfInternal(left - right, targetScale)
     }
 
-    actual fun subtract(other: BigDecimal, mathContext: MathContext): BigDecimal =
-        if (mathContext.precision == 0) subtract(other) else roundToMathContext(subtract(other), mathContext)
+    actual fun subtract(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) subtract(other) else roundToMathContext(subtract(other), mathContext)
 
     actual fun multiply(other: BigDecimal): BigDecimal {
         val scale = safeScaleAdd(scaleValue, other.scaleValue)
@@ -161,8 +158,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         return bigDecimalOfInternal(unscaled * other.unscaled, scale)
     }
 
-    actual fun multiply(other: BigDecimal, mathContext: MathContext): BigDecimal =
-        if (mathContext.precision == 0) multiply(other) else roundToMathContext(multiply(other), mathContext)
+    actual fun multiply(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) multiply(other) else roundToMathContext(multiply(other), mathContext)
 
     actual fun divide(other: BigDecimal): BigDecimal {
         requireNonZero(other)
@@ -217,11 +213,9 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         return bigDecimalOfInternal(quotient, safeScaleAdd(preferredScale, scaleAdjustment))
     }
 
-    actual fun divide(other: BigDecimal, roundingMode: RoundingMode): BigDecimal =
-        divide(other, scaleValue, roundingMode)
+    actual fun divide(other: BigDecimal, roundingMode: RoundingMode): BigDecimal = divide(other, scaleValue, roundingMode)
 
-    actual fun divide(other: BigDecimal, scale: Int, roundingMode: RoundingMode): BigDecimal =
-        divideToScale(other, scale, roundingMode)
+    actual fun divide(other: BigDecimal, scale: Int, roundingMode: RoundingMode): BigDecimal = divideToScale(other, scale, roundingMode)
 
     actual fun divide(other: BigDecimal, mathContext: MathContext): BigDecimal {
         if (mathContext.precision == 0) {
@@ -258,8 +252,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
 
     actual fun remainder(other: BigDecimal): BigDecimal = divideAndRemainder(other)[1]
 
-    actual fun remainder(other: BigDecimal, mathContext: MathContext): BigDecimal =
-        divideAndRemainder(other, mathContext)[1]
+    actual fun remainder(other: BigDecimal, mathContext: MathContext): BigDecimal = divideAndRemainder(other, mathContext)[1]
 
     actual fun divideAndRemainder(other: BigDecimal): Array<BigDecimal> {
         requireNonZero(other)
@@ -520,8 +513,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
 
     actual fun plus(): BigDecimal = this
 
-    actual fun plus(mathContext: MathContext): BigDecimal =
-        if (mathContext.precision == 0) this else roundToMathContext(this, mathContext)
+    actual fun plus(mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) this else roundToMathContext(this, mathContext)
 
     actual fun round(mathContext: MathContext): BigDecimal = plus(mathContext)
 
@@ -726,8 +718,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         return rendered
     }
 
-    actual override fun equals(other: Any?): Boolean =
-        other is BigDecimal && scaleValue == other.scaleValue && unscaled == other.unscaled
+    actual override fun equals(other: Any?): Boolean = other is BigDecimal && scaleValue == other.scaleValue && unscaled == other.unscaled
 
     actual override fun hashCode(): Int = 31 * unscaled.hashCode() + scaleValue
 
@@ -1047,8 +1038,7 @@ private fun compareMagnitudeNormalized(
     else -> left.compareTo(multiplyByPowerOfTen(right, leftScale - rightScale))
 }
 
-private fun rescaleUnscaled(value: BigInteger, fromScale: Int, toScale: Int): BigInteger =
-    if (fromScale == toScale) value else multiplyByPowerOfTen(value, toScale - fromScale)
+private fun rescaleUnscaled(value: BigInteger, fromScale: Int, toScale: Int): BigInteger = if (fromScale == toScale) value else multiplyByPowerOfTen(value, toScale - fromScale)
 
 private fun multiplyByPowerOfTen(value: BigInteger, power: Int): BigInteger {
     require(power >= 0) { "Negative power: $power" }
@@ -1156,8 +1146,7 @@ private fun stripSmallFactor(value: BigInteger, factor: ULong, maxCount: Int = I
     }
 }
 
-private fun BigInteger.singleLimbMagnitudeOrNull(): ULong? =
-    if (size == 1) limbs[0] else null
+private fun BigInteger.singleLimbMagnitudeOrNull(): ULong? = if (size == 1) limbs[0] else null
 
 private fun multiplyByUnsignedMagnitude(
     value: BigInteger,
@@ -1311,8 +1300,7 @@ private fun divideExactQuotientOrNull(dividend: BigInteger, divisor: BigInteger)
     }
 }
 
-private fun powerOfTenDigitOrNull(power: Int): ULong? =
-    if (power in 0..SMALL_TEN_DIGIT_POWER_LIMIT) SMALL_TEN_DIGITS[power] else null
+private fun powerOfTenDigitOrNull(power: Int): ULong? = if (power in 0..SMALL_TEN_DIGIT_POWER_LIMIT) SMALL_TEN_DIGITS[power] else null
 
 private fun scaledDigitMagnitudeOrNull(value: BigInteger, factor: ULong): ULong? {
     val digit = value.divisionByDigitMagnitudeOrNull() ?: return null
@@ -1605,14 +1593,11 @@ private fun ensurePowerOfTenBitLength(value: BigInteger, power: Int) {
     }
 }
 
-private fun powerOfTenBitLengthUpperBound(power: Int): Long =
-    (power.toLong() * 332_193L + 99_999L) / 100_000L
+private fun powerOfTenBitLengthUpperBound(power: Int): Long = (power.toLong() * 332_193L + 99_999L) / 100_000L
 
-private fun powerOfTenBitLengthLowerBound(power: Int): Long =
-    (power.toLong() * 332_192L) / 100_000L + 1L
+private fun powerOfTenBitLengthLowerBound(power: Int): Long = (power.toLong() * 332_192L) / 100_000L + 1L
 
-private fun estimatedCanonicalLimbs(bitLength: Long): Int =
-    maxOf(1L, (bitLength + CANONICAL_LIMB_BITS - 1L) / CANONICAL_LIMB_BITS).toInt()
+private fun estimatedCanonicalLimbs(bitLength: Long): Int = maxOf(1L, (bitLength + CANONICAL_LIMB_BITS - 1L) / CANONICAL_LIMB_BITS).toInt()
 
 private fun compareRemainderToHalfDivisor(
     remainderHandle: kotlinx.cinterop.CPointer<io.github.artificialpb.bignum.tommath.mp_int>,

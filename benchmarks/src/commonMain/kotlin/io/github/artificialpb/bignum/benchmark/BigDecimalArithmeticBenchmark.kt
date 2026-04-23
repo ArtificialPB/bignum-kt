@@ -74,16 +74,13 @@ open class BigDecimalArithmeticBenchmark : BigDecimalProfiledBenchmarkState() {
     fun divideGenericExactMethod(): BigDecimal = fixture.genericExactDividend.divide(fixture.genericExactDivisor)
 
     @Benchmark
-    fun divideRoundingModeMethod(): BigDecimal =
-        fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.roundingMode)
+    fun divideRoundingModeMethod(): BigDecimal = fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.roundingMode)
 
     @Benchmark
-    fun divideScaleRoundingModeMethod(): BigDecimal =
-        fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.scaleTarget, fixture.roundingMode)
+    fun divideScaleRoundingModeMethod(): BigDecimal = fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.scaleTarget, fixture.roundingMode)
 
     @Benchmark
-    fun divideMathContextMethod(): BigDecimal =
-        fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.mathContext)
+    fun divideMathContextMethod(): BigDecimal = fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.mathContext)
 
     @Benchmark
     fun divOperator(): BigDecimal = fixture.dividend / fixture.divisor
@@ -95,37 +92,31 @@ open class BigDecimalArithmeticBenchmark : BigDecimalProfiledBenchmarkState() {
     fun remainderOperator(): BigDecimal = fixture.dividend % fixture.divisor
 
     @Benchmark
-    fun remainderMathContextMethod(): BigDecimal =
-        fixture.positiveScaleGenericDividend.remainder(fixture.positiveScaleGenericDivisor, fixture.integralMathContext)
+    fun remainderMathContextMethod(): BigDecimal = fixture.positiveScaleGenericDividend.remainder(fixture.positiveScaleGenericDivisor, fixture.integralMathContext)
 
     @Benchmark
     fun divideAndRemainderMethod(): Array<BigDecimal> = fixture.dividend.divideAndRemainder(fixture.divisor)
 
     @Benchmark
-    fun divideAndRemainderNegativeScaleSmallDivisorMethod(): Array<BigDecimal> =
-        fixture.negativeScaleSmallDividend.divideAndRemainder(fixture.negativeScaleSmallDivisor)
+    fun divideAndRemainderNegativeScaleSmallDivisorMethod(): Array<BigDecimal> = fixture.negativeScaleSmallDividend.divideAndRemainder(fixture.negativeScaleSmallDivisor)
 
     @Benchmark
-    fun divideAndRemainderPositiveScaleGenericDivisorMethod(): Array<BigDecimal> =
-        fixture.positiveScaleGenericDividend.divideAndRemainder(fixture.positiveScaleGenericDivisor)
+    fun divideAndRemainderPositiveScaleGenericDivisorMethod(): Array<BigDecimal> = fixture.positiveScaleGenericDividend.divideAndRemainder(fixture.positiveScaleGenericDivisor)
 
     @Benchmark
-    fun divideAndRemainderNegativeScaleGenericDivisorMethod(): Array<BigDecimal> =
-        fixture.negativeScaleGenericDividend.divideAndRemainder(fixture.negativeScaleGenericDivisor)
+    fun divideAndRemainderNegativeScaleGenericDivisorMethod(): Array<BigDecimal> = fixture.negativeScaleGenericDividend.divideAndRemainder(fixture.negativeScaleGenericDivisor)
 
     @Benchmark
-    fun divideAndRemainderMathContextMethod(): Array<BigDecimal> =
-        fixture.positiveScaleGenericDividend.divideAndRemainder(
-            fixture.positiveScaleGenericDivisor,
-            fixture.integralMathContext,
-        )
+    fun divideAndRemainderMathContextMethod(): Array<BigDecimal> = fixture.positiveScaleGenericDividend.divideAndRemainder(
+        fixture.positiveScaleGenericDivisor,
+        fixture.integralMathContext,
+    )
 
     @Benchmark
-    fun divideToIntegralValueMathContextMethod(): BigDecimal =
-        fixture.positiveScaleGenericDividend.divideToIntegralValue(
-            fixture.positiveScaleGenericDivisor,
-            fixture.integralMathContext,
-        )
+    fun divideToIntegralValueMathContextMethod(): BigDecimal = fixture.positiveScaleGenericDividend.divideToIntegralValue(
+        fixture.positiveScaleGenericDivisor,
+        fixture.integralMathContext,
+    )
 
     @Benchmark
     fun powMethod(): BigDecimal = fixture.powBase.pow(fixture.powExponent)
