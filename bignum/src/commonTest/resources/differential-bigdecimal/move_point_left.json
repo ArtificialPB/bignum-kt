@@ -2294,7 +2294,7 @@
             ],
             "expected": {
                 "type": "big_decimal",
-                "decimal": "1000"
+                "decimal": "1E+3"
             }
         },
         {
@@ -2634,7 +2634,7 @@
             ],
             "expected": {
                 "type": "big_decimal",
-                "decimal": "-43210000"
+                "decimal": "-4.321E+7"
             }
         },
         {
@@ -2974,7 +2974,7 @@
             ],
             "expected": {
                 "type": "big_decimal",
-                "decimal": "123000"
+                "decimal": "1.2300E+5"
             }
         },
         {
