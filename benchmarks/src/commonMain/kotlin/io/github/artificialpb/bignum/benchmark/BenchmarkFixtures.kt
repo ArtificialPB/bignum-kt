@@ -86,6 +86,7 @@ data class BigDecimalBenchmarkFixture(
     val factoryBigInteger: BigInteger,
     val factoryBigIntegerScale: Int,
     val left: BigDecimal,
+    val integralLeft: BigDecimal,
     val right: BigDecimal,
     val negativeLeft: BigDecimal,
     val zeroDividend: BigDecimal,
@@ -282,6 +283,7 @@ internal object BigDecimalBenchmarkFixtures {
         val constructorString = decimalOperand(profile.operandA, 6)
         val factoryString = decimalOperand(profile.operandB, 4)
         val left = BigDecimal(constructorString)
+        val integralLeft = BigDecimal(profile.operandA)
         val right = BigDecimal(factoryString)
         val negativeLeft = -left
         val equalLeft = BigDecimal(left.toString())
@@ -344,6 +346,7 @@ internal object BigDecimalBenchmarkFixtures {
             factoryBigInteger = factoryBigInteger,
             factoryBigIntegerScale = factoryBigIntegerScale,
             left = left,
+            integralLeft = integralLeft,
             right = right,
             negativeLeft = negativeLeft,
             zeroDividend = zeroDividend,

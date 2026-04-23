@@ -42,5 +42,5 @@ open class BigDecimalConversionBenchmark : BigDecimalProfiledBenchmarkState() {
     fun toDoubleMethod(): Double = fixture.left.toDouble()
 
     @Benchmark
-    fun toBigIntegerExactMethod() = fixture.left.setScale(0).toBigIntegerExact()
+    fun toBigIntegerExactMethod() = fixture.integralLeft.toBigIntegerExact()
 }
