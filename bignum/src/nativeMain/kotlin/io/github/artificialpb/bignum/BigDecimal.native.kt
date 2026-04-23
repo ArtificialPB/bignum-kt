@@ -559,6 +559,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
     }
 
     actual fun movePointLeft(n: Int): BigDecimal {
+        if (n == 0) return this
         if (signum() == 0) {
             return bigDecimalOfInternal(ZERO, clampZeroScale(saturatingScaleAdd(scaleValue, n)))
         }
@@ -573,6 +574,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
     }
 
     actual fun movePointRight(n: Int): BigDecimal {
+        if (n == 0) return this
         if (signum() == 0) {
             return bigDecimalOfInternal(ZERO, clampZeroScale(saturatingScaleSubtract(scaleValue, n)))
         }

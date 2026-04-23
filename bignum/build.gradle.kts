@@ -3,6 +3,7 @@ import org.gradle.api.artifacts.dsl.RepositoryHandler
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
@@ -29,6 +30,10 @@ val tommathPinnedDefines = listOf(
     "MP_64BIT",
 )
 val tommathPinnedCompilerOpts = tommathPinnedDefines.map { "-D$it" }
+val jvmBaselineVersion = 17
+val jvmBaselineLauncher = javaToolchains.launcherFor {
+    languageVersion.set(JavaLanguageVersion.of(jvmBaselineVersion))
+}
 
 data class TommathAppleTarget(val sdk: String, val clangTarget: String)
 
@@ -40,6 +45,7 @@ val pinnedTommathTargets = mapOf(
 )
 
 kotlin {
+    jvmToolchain(jvmBaselineVersion)
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
@@ -170,6 +176,7 @@ extensions.configure<PublishingExtension> {
 }
 
 tasks.withType<Test>().configureEach {
+    javaLauncher.set(jvmBaselineLauncher)
     systemProperty("bignum.differential.fixtureDir", differentialFixtureDir.absolutePath)
     systemProperty("bignum.bigdecimal.differential.fixtureDir", bigDecimalDifferentialFixtureDir.absolutePath)
     differentialFixtureSeed.orNull?.let { systemProperty("bignum.differential.seed", it) }
@@ -189,6 +196,7 @@ tasks.register<JavaExec>("generateDifferentialFixtures") {
     group = "verification"
     description = "Generates the checked-in JVM differential fuzz corpus. Set differentialFixtureSeed to override the seed."
     dependsOn("jvmTestClasses")
+    javaLauncher.set(jvmBaselineLauncher)
     classpath(
         configurations.getByName("jvmTestRuntimeClasspath"),
         files(
@@ -206,6 +214,7 @@ tasks.register<JavaExec>("generateBigDecimalDifferentialFixtures") {
     group = "verification"
     description = "Generates the checked-in JVM BigDecimal differential fuzz corpus. Set differentialFixtureSeed to override the seed."
     dependsOn("jvmTestClasses")
+    javaLauncher.set(jvmBaselineLauncher)
     classpath(
         configurations.getByName("jvmTestRuntimeClasspath"),
         files(

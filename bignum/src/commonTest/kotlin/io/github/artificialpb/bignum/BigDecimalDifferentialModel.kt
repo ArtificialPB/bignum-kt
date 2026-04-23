@@ -205,7 +205,7 @@ class BigDecActual(val value: BigDecimal) : BigDecimalDifferentialExpected {
 
     override fun hashCode(): Int = 31 * value.unscaledValue().hashCode() + value.scale()
 
-    override fun toString(): String = "BigDecimal(scale=${value.scale()}, sign=${value.signum()})"
+    override fun toString(): String = "BigDecimal(value=${value.toString()}, scale=${value.scale()}, sign=${value.signum()})"
 }
 
 data class BigIntExpected2(val decimal: String) : BigDecimalDifferentialExpected
@@ -639,9 +639,9 @@ object BigDecimalDifferentialExecutor {
 private data class ExpectedBigDecimalMatcher(
     val scale: Int,
     val isZero: Boolean,
+    val unscaledValue: BigInteger?,
     val trailingZeros: Int,
     val reducedValue: BigDecimal?,
-    val fallbackValue: Lazy<BigDecimal>,
 ) {
     fun matches(actual: BigDecimal): Boolean {
         if (actual.scale() != scale) return false
@@ -654,7 +654,7 @@ private data class ExpectedBigDecimalMatcher(
             }
             return actual.setScale(scale - trailingZeros) == reducedValue
         }
-        return actual == fallbackValue.value
+        return actual.unscaledValue() == unscaledValue
     }
 }
 
@@ -696,12 +696,13 @@ private fun parseExpectedBigDecimal(decimal: String): ExpectedBigDecimalMatcher 
         return ExpectedBigDecimalMatcher(
             scale = scale,
             isZero = true,
+            unscaledValue = bigIntegerOf(0),
             trailingZeros = digitString.length,
             reducedValue = null,
-            fallbackValue = lazy(LazyThreadSafetyMode.NONE) { BigDecimal(decimal) },
         )
     }
 
+    val unscaledValue = BigInteger(signPrefix + digitString)
     val trailingZeros = digitString.length - digitString.trimEnd('0').length
     val reducedScale = scale.toLong() - trailingZeros.toLong()
     val reducedValue = if (
@@ -717,9 +718,9 @@ private fun parseExpectedBigDecimal(decimal: String): ExpectedBigDecimalMatcher 
     return ExpectedBigDecimalMatcher(
         scale = scale,
         isZero = false,
+        unscaledValue = unscaledValue,
         trailingZeros = trailingZeros,
         reducedValue = reducedValue,
-        fallbackValue = lazy(LazyThreadSafetyMode.NONE) { BigDecimal(decimal) },
     )
 }
 

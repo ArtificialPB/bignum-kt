@@ -169,6 +169,17 @@ class BigDecimalConversionEdgeCaseTest : FunSpec({
         value.scale() shouldBeExactly 0
     }
 
+    test("movePointLeft and movePointRight preserve negative scale for zero shift") {
+        val scientific = BigDecimal("1E+3")
+        val left = scientific.movePointLeft(0)
+        val right = scientific.movePointRight(0)
+
+        left.toString() shouldBe "1E+3"
+        left.scale() shouldBeExactly -3
+        right.toString() shouldBe "1E+3"
+        right.scale() shouldBeExactly -3
+    }
+
     test("movePointLeft grows scale") {
         val value = BigDecimal("123").movePointLeft(5)
         value.toString() shouldBe "0.00123"
