@@ -205,7 +205,7 @@ class BigDecActual(val value: BigDecimal) : BigDecimalDifferentialExpected {
 
     override fun hashCode(): Int = 31 * value.unscaledValue().hashCode() + value.scale()
 
-    override fun toString(): String = "BigDecimal(value=${value.toString()}, scale=${value.scale()}, sign=${value.signum()})"
+    override fun toString(): String = "BigDecimal(value=$value, scale=${value.scale()}, sign=${value.signum()})"
 }
 
 data class BigIntExpected2(val decimal: String) : BigDecimalDifferentialExpected
