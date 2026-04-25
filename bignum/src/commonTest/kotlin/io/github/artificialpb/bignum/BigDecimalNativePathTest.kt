@@ -343,6 +343,16 @@ class BigDecimalSqrtPathTest : FunSpec({
         bd("2").sqrt(MathContext(4, RoundingMode.HALF_EVEN)).toString() shouldBe "1.414"
     }
 
+    test("HALF_UP HALF_DOWN HALF_EVEN distinguish exact .5 roots") {
+        bd("6.25").sqrt(MathContext(1, RoundingMode.HALF_UP)).toString() shouldBe "3"
+        bd("6.25").sqrt(MathContext(1, RoundingMode.HALF_DOWN)).toString() shouldBe "2"
+        bd("6.25").sqrt(MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "2"
+
+        bd("12.25").sqrt(MathContext(1, RoundingMode.HALF_UP)).toString() shouldBe "4"
+        bd("12.25").sqrt(MathContext(1, RoundingMode.HALF_DOWN)).toString() shouldBe "3"
+        bd("12.25").sqrt(MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "4"
+    }
+
     test("UNNECESSARY with exact square root succeeds") {
         bd("4").sqrt(MathContext(1, RoundingMode.UNNECESSARY)).toString() shouldBe "2"
         bd("9").sqrt(MathContext(1, RoundingMode.UNNECESSARY)).toString() shouldBe "3"
@@ -451,6 +461,25 @@ class BigDecimalAddSubtractPathTest : FunSpec({
         bd("100.99").subtract(bd("0.01"), mc).toString() shouldBe "1.0E+2"
     }
 
+    test("add subtract and multiply with MathContext distinguish half rounding ties") {
+        val halfUp = MathContext(1, RoundingMode.HALF_UP)
+        val halfDown = MathContext(1, RoundingMode.HALF_DOWN)
+        val halfEven = MathContext(1, RoundingMode.HALF_EVEN)
+
+        bd("2.5").add(bd("0"), halfUp).toString() shouldBe "3"
+        bd("2.5").add(bd("0"), halfDown).toString() shouldBe "2"
+        bd("2.5").add(bd("0"), halfEven).toString() shouldBe "2"
+
+        bd("2.5").subtract(bd("0"), halfUp).toString() shouldBe "3"
+        bd("2.5").subtract(bd("0"), halfDown).toString() shouldBe "2"
+        bd("2.5").subtract(bd("0"), halfEven).toString() shouldBe "2"
+
+        bd("2.5").multiply(bd("1"), halfUp).toString() shouldBe "3"
+        bd("2.5").multiply(bd("1"), halfDown).toString() shouldBe "2"
+        bd("2.5").multiply(bd("1"), halfEven).toString() shouldBe "2"
+        bd("3.5").multiply(bd("1"), halfEven).toString() shouldBe "4"
+    }
+
     test("add sign combinations") {
         (bd("5") + bd("-3")).toString() shouldBe "2"
         (bd("-5") + bd("3")).toString() shouldBe "-2"
@@ -510,6 +539,18 @@ class BigDecimalDivideMathContextPathTest : FunSpec({
         a.divide(b, MathContext(4, RoundingMode.UP)).toString() shouldBe "3.334"
         a.divide(b, MathContext(4, RoundingMode.CEILING)).toString() shouldBe "3.334"
         a.divide(b, MathContext(4, RoundingMode.FLOOR)).toString() shouldBe "3.333"
+    }
+
+    test("divide MathContext distinguishes half rounding modes on ties") {
+        bd("5").divide(bd("2"), MathContext(1, RoundingMode.HALF_UP)).toString() shouldBe "3"
+        bd("5").divide(bd("2"), MathContext(1, RoundingMode.HALF_DOWN)).toString() shouldBe "2"
+        bd("5").divide(bd("2"), MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "2"
+
+        bd("7").divide(bd("2"), MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "4"
+
+        bd("-5").divide(bd("2"), MathContext(1, RoundingMode.HALF_UP)).toString() shouldBe "-3"
+        bd("-5").divide(bd("2"), MathContext(1, RoundingMode.HALF_DOWN)).toString() shouldBe "-2"
+        bd("-5").divide(bd("2"), MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "-2"
     }
 
     test("unlimited precision MathContext delegates to exact divide") {
@@ -589,6 +630,16 @@ class BigDecimalPowMathContextPathTest : FunSpec({
         bd("123.456").pow(1, mc).toString() shouldBe "123"
     }
 
+    test("exponent one preserves tie-breaking across rounding modes") {
+        bd("2.5").pow(1, MathContext(1, RoundingMode.HALF_UP)).toString() shouldBe "3"
+        bd("2.5").pow(1, MathContext(1, RoundingMode.HALF_DOWN)).toString() shouldBe "2"
+        bd("2.5").pow(1, MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "2"
+
+        bd("-2.5").pow(1, MathContext(1, RoundingMode.HALF_UP)).toString() shouldBe "-3"
+        bd("-2.5").pow(1, MathContext(1, RoundingMode.HALF_DOWN)).toString() shouldBe "-2"
+        bd("-2.5").pow(1, MathContext(1, RoundingMode.HALF_EVEN)).toString() shouldBe "-2"
+    }
+
     test("small positive exponent binary loop") {
         val mc = MathContext(10, RoundingMode.HALF_UP)
         bd("2").pow(10, mc).toString() shouldBe "1024"
@@ -626,13 +677,14 @@ class BigDecimalPowMathContextPathTest : FunSpec({
 })
 
 // ── divideToIntegralValue path coverage ──────────────────────────────────────
-// Public divideToIntegralValue(other, MathContext) at lines 348-375 and
-// private version at lines 762-775.
+// Covers both the plain overload and the MathContext-specific path.
 
 class BigDecimalDivideToIntegralValuePathTest : FunSpec({
 
-    test("unlimited precision delegates to private version") {
+    test("plain overload matches unlimited precision MathContext") {
         val mc = MathContext(0)
+        bd("10").divideToIntegralValue(bd("3")).toString() shouldBe "3"
+        bd("7.5").divideToIntegralValue(bd("2")).toString() shouldBe "3.0"
         bd("10").divideToIntegralValue(bd("3"), mc).toString() shouldBe "3"
         bd("7.5").divideToIntegralValue(bd("2"), mc).toString() shouldBe "3.0"
     }
@@ -667,16 +719,14 @@ class BigDecimalDivideToIntegralValuePathTest : FunSpec({
         bd("100").divideToIntegralValue(bd("3"), mc).toString() shouldBe "33"
     }
 
-    test("private version preferredScale >= 0 scales divisor") {
-        val mc = MathContext(0)
+    test("plain overload preferredScale >= 0 scales divisor") {
         // scale(10.5) - scale(3) = 1 - 0 = 1 >= 0
-        bd("10.5").divideToIntegralValue(bd("3"), mc).toString() shouldBe "3.0"
+        bd("10.5").divideToIntegralValue(bd("3")).toString() shouldBe "3.0"
     }
 
-    test("private version preferredScale < 0 scales dividend") {
-        val mc = MathContext(0)
+    test("plain overload preferredScale < 0 scales dividend") {
         // scale(100) - scale(0.01) = 0 - 2 = -2 < 0
-        val result = bd("100").divideToIntegralValue(bd("0.01"), mc)
+        val result = bd("100").divideToIntegralValue(bd("0.01"))
         result.compareTo(bd("10000")) shouldBeExactly 0
     }
 

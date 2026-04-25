@@ -47,6 +47,7 @@ expect class BigDecimal : Comparable<BigDecimal> {
     fun remainder(other: BigDecimal, mathContext: MathContext): BigDecimal
     fun divideAndRemainder(other: BigDecimal): Array<BigDecimal>
     fun divideAndRemainder(other: BigDecimal, mathContext: MathContext): Array<BigDecimal>
+    fun divideToIntegralValue(other: BigDecimal): BigDecimal
     fun divideToIntegralValue(other: BigDecimal, mathContext: MathContext): BigDecimal
     fun pow(exponent: Int): BigDecimal
     fun pow(exponent: Int, mathContext: MathContext): BigDecimal

@@ -241,6 +241,11 @@ class BigDecimalArithmeticTest : FunSpec({
             result[1].toString() shouldBe "0"
         }
 
+        test("plain divideToIntegralValue uses the common API overload") {
+            bd("10.5").divideToIntegralValue(bd("3")).toString() shouldBe "3.0"
+            bd("100").divideToIntegralValue(bd("0.01")).compareTo(bd("10000")) shouldBeExactly 0
+        }
+
         test("MathContext overloads share quotient precision checks") {
             bd("10").remainder(bd("3"), MathContext(1, RoundingMode.DOWN)).toString() shouldBe "1"
             bd("10").divideAndRemainder(bd("3"), MathContext(1, RoundingMode.DOWN)).map { it.toString() } shouldBe listOf("3", "1")

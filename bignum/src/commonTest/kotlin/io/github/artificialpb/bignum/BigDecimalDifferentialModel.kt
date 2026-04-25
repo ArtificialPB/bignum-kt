@@ -45,6 +45,7 @@ enum class BigDecimalDifferentialOperation {
     REMAINDER_MATH_CONTEXT,
     DIVIDE_AND_REMAINDER,
     DIVIDE_AND_REMAINDER_MATH_CONTEXT,
+    DIVIDE_TO_INTEGRAL_VALUE,
     DIVIDE_TO_INTEGRAL_VALUE_MATH_CONTEXT,
     POW,
     POW_MATH_CONTEXT,
@@ -117,6 +118,7 @@ val BigDecimalDifferentialOperation.group: BigDecimalDifferentialGroup
         BigDecimalDifferentialOperation.REMAINDER_MATH_CONTEXT,
         BigDecimalDifferentialOperation.DIVIDE_AND_REMAINDER,
         BigDecimalDifferentialOperation.DIVIDE_AND_REMAINDER_MATH_CONTEXT,
+        BigDecimalDifferentialOperation.DIVIDE_TO_INTEGRAL_VALUE,
         BigDecimalDifferentialOperation.DIVIDE_TO_INTEGRAL_VALUE_MATH_CONTEXT,
         BigDecimalDifferentialOperation.POW,
         BigDecimalDifferentialOperation.POW_MATH_CONTEXT,
@@ -447,6 +449,9 @@ object BigDecimalDifferentialExecutor {
 
             BigDecimalDifferentialOperation.DIVIDE_AND_REMAINDER_MATH_CONTEXT ->
                 BigDecListExpected(args.bigDec(0).divideAndRemainder(args.bigDec(1), args.mathContext(2)).map { it.toString() })
+
+            BigDecimalDifferentialOperation.DIVIDE_TO_INTEGRAL_VALUE ->
+                normalizeBigDecimal(args.bigDec(0).divideToIntegralValue(args.bigDec(1)))
 
             BigDecimalDifferentialOperation.DIVIDE_TO_INTEGRAL_VALUE_MATH_CONTEXT ->
                 normalizeBigDecimal(args.bigDec(0).divideToIntegralValue(args.bigDec(1), args.mathContext(2)))

@@ -1,4 +1,4 @@
-@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class)
 
 package io.github.artificialpb.bignum
 
@@ -11,7 +11,6 @@ import io.github.artificialpb.bignum.tommath.mp_div_d
 import io.github.artificialpb.bignum.tommath.mp_expt_u32
 import io.github.artificialpb.bignum.tommath.mp_mul
 import io.github.artificialpb.bignum.tommath.mp_mul_2
-import io.github.artificialpb.bignum.tommath.mp_mul_d
 import kotlinx.cinterop.*
 
 actual enum class RoundingMode {
@@ -338,6 +337,21 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         return arrayOf(quotient, remainder)
     }
 
+    actual fun divideToIntegralValue(other: BigDecimal): BigDecimal {
+        val preferredScale = safeScaleSubtract(scaleValue, other.scaleValue)
+        val integerPart = when {
+            preferredScale >= 0 -> {
+                val scaledDivisor = multiplyByPowerOfTen(other.unscaled, preferredScale)
+                unscaled / scaledDivisor
+            }
+            else -> {
+                val scaledDividend = multiplyByPowerOfTen(unscaled, -preferredScale)
+                scaledDividend / other.unscaled
+            }
+        }
+        return integerToBigDecimal(integerPart, preferredScale)
+    }
+
     actual fun divideToIntegralValue(other: BigDecimal, mathContext: MathContext): BigDecimal {
         if (mathContext.precision == 0 || compareMagnitude(other) < 0) {
             return divideToIntegralValue(other)
@@ -437,7 +451,7 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         val scaleAdjust = if (scale % 2 == 0) scale else safeScaleSubtract(scale, 1)
         val working = stripped.scaleByPowerOfTen(scaleAdjust)
 
-        var guess = BigDecimal(kotlin.math.sqrt(working.toDouble()).toString())
+        val guess = BigDecimal(kotlin.math.sqrt(working.toDouble()).toString())
         var guessPrecision = 15
         val originalPrecision = mathContext.precision
         val targetPrecision = when {
@@ -752,21 +766,6 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
         }
     }
 
-    private fun divideToIntegralValue(other: BigDecimal): BigDecimal {
-        val preferredScale = safeScaleSubtract(scaleValue, other.scaleValue)
-        val integerPart = when {
-            preferredScale >= 0 -> {
-                val scaledDivisor = multiplyByPowerOfTen(other.unscaled, preferredScale)
-                unscaled / scaledDivisor
-            }
-            else -> {
-                val scaledDividend = multiplyByPowerOfTen(unscaled, -preferredScale)
-                scaledDividend / other.unscaled
-            }
-        }
-        return integerToBigDecimal(integerPart, preferredScale)
-    }
-
     private fun integerToBigDecimal(integerPart: BigInteger, preferredScale: Int): BigDecimal {
         if (integerPart.signum() == 0) {
             return bigDecimalOfInternal(ZERO, preferredScale)
@@ -934,7 +933,7 @@ private inline fun parseSimpleDecimalOrNull(
     var pointIndex = -1
     var digits = 0
     while (index < value.length) {
-        when (val ch = value[index]) {
+        when (value[index]) {
             in '0'..'9' -> digits++
             '.' -> if (pointIndex == -1) {
                 pointIndex = index
@@ -1119,7 +1118,7 @@ private fun stripSmallFactor(value: BigInteger, factor: ULong, maxCount: Int = I
 
     return value.withBorrowedHandle { handle ->
         var current = handle
-        var ownedCurrent: kotlinx.cinterop.CPointer<io.github.artificialpb.bignum.tommath.mp_int>? = null
+        var ownedCurrent: CPointer<io.github.artificialpb.bignum.tommath.mp_int>? = null
         var count = 0
 
         memScoped {
@@ -1602,8 +1601,8 @@ private fun powerOfTenBitLengthLowerBound(power: Int): Long = (power.toLong() * 
 private fun estimatedCanonicalLimbs(bitLength: Long): Int = maxOf(1L, (bitLength + CANONICAL_LIMB_BITS - 1L) / CANONICAL_LIMB_BITS).toInt()
 
 private fun compareRemainderToHalfDivisor(
-    remainderHandle: kotlinx.cinterop.CPointer<io.github.artificialpb.bignum.tommath.mp_int>,
-    divisorHandle: kotlinx.cinterop.CPointer<io.github.artificialpb.bignum.tommath.mp_int>,
+    remainderHandle: CPointer<io.github.artificialpb.bignum.tommath.mp_int>,
+    divisorHandle: CPointer<io.github.artificialpb.bignum.tommath.mp_int>,
 ): Int {
     val doubledRemainder = allocMp(maxOf(remainderHandle.pointed.used + 1, 1))
     checkMp(mp_mul_2(remainderHandle, doubledRemainder), doubledRemainder)
