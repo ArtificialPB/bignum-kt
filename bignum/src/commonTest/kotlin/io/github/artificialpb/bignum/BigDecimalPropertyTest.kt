@@ -221,6 +221,21 @@ class BigDecimalScalePropertyTest : FunSpec({
     }
 })
 
+class BigDecimalSqrtPropertyTest : FunSpec({
+    test("sqrt of exact squares recovers the original non-negative operand") {
+        val unlimited = MathContext(0)
+        checkAll(Arb.int(0..1_000_000), Arb.int(0..6)) { unscaled, scale ->
+            val root = bigDecimalOf(bigIntegerOf(unscaled), scale)
+            assertImmutable(root) {
+                val square = root * root
+                val sqrt = square.sqrt(unlimited)
+                sqrt.compareTo(root) shouldBeExactly 0
+                (sqrt * sqrt).compareTo(square) shouldBeExactly 0
+            }
+        }
+    }
+})
+
 class BigDecimalConversionPropertyTest : FunSpec({
     test("toString round-trips through constructor") {
         checkAll(Arb.bigDecimal()) { a ->
@@ -305,6 +320,25 @@ class BigDecimalMathContextPropertyTest : FunSpec({
         checkAll(Arb.bigDecimal()) { a ->
             assertImmutable(a) {
                 a.round(mc).round(mc) shouldBe a.round(mc)
+            }
+        }
+    }
+
+    test("pow with exponent zero returns one for any MathContext") {
+        checkAll(Arb.bigDecimal(), Arb.int(0..6), Arb.int(0 until RoundingMode.entries.size)) { a, precision, roundingModeIndex ->
+            val mc = MathContext(precision, RoundingMode.entries[roundingModeIndex])
+            assertImmutable(a) {
+                a.pow(0, mc).compareTo(BigDecimal("1")) shouldBeExactly 0
+            }
+        }
+    }
+
+    test("pow with exponent one matches round when no rounding is required") {
+        checkAll(Arb.bigDecimal(), Arb.int(0..3), Arb.int(0 until RoundingMode.entries.size)) { a, extraPrecision, roundingModeIndex ->
+            val mc = MathContext(a.precision() + extraPrecision, RoundingMode.entries[roundingModeIndex])
+            assertImmutable(a) {
+                a.pow(1, mc) shouldBe a.round(mc)
+                a.pow(1, mc) shouldBe a
             }
         }
     }
