@@ -1,0 +1,4270 @@
+{
+    "operation": "MATH_CONTEXT_TO_STRING",
+    "group": "CONSTRUCTION",
+    "cases": [
+        {
+            "id": "math_context_to_string_0",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_1",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_2",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_3",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_4",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_5",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_6",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_7",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_8",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=4 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_9",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_10",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_11",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_12",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_13",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=50 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=50 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_14",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_15",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_16",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_17",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_18",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_19",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_20",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_21",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=7 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_22",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_23",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_24",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_25",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_26",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_27",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_28",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_29",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_30",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_31",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_32",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_33",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_34",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_35",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_36",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_37",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_38",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_39",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_40",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_41",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_42",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_43",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_44",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_45",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_46",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_47",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_48",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_49",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_50",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_51",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_52",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_53",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_54",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_55",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_56",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_57",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_58",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_59",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_60",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_61",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_62",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_63",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_64",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_65",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_66",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_67",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_68",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_69",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_70",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=2 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_71",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_72",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_73",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_74",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_75",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_76",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_77",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_78",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_79",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_80",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_81",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_82",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_83",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_84",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_85",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=0 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_86",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_87",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_88",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_89",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_90",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_91",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_92",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_93",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_94",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_95",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_96",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_97",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_98",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_99",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_100",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_101",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_102",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_103",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_104",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_105",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_106",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_107",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_108",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_109",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_110",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=1 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_111",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_112",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_113",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_114",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_115",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_116",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_117",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_118",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_119",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_120",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_121",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_122",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_123",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_124",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_125",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_126",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_127",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_128",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_129",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_130",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_131",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_132",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_133",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_134",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_135",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_136",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_137",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_138",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_139",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_140",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_141",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_142",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_143",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_144",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_145",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_146",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_147",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_148",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_149",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_150",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_151",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_152",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_153",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_154",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_155",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_156",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_157",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_158",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_159",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_160",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_161",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_162",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_163",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_164",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_165",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_166",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_167",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_168",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_169",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_170",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_171",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_172",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_173",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_174",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_175",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_176",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_177",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_178",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_179",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_180",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_181",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_182",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_183",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_184",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_185",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_186",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_187",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_188",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_189",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_190",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_191",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_192",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_193",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_194",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_195",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_196",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_197",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_198",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_199",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_200",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_201",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_202",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_203",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_204",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_205",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_206",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_207",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_208",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_209",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_210",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_211",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_212",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_213",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_214",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_215",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_216",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_217",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_218",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_219",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_220",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_221",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_222",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_223",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_224",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_225",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_226",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_227",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_228",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_229",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_230",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_231",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_232",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_233",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_234",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_235",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_236",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_237",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_238",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_239",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_240",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_241",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_242",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_243",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_244",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_245",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_246",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_247",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_248",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_249",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_250",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_251",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_252",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=36 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_253",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=8 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_254",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_255",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_256",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_257",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_258",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=15 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_259",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_260",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=18 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_261",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_262",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_263",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_264",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_265",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_266",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_267",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_268",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_269",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_270",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_271",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_272",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_273",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=24 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_274",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=29 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_275",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=28 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_276",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_277",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_278",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_279",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_280",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=23 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_281",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_282",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=20 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_283",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=40 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_284",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=27 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_285",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_286",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_287",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=11 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_288",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=34 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_289",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=13 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_290",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=12 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_291",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=21 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_292",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_293",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_294",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=33 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_295",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=14 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_296",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=3 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_297",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_298",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_299",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=32 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_300",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_301",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=26 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_302",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=38 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_303",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=10 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_304",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_305",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_306",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_307",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_308",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_309",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_310",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=35 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_311",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=16 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_312",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_313",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=CEILING"
+            }
+        },
+        {
+            "id": "math_context_to_string_314",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_315",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=9 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_316",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_317",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=17 roundingMode=FLOOR"
+            }
+        },
+        {
+            "id": "math_context_to_string_318",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=22 roundingMode=HALF_EVEN"
+            }
+        },
+        {
+            "id": "math_context_to_string_319",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=6 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_320",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=37 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_321",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=HALF_DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_322",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=30 roundingMode=UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_323",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=39 roundingMode=DOWN"
+            }
+        },
+        {
+            "id": "math_context_to_string_324",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=19 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_325",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=31 roundingMode=HALF_UP"
+            }
+        },
+        {
+            "id": "math_context_to_string_326",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=5 roundingMode=UNNECESSARY"
+            }
+        },
+        {
+            "id": "math_context_to_string_327",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "string",
+                "value": "precision=25 roundingMode=HALF_EVEN"
+            }
+        }
+    ]
+}

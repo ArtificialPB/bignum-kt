@@ -1,0 +1,4283 @@
+{
+    "operation": "MATH_CONTEXT_GET_PRECISION",
+    "group": "CONSTRUCTION",
+    "cases": [
+        {
+            "id": "math_context_get_precision_0",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_1",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_2",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_3",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_4",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_5",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_6",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_7",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_8",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=4 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "4"
+            }
+        },
+        {
+            "id": "math_context_get_precision_9",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_10",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_11",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_12",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_13",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=50 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "50"
+            }
+        },
+        {
+            "id": "math_context_get_precision_14",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_15",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_16",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_17",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_18",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_19",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_20",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_21",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=7 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "7"
+            }
+        },
+        {
+            "id": "math_context_get_precision_22",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_23",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_24",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_25",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_26",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_27",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_28",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_29",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_30",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_31",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_32",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_33",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_34",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_35",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_36",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_37",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_38",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_39",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_40",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_41",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_42",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_43",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_44",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_45",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_46",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_47",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_48",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_49",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_50",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_51",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_52",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_53",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_54",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_55",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_56",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_57",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_58",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_59",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=2 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "2"
+            }
+        },
+        {
+            "id": "math_context_get_precision_60",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_61",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_62",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_63",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_64",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_65",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_66",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_67",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_68",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_69",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_70",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_71",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_72",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_73",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_74",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_75",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_76",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_77",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=0 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "0"
+            }
+        },
+        {
+            "id": "math_context_get_precision_78",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_79",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_80",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_81",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_82",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_83",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_84",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_85",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_86",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_87",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_88",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_89",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_90",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_91",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_92",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_93",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_94",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_95",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_96",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_97",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_98",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_99",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_100",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_101",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=1 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "1"
+            }
+        },
+        {
+            "id": "math_context_get_precision_102",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_103",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_104",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_105",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_106",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_107",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_108",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_109",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_110",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_111",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_112",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_113",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_114",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_115",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_116",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_117",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_118",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_119",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_120",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_121",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_122",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_123",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_124",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_125",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_126",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_127",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_128",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_129",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_130",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_131",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_132",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_133",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_134",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_135",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_136",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_137",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_138",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_139",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_140",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_141",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_142",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_143",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_144",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_145",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_146",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_147",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_148",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_149",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_150",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_151",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_152",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_153",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_154",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_155",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_156",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_157",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_158",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_159",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_160",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_161",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_162",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_163",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_164",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_165",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_166",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_167",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_168",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_169",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_170",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_171",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_172",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_173",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_174",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_175",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_176",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_177",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_178",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_179",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_180",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_181",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_182",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_183",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_184",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_185",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_186",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_187",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_188",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_189",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_190",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_191",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_192",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_193",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_194",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_195",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_196",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_197",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_198",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_199",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_200",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_201",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_202",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_203",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_204",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_205",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_206",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_207",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_208",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_209",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_210",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_211",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_212",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_213",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_214",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_215",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_216",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_217",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_218",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_219",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_220",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_221",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_222",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_223",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_224",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_225",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_226",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_227",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=5 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "5"
+            }
+        },
+        {
+            "id": "math_context_get_precision_228",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_229",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_230",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_231",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_232",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_233",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_234",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_235",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_236",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_237",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_238",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_239",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_240",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_241",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_242",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=28 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "28"
+            }
+        },
+        {
+            "id": "math_context_get_precision_243",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_244",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_245",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_246",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=39 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "39"
+            }
+        },
+        {
+            "id": "math_context_get_precision_247",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_248",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_249",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_250",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_251",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_252",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_253",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_254",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_255",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_256",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_257",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_258",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_259",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_260",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_261",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_262",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_263",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_264",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_265",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_266",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_267",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_268",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_269",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=24 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "24"
+            }
+        },
+        {
+            "id": "math_context_get_precision_270",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_271",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_272",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_273",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_274",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_275",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_276",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=19 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "19"
+            }
+        },
+        {
+            "id": "math_context_get_precision_277",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_278",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_279",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_280",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=38 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "38"
+            }
+        },
+        {
+            "id": "math_context_get_precision_281",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_282",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=32 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "32"
+            }
+        },
+        {
+            "id": "math_context_get_precision_283",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_284",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_285",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_286",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=34 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "34"
+            }
+        },
+        {
+            "id": "math_context_get_precision_287",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=25 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "25"
+            }
+        },
+        {
+            "id": "math_context_get_precision_288",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_289",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=37 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "37"
+            }
+        },
+        {
+            "id": "math_context_get_precision_290",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=10 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "10"
+            }
+        },
+        {
+            "id": "math_context_get_precision_291",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_292",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=9 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "9"
+            }
+        },
+        {
+            "id": "math_context_get_precision_293",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=3 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "3"
+            }
+        },
+        {
+            "id": "math_context_get_precision_294",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_295",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_296",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=27 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "27"
+            }
+        },
+        {
+            "id": "math_context_get_precision_297",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=23 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "23"
+            }
+        },
+        {
+            "id": "math_context_get_precision_298",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_299",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=6 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "6"
+            }
+        },
+        {
+            "id": "math_context_get_precision_300",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=18 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "18"
+            }
+        },
+        {
+            "id": "math_context_get_precision_301",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=14 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "14"
+            }
+        },
+        {
+            "id": "math_context_get_precision_302",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_303",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=16 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "16"
+            }
+        },
+        {
+            "id": "math_context_get_precision_304",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_305",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_306",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_307",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=22 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "22"
+            }
+        },
+        {
+            "id": "math_context_get_precision_308",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_309",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_310",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=21 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "21"
+            }
+        },
+        {
+            "id": "math_context_get_precision_311",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=17 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "17"
+            }
+        },
+        {
+            "id": "math_context_get_precision_312",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        },
+        {
+            "id": "math_context_get_precision_313",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=20 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "20"
+            }
+        },
+        {
+            "id": "math_context_get_precision_314",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_315",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=15 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "15"
+            }
+        },
+        {
+            "id": "math_context_get_precision_316",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=12 roundingMode=HALF_DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "12"
+            }
+        },
+        {
+            "id": "math_context_get_precision_317",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=13 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "13"
+            }
+        },
+        {
+            "id": "math_context_get_precision_318",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=26 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "26"
+            }
+        },
+        {
+            "id": "math_context_get_precision_319",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_320",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=33 roundingMode=CEILING"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "33"
+            }
+        },
+        {
+            "id": "math_context_get_precision_321",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=11 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "11"
+            }
+        },
+        {
+            "id": "math_context_get_precision_322",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=30 roundingMode=HALF_UP"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "30"
+            }
+        },
+        {
+            "id": "math_context_get_precision_323",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=31 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "31"
+            }
+        },
+        {
+            "id": "math_context_get_precision_324",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=8 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "8"
+            }
+        },
+        {
+            "id": "math_context_get_precision_325",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=29 roundingMode=DOWN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "29"
+            }
+        },
+        {
+            "id": "math_context_get_precision_326",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=35 roundingMode=FLOOR"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "35"
+            }
+        },
+        {
+            "id": "math_context_get_precision_327",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=40 roundingMode=HALF_EVEN"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "40"
+            }
+        },
+        {
+            "id": "math_context_get_precision_328",
+            "args": [
+                {
+                    "type": "math_context",
+                    "value": "precision=36 roundingMode=UNNECESSARY"
+                }
+            ],
+            "expected": {
+                "type": "int",
+                "value": "36"
+            }
+        }
+    ]
+}
