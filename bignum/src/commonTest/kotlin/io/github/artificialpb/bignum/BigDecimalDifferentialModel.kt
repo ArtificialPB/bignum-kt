@@ -86,6 +86,13 @@ enum class BigDecimalDifferentialOperation {
     EQUALS_STRING,
     HASH_CODE,
     ULP,
+    MATH_CONTEXT_CONSTRUCTOR_PRECISION,
+    MATH_CONTEXT_CONSTRUCTOR_PRECISION_ROUNDING,
+    MATH_CONTEXT_CONSTRUCTOR_STRING,
+    MATH_CONTEXT_GET_PRECISION,
+    MATH_CONTEXT_GET_ROUNDING_MODE,
+    MATH_CONTEXT_TO_STRING,
+    MATH_CONTEXT_EQUALS,
 }
 
 val BigDecimalDifferentialOperation.group: BigDecimalDifferentialGroup
@@ -95,6 +102,13 @@ val BigDecimalDifferentialOperation.group: BigDecimalDifferentialGroup
         BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT_SCALE,
         BigDecimalDifferentialOperation.CONSTRUCTOR_LONG,
         BigDecimalDifferentialOperation.CONSTRUCTOR_INT,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION_ROUNDING,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_GET_PRECISION,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_GET_ROUNDING_MODE,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_TO_STRING,
+        BigDecimalDifferentialOperation.MATH_CONTEXT_EQUALS,
         -> BigDecimalDifferentialGroup.CONSTRUCTION
 
         BigDecimalDifferentialOperation.FACTORY_OF_STRING,
@@ -392,6 +406,27 @@ object BigDecimalDifferentialExecutor {
 
             BigDecimalDifferentialOperation.CONSTRUCTOR_INT ->
                 normalizeBigDecimal(BigDecimal(args.int(0)))
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION ->
+                StringExpected2(MathContext(args.int(0)).toString())
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION_ROUNDING ->
+                StringExpected2(MathContext(args.int(0), args.roundingMode(1)).toString())
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING ->
+                StringExpected2(MathContext(args.string(0)).toString())
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_GET_PRECISION ->
+                IntExpected2(args.mathContext(0).precision)
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_GET_ROUNDING_MODE ->
+                StringExpected2(args.mathContext(0).roundingMode.name)
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_TO_STRING ->
+                StringExpected2(args.mathContext(0).toString())
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_EQUALS ->
+                BooleanExpected2(args.mathContext(0) == args.mathContext(1))
 
             BigDecimalDifferentialOperation.FACTORY_OF_STRING ->
                 normalizeBigDecimal(bigDecimalOf(args.string(0)))

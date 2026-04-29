@@ -11,6 +11,21 @@ private fun roundingModesCovered(cases: List<BigDecimalDifferentialCase>): Set<R
 
 private fun List<BigDecimalDifferentialCase>.containsArgs(vararg expected: BigDecimalDifferentialArg): Boolean = any { it.args == expected.toList() }
 
+private val roundingMatrixDecimals = listOf("2.4", "2.5", "3.5", "2.6", "-2.4", "-2.5", "-3.5", "-2.6")
+
+private val divideRoundingMatrixPairs = listOf(
+    "12" to "5",
+    "5" to "2",
+    "7" to "2",
+    "13" to "5",
+    "-12" to "5",
+    "-5" to "2",
+    "-7" to "2",
+    "-13" to "5",
+)
+
+private val sqrtRoundingMatrixDecimals = listOf("5.76", "6.25", "12.25", "6.76")
+
 class BigDecimalDifferentialFixtureCorpusGuardTest : FunSpec({
     test("checked-in big decimal differential JSON corpus matches the generator") {
         val seed = BigDecimalDifferentialFixtureGenerator.configuredSeed()
@@ -123,6 +138,128 @@ class BigDecimalDifferentialFixtureCorpusGuardTest : FunSpec({
         edgeCases.getValue(BigDecimalDifferentialOperation.SQRT_MATH_CONTEXT).containsArgs(
             BigDecArg("12.25"),
             MathContextArg(MathContext(1, RoundingMode.HALF_EVEN).toString()),
+        ) shouldBe true
+    }
+
+    test("edge-case generator covers the deterministic rounding decision matrix") {
+        val edgeCases = BigDecimalDifferentialFixtureGenerator.generateEdgeCasesByOperation()
+
+        roundingMatrixDecimals.forEach { decimal ->
+            RoundingMode.entries.forEach { roundingMode ->
+                val roundingModeArg = RoundingModeArg(roundingMode.name)
+                val mathContextArg = MathContextArg(MathContext(1, roundingMode).toString())
+
+                edgeCases.getValue(BigDecimalDifferentialOperation.SET_SCALE_ROUNDING).containsArgs(
+                    BigDecArg(decimal),
+                    IntArg2(0),
+                    roundingModeArg,
+                ) shouldBe true
+
+                edgeCases.getValue(BigDecimalDifferentialOperation.ADD_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    BigDecArg("0"),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.SUBTRACT_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    BigDecArg("0"),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.MULTIPLY_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    BigDecArg("1"),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.ABS_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.NEGATE_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.PLUS_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.ROUND_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    mathContextArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.POW_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    IntArg2(1),
+                    mathContextArg,
+                ) shouldBe true
+            }
+        }
+
+        divideRoundingMatrixPairs.forEach { (left, right) ->
+            RoundingMode.entries.forEach { roundingMode ->
+                val roundingModeArg = RoundingModeArg(roundingMode.name)
+                val mathContextArg = MathContextArg(MathContext(1, roundingMode).toString())
+
+                edgeCases.getValue(BigDecimalDifferentialOperation.DIVIDE_ROUNDING_MODE).containsArgs(
+                    BigDecArg(left),
+                    BigDecArg(right),
+                    roundingModeArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.DIVIDE_SCALE_ROUNDING_MODE).containsArgs(
+                    BigDecArg(left),
+                    BigDecArg(right),
+                    IntArg2(0),
+                    roundingModeArg,
+                ) shouldBe true
+                edgeCases.getValue(BigDecimalDifferentialOperation.DIVIDE_MATH_CONTEXT).containsArgs(
+                    BigDecArg(left),
+                    BigDecArg(right),
+                    mathContextArg,
+                ) shouldBe true
+            }
+        }
+
+        sqrtRoundingMatrixDecimals.forEach { decimal ->
+            RoundingMode.entries.forEach { roundingMode ->
+                edgeCases.getValue(BigDecimalDifferentialOperation.SQRT_MATH_CONTEXT).containsArgs(
+                    BigDecArg(decimal),
+                    MathContextArg(MathContext(1, roundingMode).toString()),
+                ) shouldBe true
+            }
+        }
+    }
+
+    test("edge-case generator covers MathContext construction and accessors") {
+        val edgeCases = BigDecimalDifferentialFixtureGenerator.generateEdgeCasesByOperation()
+        val expectedModes = RoundingMode.entries.toSet()
+
+        val constructorModes = edgeCases
+            .getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION_ROUNDING)
+            .mapNotNull { case -> case.args.filterIsInstance<RoundingModeArg>().singleOrNull()?.let { RoundingMode.valueOf(it.value) } }
+            .toSet()
+        constructorModes shouldBe expectedModes
+
+        RoundingMode.entries.forEach { roundingMode ->
+            val mathContextArg = MathContextArg(MathContext(7, roundingMode).toString())
+            edgeCases.getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING).containsArgs(
+                StringArg2(mathContextArg.value),
+            ) shouldBe true
+            edgeCases.getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_GET_ROUNDING_MODE).containsArgs(
+                mathContextArg,
+            ) shouldBe true
+            edgeCases.getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_TO_STRING).containsArgs(
+                mathContextArg,
+            ) shouldBe true
+        }
+
+        edgeCases.getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION).containsArgs(
+            IntArg2(-1),
+        ) shouldBe true
+        edgeCases.getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING).containsArgs(
+            StringArg2("precision=1 roundingMode=NOT_A_MODE"),
+        ) shouldBe true
+        edgeCases.getValue(BigDecimalDifferentialOperation.MATH_CONTEXT_EQUALS).containsArgs(
+            MathContextArg(MathContext(4, RoundingMode.UP).toString()),
+            MathContextArg(MathContext(4, RoundingMode.UP).toString()),
         ) shouldBe true
     }
 

@@ -41,6 +41,7 @@ object BigDecimalDifferentialFixtureGenerator {
     private val invalidDecimalStrings = listOf("", "+", "-", ".", "1_", "1e", "NaN", "Infinity", "0x10", " 1", "1 ")
     private val bigIntegerStrings = listOf("0", "1", "-1", "10", "-10", "12345678901234567890", "-99999999999999999999")
     private val scaleValues = listOf(Int.MIN_VALUE, -1000, -100, -10, -1, 0, 1, 2, 5, 10, 100, 1000, Int.MAX_VALUE)
+    private val mathContextPrecisionValues = listOf(Int.MIN_VALUE, -1000, -1, 0, 1, 2, 4, 16, 34, 1000, Int.MAX_VALUE)
     private val divisionScaleValues = listOf(-100, -10, -1, 0, 1, 2, 5, 10, 100)
     private val powValues = listOf(-1, 0, 1, 2, 3, 5, 10)
     private val shiftValues = listOf(Int.MIN_VALUE, -1000, -10, -1, 0, 1, 2, 10, 1000, Int.MAX_VALUE)
@@ -56,6 +57,17 @@ object BigDecimalDifferentialFixtureGenerator {
         add(MathContext(34, RoundingMode.HALF_EVEN))
         add(MathContext(50, RoundingMode.HALF_EVEN))
     }.distinctBy(MathContext::toString)
+    private val mathContextStrings = mathContexts.map(MathContext::toString) + RoundingMode.entries.map { MathContext(7, it).toString() }
+    private val invalidMathContextStrings = listOf(
+        "",
+        "precision=",
+        "precision=x roundingMode=HALF_UP",
+        "precision=-1 roundingMode=HALF_UP",
+        "precision=1 mode=HALF_UP",
+        "precision=1 roundingMode=NOT_A_MODE",
+        " precision=1 roundingMode=HALF_UP",
+        "precision=1 roundingMode=HALF_UP ",
+    )
     private val sqrtDecimalStrings = listOf("0", "0.00", "4", "0.04", "2", "1E+4", "1E+3", "-1")
     private val activeSeed = ThreadLocal.withInitial { DEFAULT_RANDOM_SEED }
 
@@ -193,6 +205,80 @@ object BigDecimalDifferentialFixtureGenerator {
             }
         }
 
+        val roundingMatrixDecimals = listOf(
+            "2.4",
+            "2.5",
+            "3.5",
+            "2.6",
+            "-2.4",
+            "-2.5",
+            "-3.5",
+            "-2.6",
+        )
+        roundingMatrixDecimals.forEach { decimal ->
+            tieBreakingMathContextArgs.forEach { mathContextArg ->
+                builder.add(BigDecimalDifferentialOperation.ADD_MATH_CONTEXT, BigDecArg(decimal), BigDecArg("0"), mathContextArg)
+                builder.add(BigDecimalDifferentialOperation.SUBTRACT_MATH_CONTEXT, BigDecArg(decimal), BigDecArg("0"), mathContextArg)
+                builder.add(BigDecimalDifferentialOperation.MULTIPLY_MATH_CONTEXT, BigDecArg(decimal), BigDecArg("1"), mathContextArg)
+                builder.add(BigDecimalDifferentialOperation.ABS_MATH_CONTEXT, BigDecArg(decimal), mathContextArg)
+                builder.add(BigDecimalDifferentialOperation.NEGATE_MATH_CONTEXT, BigDecArg(decimal), mathContextArg)
+                builder.add(BigDecimalDifferentialOperation.PLUS_MATH_CONTEXT, BigDecArg(decimal), mathContextArg)
+                builder.add(BigDecimalDifferentialOperation.ROUND_MATH_CONTEXT, BigDecArg(decimal), mathContextArg)
+                builder.add(
+                    BigDecimalDifferentialOperation.POW_MATH_CONTEXT,
+                    BigDecArg(decimal),
+                    IntArg2(1),
+                    mathContextArg,
+                )
+            }
+
+            roundingModes.forEach { roundingMode ->
+                builder.add(
+                    BigDecimalDifferentialOperation.SET_SCALE_ROUNDING,
+                    BigDecArg(decimal),
+                    IntArg2(0),
+                    RoundingModeArg(roundingMode.name),
+                )
+            }
+        }
+
+        val divideRoundingMatrixPairs = listOf(
+            "12" to "5", // 2.4
+            "5" to "2", // 2.5, even quotient tie
+            "7" to "2", // 3.5, odd quotient tie
+            "13" to "5", // 2.6
+            "-12" to "5",
+            "-5" to "2",
+            "-7" to "2",
+            "-13" to "5",
+        )
+        divideRoundingMatrixPairs.forEach { (left, right) ->
+            tieBreakingMathContextArgs.forEach { mathContextArg ->
+                builder.add(BigDecimalDifferentialOperation.DIVIDE_MATH_CONTEXT, BigDecArg(left), BigDecArg(right), mathContextArg)
+            }
+            roundingModes.forEach { roundingMode ->
+                builder.add(
+                    BigDecimalDifferentialOperation.DIVIDE_ROUNDING_MODE,
+                    BigDecArg(left),
+                    BigDecArg(right),
+                    RoundingModeArg(roundingMode.name),
+                )
+                builder.add(
+                    BigDecimalDifferentialOperation.DIVIDE_SCALE_ROUNDING_MODE,
+                    BigDecArg(left),
+                    BigDecArg(right),
+                    IntArg2(0),
+                    RoundingModeArg(roundingMode.name),
+                )
+            }
+        }
+
+        listOf("5.76", "6.25", "12.25", "6.76").forEach { decimal ->
+            tieBreakingMathContextArgs.forEach { mathContextArg ->
+                builder.add(BigDecimalDifferentialOperation.SQRT_MATH_CONTEXT, BigDecArg(decimal), mathContextArg)
+            }
+        }
+
         tieBreakingMathContextArgs.forEach { mathContextArg ->
             builder.add(BigDecimalDifferentialOperation.ADD_MATH_CONTEXT, BigDecArg("2.5"), BigDecArg("0"), mathContextArg)
             builder.add(BigDecimalDifferentialOperation.SUBTRACT_MATH_CONTEXT, BigDecArg("2.5"), BigDecArg("0"), mathContextArg)
@@ -286,6 +372,34 @@ object BigDecimalDifferentialFixtureGenerator {
                 builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT_SCALE, BigIntArg2(integer), IntArg2(scale))
                 builder.add(BigDecimalDifferentialOperation.FACTORY_OF_BIGINT_SCALE, BigIntArg2(integer), IntArg2(scale))
             }
+        }
+
+        mathContextPrecisionValues.forEach { precision ->
+            builder.add(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION, IntArg2(precision))
+            roundingModes.forEach { roundingMode ->
+                builder.add(
+                    BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION_ROUNDING,
+                    IntArg2(precision),
+                    RoundingModeArg(roundingMode.name),
+                )
+            }
+        }
+        mathContextStrings.distinct().forEach { value ->
+            val mathContextArg = MathContextArg(value)
+            builder.add(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING, StringArg2(value))
+            builder.add(BigDecimalDifferentialOperation.MATH_CONTEXT_GET_PRECISION, mathContextArg)
+            builder.add(BigDecimalDifferentialOperation.MATH_CONTEXT_GET_ROUNDING_MODE, mathContextArg)
+            builder.add(BigDecimalDifferentialOperation.MATH_CONTEXT_TO_STRING, mathContextArg)
+            mathContexts.forEach { other ->
+                builder.add(
+                    BigDecimalDifferentialOperation.MATH_CONTEXT_EQUALS,
+                    mathContextArg,
+                    MathContextArg(other.toString()),
+                )
+            }
+        }
+        invalidMathContextStrings.forEach { value ->
+            builder.add(BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING, StringArg2(value))
         }
 
         listOf(Long.MIN_VALUE, -10L, -1L, 0L, 1L, 10L, Long.MAX_VALUE).forEach { value ->
@@ -417,6 +531,26 @@ object BigDecimalDifferentialFixtureGenerator {
             BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT_SCALE,
             BigDecimalDifferentialOperation.FACTORY_OF_BIGINT_SCALE,
             -> listOf(BigIntArg2(randomBigInteger(random)), IntArg2(randomScale(random)))
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION ->
+                listOf(IntArg2(randomMathContextPrecision(random)))
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION_ROUNDING ->
+                listOf(
+                    IntArg2(randomMathContextPrecision(random)),
+                    RoundingModeArg(roundingModes[random.nextInt(roundingModes.size)].name),
+                )
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_STRING ->
+                listOf(StringArg2(randomMathContextString(random, validOnly = random.nextBoolean())))
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_GET_PRECISION,
+            BigDecimalDifferentialOperation.MATH_CONTEXT_GET_ROUNDING_MODE,
+            BigDecimalDifferentialOperation.MATH_CONTEXT_TO_STRING,
+            -> listOf(randomMathContext(random))
+
+            BigDecimalDifferentialOperation.MATH_CONTEXT_EQUALS ->
+                listOf(randomMathContext(random), randomMathContext(random))
 
             BigDecimalDifferentialOperation.CONSTRUCTOR_LONG ->
                 listOf(LongArg2(random.nextLong()))
@@ -580,6 +714,13 @@ object BigDecimalDifferentialFixtureGenerator {
         else -> random.nextInt(-5_000, 5_001)
     }
 
+    private fun randomMathContextPrecision(random: Random): Int = when (random.nextInt(8)) {
+        0 -> Int.MIN_VALUE
+        1 -> Int.MAX_VALUE
+        2 -> -1
+        else -> random.nextInt(0, 5_001)
+    }
+
     private fun randomMathContext(random: Random): MathContextArg {
         val precision = when (random.nextInt(6)) {
             0 -> 0
@@ -589,6 +730,15 @@ object BigDecimalDifferentialFixtureGenerator {
         }
         val roundingMode = roundingModes[random.nextInt(roundingModes.size)]
         return MathContextArg(MathContext(precision, roundingMode).toString())
+    }
+
+    private fun randomMathContextString(random: Random, validOnly: Boolean): String {
+        if (!validOnly && random.nextInt(5) == 0) {
+            return invalidMathContextStrings[random.nextInt(invalidMathContextStrings.size)]
+        }
+        val precision = random.nextInt(0, 5_001)
+        val roundingMode = roundingModes[random.nextInt(roundingModes.size)]
+        return MathContext(precision, roundingMode).toString()
     }
 
     private fun randomDivisionScale(random: Random): Int = when (random.nextInt(5)) {
