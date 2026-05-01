@@ -16,6 +16,50 @@ arrays, so behavior stays consistent across platforms.
 | macOS ARM64       | Hybrid: pure Kotlin hot paths + LibTomMath interop |
 | iOS ARM64         | Hybrid: pure Kotlin hot paths + LibTomMath interop |
 
+## Getting started
+
+`bignum-kt` is published to Maven Central. Add `mavenCentral()` to your repositories:
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+```
+
+For Kotlin Multiplatform projects, add the dependency to `commonMain`:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("io.github.artificialpb:bignum:1.0.0")
+            }
+        }
+    }
+}
+```
+
+For JVM or Android-only projects, add the same dependency in the regular `dependencies` block:
+
+```kotlin
+dependencies {
+    implementation("io.github.artificialpb:bignum:1.0.0")
+}
+```
+
+Snapshot builds use the same coordinates with the snapshot version, plus the Maven Central snapshots repository:
+
+```kotlin
+repositories {
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
+}
+
+dependencies {
+    implementation("io.github.artificialpb:bignum:1.0.1-SNAPSHOT")
+}
+```
+
 ## Usage
 
 ```kotlin
