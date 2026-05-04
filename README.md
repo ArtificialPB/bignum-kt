@@ -1,20 +1,20 @@
 # bignum-kt
 
-High-performance Kotlin Multiplatform `BigInteger` library with JVM semantics across JVM, Android, and Apple native.
+High-performance Kotlin Multiplatform `BigInteger` and `BigDecimal` for JVM, Android, and Apple native targets.
 
-On the JVM and Android, `BigInteger` is a zero-overhead typealias to `java.math.BigInteger`. On Apple native targets,
-the implementation is hybrid: hot paths and small-to-medium operations run in pure Kotlin, while larger or specialized
-work uses LibTomMath through C interop. All targets follow JVM semantics, including two's complement big-endian byte
-arrays, so behavior stays consistent across platforms.
+On JVM and Android, `BigInteger` and `BigDecimal` are zero-overhead typealiases to `java.math.BigInteger` and
+`java.math.BigDecimal`. On Apple native targets, `BigInteger` uses pure Kotlin hot paths plus LibTomMath for larger or
+specialized work, and `BigDecimal` is implemented in Kotlin on top of the shared API. The library is zero-dependency
+except for LibTomMath on native targets.
 
 ## Supported platforms
 
-| Platform          | Backend                                            |
-|-------------------|----------------------------------------------------|
-| JVM               | `java.math.BigInteger` typealias                   |
-| Android (API 21+) | `java.math.BigInteger` typealias                   |
-| macOS ARM64       | Hybrid: pure Kotlin hot paths + LibTomMath interop |
-| iOS ARM64         | Hybrid: pure Kotlin hot paths + LibTomMath interop |
+| Platform          | Backend                                                                |
+|-------------------|------------------------------------------------------------------------|
+| JVM               | `java.math.BigInteger` and `java.math.BigDecimal` typealiases          |
+| Android (API 21+) | `java.math.BigInteger` and `java.math.BigDecimal` typealiases          |
+| macOS ARM64       | Pure Kotlin `BigDecimal`; hybrid Kotlin + LibTomMath `BigInteger`      |
+| iOS ARM64         | Pure Kotlin `BigDecimal`; hybrid Kotlin + LibTomMath `BigInteger`      |
 
 ## Getting started
 
@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("io.github.artificialpb:bignum:1.0.0")
+                implementation("io.github.artificialpb:bignum:1.0.1")
             }
         }
     }
@@ -44,7 +44,7 @@ For JVM or Android-only projects, add the same dependency in the regular `depend
 
 ```kotlin
 dependencies {
-    implementation("io.github.artificialpb:bignum:1.0.0")
+    implementation("io.github.artificialpb:bignum:1.0.1")
 }
 ```
 
@@ -56,7 +56,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.artificialpb:bignum:1.0.1-SNAPSHOT")
+    implementation("io.github.artificialpb:bignum:1.0.2-SNAPSHOT")
 }
 ```
 
@@ -65,35 +65,20 @@ dependencies {
 ```kotlin
 import io.github.artificialpb.bignum.*
 
-// Create BigIntegers
 val a = bigIntegerOf("123456789012345678901234567890")
 val b = bigIntegerOf(42L)
 
-// Arithmetic
 val sum = a + b
-val product = a * b
-val quotient = a / b
-val remainder = a % b
-val power = b.pow(10)
-
-// Bitwise operations
 val shifted = a.shiftLeft(16)
-val masked = a.and(b)
-
-// Number theory
-val gcd = a.gcd(b)
 val modPow = a.modPow(b, bigIntegerOf(1000000007L))
-val isPrime = b.isProbablePrime(20)
 
-// Conversions
-val bytes = a.toByteArray()
-val hex = a.toString(16)
-val restored = BigInteger(bytes)
+val price = bigDecimalOf("19.99")
+val taxRate = bigDecimalOf("0.20")
+val quantity = 3.toBigDecimal()
 
-// Ranges
-for (i in bigIntegerOf(0L)..bigIntegerOf(10L)) {
-    println(i)
-}
+val subtotal = price.multiply(quantity)
+val total = (subtotal + subtotal * taxRate).setScale(2, RoundingMode.HALF_UP)
+val unscaled = total.toBigInteger()
 ```
 
 ## Performance
@@ -422,6 +407,8 @@ of the public `BigDecimal` surface that `bignum-kt` covers.
 
 ## API overview
 
+### BigInteger
+
 **Constructors** - `BigInteger(String)`, `BigInteger(String, radix)`, `BigInteger(ByteArray)`,
 `BigInteger(ByteArray, off, len)`
 
@@ -439,7 +426,30 @@ of the public `BigDecimal` surface that `bignum-kt` covers.
 
 **Comparison** - `compareTo`, `min`, `max`, `equals`, `hashCode`
 
-**Factory** - `bigIntegerOf(String)`, `bigIntegerOf(Long)`, `bigIntegerOf(Int)`
+**Factory and extensions** - `bigIntegerOf(String)`, `bigIntegerOf(Long)`, `bigIntegerOf(Int)`, `String.toBigInteger()`,
+`Long.toBigInteger()`, `Int.toBigInteger()`
+
+### BigDecimal
+
+**Constructors** - `BigDecimal(String)`, `BigDecimal(BigInteger)`, `BigDecimal(BigInteger, scale)`
+
+**Arithmetic** - `add`, `subtract`, `multiply`, `divide`, `remainder`, `divideAndRemainder`, `divideToIntegralValue`,
+`abs`, `negate`, `plus`, `pow`, `sqrt`, `ulp`
+
+**Operators** - `+`, `-`, `*`, `/`, `%`, unary `-`, unary `+`
+
+**Scale and precision** - `scale`, `precision`, `setScale`, `movePointLeft`, `movePointRight`, `scaleByPowerOfTen`,
+`stripTrailingZeros`, `round`, `MathContext`, `RoundingMode`
+
+**Conversions** - `toBigInteger`, `toBigIntegerExact`, `toInt`, `toLong`, `toFloat`, `toDouble`, `toString`,
+`toPlainString`, `toEngineeringString`
+
+**Comparison** - `compareTo`, `min`, `max`, `equals`, `hashCode`, `signum`
+
+**Factory and extensions** - `bigDecimalOf(String)`, `bigDecimalOf(BigInteger)`, `bigDecimalOf(BigInteger, scale)`,
+`bigDecimalOf(Long)`, `bigDecimalOf(Int)`, `bigDecimalOf(Double)`, `String.toBigDecimal()`,
+`BigInteger.toBigDecimal()`, `BigInteger.toBigDecimal(scale)`, `Long.toBigDecimal()`, `Int.toBigDecimal()`,
+`Double.toBigDecimal()`
 
 ## Testing
 
