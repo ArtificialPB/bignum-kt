@@ -8,6 +8,7 @@ import io.kotest.matchers.doubles.shouldBeExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import io.github.artificialpb.bignum.toBigInteger as bignumToBigInteger
 
 // -- Helper to construct expected BigInteger values --
 
@@ -182,6 +183,12 @@ class BigIntegerConstructionTest : FunSpec({
         bigIntegerOf("10") shouldBe bi("10")
         bigIntegerOf("100") shouldBe bi("100")
         bigIntegerOf("12345678901234567890") shouldBe bi("12345678901234567890")
+    }
+
+    test("factory extensions") {
+        "12345678901234567890".bignumToBigInteger() shouldBe bi("12345678901234567890")
+        42.bignumToBigInteger() shouldBe bi("42")
+        42L.bignumToBigInteger() shouldBe bi("42")
     }
 })
 

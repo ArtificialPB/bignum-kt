@@ -259,6 +259,7 @@ object DifferentialFixtureGenerator {
         when (this@randomArgsArb) {
             DifferentialOperation.CONSTRUCTOR_STRING,
             DifferentialOperation.FACTORY_OF_STRING,
+            DifferentialOperation.FACTORY_EXTENSION_STRING,
             -> listOf(constructorStringArgArb.next(rs = rs))
 
             DifferentialOperation.CONSTRUCTOR_STRING_RADIX ->
@@ -276,10 +277,14 @@ object DifferentialFixtureGenerator {
             DifferentialOperation.CONSTANT_TEN,
             -> emptyList()
 
-            DifferentialOperation.FACTORY_OF_LONG ->
+            DifferentialOperation.FACTORY_OF_LONG,
+            DifferentialOperation.FACTORY_EXTENSION_LONG,
+            ->
                 listOf(longArgArb.next(rs = rs))
 
-            DifferentialOperation.FACTORY_OF_INT ->
+            DifferentialOperation.FACTORY_OF_INT,
+            DifferentialOperation.FACTORY_EXTENSION_INT,
+            ->
                 listOf(intArgArb.next(rs = rs))
 
             DifferentialOperation.ADD,
@@ -407,14 +412,17 @@ object DifferentialFixtureGenerator {
 
         decimalConstructorLiterals().take(18).forEach { literal ->
             builder.add(DifferentialOperation.FACTORY_OF_STRING, StringArg(literal))
+            builder.add(DifferentialOperation.FACTORY_EXTENSION_STRING, StringArg(literal))
         }
 
         longFactoryValues().forEach { value ->
             builder.add(DifferentialOperation.FACTORY_OF_LONG, LongArg(value))
+            builder.add(DifferentialOperation.FACTORY_EXTENSION_LONG, LongArg(value))
         }
 
         intFactoryValues().forEach { value ->
             builder.add(DifferentialOperation.FACTORY_OF_INT, IntArg(value))
+            builder.add(DifferentialOperation.FACTORY_EXTENSION_INT, IntArg(value))
         }
     }
 

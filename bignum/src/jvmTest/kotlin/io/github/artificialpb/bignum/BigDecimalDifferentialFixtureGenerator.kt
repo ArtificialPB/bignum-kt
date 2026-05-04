@@ -40,6 +40,23 @@ object BigDecimalDifferentialFixtureGenerator {
     )
     private val invalidDecimalStrings = listOf("", "+", "-", ".", "1_", "1e", "NaN", "Infinity", "0x10", " 1", "1 ")
     private val bigIntegerStrings = listOf("0", "1", "-1", "10", "-10", "12345678901234567890", "-99999999999999999999")
+    private val factoryDoubleValues = listOf(
+        Double.NEGATIVE_INFINITY,
+        -Double.MAX_VALUE,
+        -1.0e100,
+        -1000.0,
+        -1.25,
+        -0.0,
+        0.0,
+        Double.MIN_VALUE,
+        1.0e-3,
+        1.25,
+        1000.0,
+        1.0e100,
+        Double.MAX_VALUE,
+        Double.POSITIVE_INFINITY,
+        Double.NaN,
+    )
     private val scaleValues = listOf(Int.MIN_VALUE, -1000, -100, -10, -1, 0, 1, 2, 5, 10, 100, 1000, Int.MAX_VALUE)
     private val mathContextPrecisionValues = listOf(Int.MIN_VALUE, -1000, -1, 0, 1, 2, 4, 16, 34, 1000, Int.MAX_VALUE)
     private val divisionScaleValues = listOf(-100, -10, -1, 0, 1, 2, 5, 10, 100)
@@ -121,6 +138,7 @@ object BigDecimalDifferentialFixtureGenerator {
         validDecimalStrings.forEach { decimal ->
             builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_STRING, StringArg2(decimal))
             builder.add(BigDecimalDifferentialOperation.FACTORY_OF_STRING, StringArg2(decimal))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING, StringArg2(decimal))
             builder.add(BigDecimalDifferentialOperation.ABS, BigDecArg(decimal))
             builder.add(BigDecimalDifferentialOperation.NEGATE, BigDecArg(decimal))
             builder.add(BigDecimalDifferentialOperation.PLUS, BigDecArg(decimal))
@@ -331,6 +349,7 @@ object BigDecimalDifferentialFixtureGenerator {
         multiLimbDecimalStrings.forEach { decimal ->
             builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_STRING, StringArg2(decimal))
             builder.add(BigDecimalDifferentialOperation.FACTORY_OF_STRING, StringArg2(decimal))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING, StringArg2(decimal))
             builder.add(BigDecimalDifferentialOperation.ABS, BigDecArg(decimal))
             builder.add(BigDecimalDifferentialOperation.NEGATE, BigDecArg(decimal))
             builder.add(BigDecimalDifferentialOperation.PLUS, BigDecArg(decimal))
@@ -363,14 +382,17 @@ object BigDecimalDifferentialFixtureGenerator {
         invalidDecimalStrings.forEach { decimal ->
             builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_STRING, StringArg2(decimal))
             builder.add(BigDecimalDifferentialOperation.FACTORY_OF_STRING, StringArg2(decimal))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING, StringArg2(decimal))
         }
 
         bigIntegerStrings.forEach { integer ->
             builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT, BigIntArg2(integer))
             builder.add(BigDecimalDifferentialOperation.FACTORY_OF_BIGINT, BigIntArg2(integer))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT, BigIntArg2(integer))
             scaleValues.forEach { scale ->
                 builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT_SCALE, BigIntArg2(integer), IntArg2(scale))
                 builder.add(BigDecimalDifferentialOperation.FACTORY_OF_BIGINT_SCALE, BigIntArg2(integer), IntArg2(scale))
+                builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT_SCALE, BigIntArg2(integer), IntArg2(scale))
             }
         }
 
@@ -405,10 +427,16 @@ object BigDecimalDifferentialFixtureGenerator {
         listOf(Long.MIN_VALUE, -10L, -1L, 0L, 1L, 10L, Long.MAX_VALUE).forEach { value ->
             builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_LONG, LongArg2(value))
             builder.add(BigDecimalDifferentialOperation.FACTORY_OF_LONG, LongArg2(value))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_LONG, LongArg2(value))
         }
         listOf(Int.MIN_VALUE, -10, -1, 0, 1, 10, Int.MAX_VALUE).forEach { value ->
             builder.add(BigDecimalDifferentialOperation.CONSTRUCTOR_INT, IntArg2(value))
             builder.add(BigDecimalDifferentialOperation.FACTORY_OF_INT, IntArg2(value))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_INT, IntArg2(value))
+        }
+        factoryDoubleValues.forEach { value ->
+            builder.add(BigDecimalDifferentialOperation.FACTORY_OF_DOUBLE, DoubleArg2(value))
+            builder.add(BigDecimalDifferentialOperation.FACTORY_EXTENSION_DOUBLE, DoubleArg2(value))
         }
 
         validDecimalStrings.forEach { left ->
@@ -522,14 +550,17 @@ object BigDecimalDifferentialFixtureGenerator {
         return when (operation) {
             BigDecimalDifferentialOperation.CONSTRUCTOR_STRING,
             BigDecimalDifferentialOperation.FACTORY_OF_STRING,
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING,
             -> listOf(StringArg2(randomDecimalString(random, validOnly = random.nextBoolean())))
 
             BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT,
             BigDecimalDifferentialOperation.FACTORY_OF_BIGINT,
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT,
             -> listOf(BigIntArg2(randomBigInteger(random)))
 
             BigDecimalDifferentialOperation.CONSTRUCTOR_BIGINT_SCALE,
             BigDecimalDifferentialOperation.FACTORY_OF_BIGINT_SCALE,
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT_SCALE,
             -> listOf(BigIntArg2(randomBigInteger(random)), IntArg2(randomScale(random)))
 
             BigDecimalDifferentialOperation.MATH_CONTEXT_CONSTRUCTOR_PRECISION ->
@@ -562,6 +593,16 @@ object BigDecimalDifferentialFixtureGenerator {
                 listOf(LongArg2(random.nextLong()))
 
             BigDecimalDifferentialOperation.FACTORY_OF_INT ->
+                listOf(IntArg2(random.nextInt()))
+
+            BigDecimalDifferentialOperation.FACTORY_OF_DOUBLE,
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_DOUBLE,
+            -> listOf(DoubleArg2(randomFactoryDouble(random)))
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_LONG ->
+                listOf(LongArg2(random.nextLong()))
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_INT ->
                 listOf(IntArg2(random.nextInt()))
 
             BigDecimalDifferentialOperation.ADD,
@@ -697,6 +738,14 @@ object BigDecimalDifferentialFixtureGenerator {
     private fun randomBigInteger(random: Random): String {
         val sign = if (random.nextBoolean()) "-" else ""
         return sign + randomDigits(random, 1 + random.nextInt(24))
+    }
+
+    private fun randomFactoryDouble(random: Random): Double = when (random.nextInt(8)) {
+        0 -> factoryDoubleValues[random.nextInt(factoryDoubleValues.size)]
+        1 -> Double.fromBits(random.nextLong())
+        2 -> random.nextDouble(-1.0e6, 1.0e6)
+        3 -> random.nextDouble(-1.0e100, 1.0e100)
+        else -> random.nextDouble(-1.0e12, 1.0e12)
     }
 
     private fun randomDigits(random: Random, length: Int): String {

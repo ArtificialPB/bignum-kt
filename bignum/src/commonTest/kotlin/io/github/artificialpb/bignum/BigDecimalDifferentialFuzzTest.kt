@@ -24,9 +24,16 @@ class BigDecimalConstructionFuzzTest : FunSpec({
 
 class BigDecimalFactoryFuzzTest : FunSpec({
     BigDecimalDifferentialGroup.FACTORY.let { group ->
-        BigDecimalDifferentialOperation.entries.filter { it.group == group }.forEach(::addBigDecimalDifferentialOperation)
+        BigDecimalDifferentialOperation.entries
+            .filter { it.group == group }
+            .filter { verifiesJvmBigDecimalDoubleFactoryCorpus || !it.isDoubleFactoryOperation }
+            .forEach(::addBigDecimalDifferentialOperation)
     }
 })
+
+private val BigDecimalDifferentialOperation.isDoubleFactoryOperation: Boolean
+    get() = this == BigDecimalDifferentialOperation.FACTORY_OF_DOUBLE ||
+        this == BigDecimalDifferentialOperation.FACTORY_EXTENSION_DOUBLE
 
 class BigDecimalArithmeticFuzzTest : FunSpec({
     BigDecimalDifferentialGroup.ARITHMETIC.let { group ->

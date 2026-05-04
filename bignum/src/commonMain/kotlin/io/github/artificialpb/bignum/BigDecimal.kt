@@ -92,6 +92,17 @@ expect fun bigDecimalOf(value: BigInteger): BigDecimal
 expect fun bigDecimalOf(value: BigInteger, scale: Int): BigDecimal
 expect fun bigDecimalOf(value: Long): BigDecimal
 expect fun bigDecimalOf(value: Int): BigDecimal
+expect fun bigDecimalOf(value: Double): BigDecimal
+
+fun String.toBigDecimal(): BigDecimal = bigDecimalOf(this)
+
+fun BigInteger.toBigDecimal(scale: Int = 0): BigDecimal = bigDecimalOf(this, scale)
+
+fun Long.toBigDecimal(): BigDecimal = bigDecimalOf(this)
+
+fun Int.toBigDecimal(): BigDecimal = bigDecimalOf(this)
+
+fun Double.toBigDecimal(): BigDecimal = bigDecimalOf(this)
 
 operator fun BigDecimal.plus(other: BigDecimal): BigDecimal = add(other)
 operator fun BigDecimal.minus(other: BigDecimal): BigDecimal = subtract(other)

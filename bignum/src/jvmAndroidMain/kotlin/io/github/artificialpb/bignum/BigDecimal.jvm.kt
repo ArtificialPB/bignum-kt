@@ -38,6 +38,8 @@ actual fun bigDecimalOf(value: Int): BigDecimal = when (value) {
     else -> java.math.BigDecimal.valueOf(value.toLong())
 }
 
+actual fun bigDecimalOf(value: Double): BigDecimal = java.math.BigDecimal.valueOf(value)
+
 actual fun BigDecimal.toInt(): Int = (this as Number).toInt()
 
 actual fun BigDecimal.toLong(): Long = (this as Number).toLong()

@@ -10,6 +10,7 @@ import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.longs.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.github.artificialpb.bignum.toBigDecimal as bignumToBigDecimal
 
 private fun bd(value: String) = BigDecimal(value)
 private fun bi(value: String) = BigInteger(value)
@@ -95,6 +96,18 @@ class BigDecimalConstructionTest : FunSpec({
         test("primitive factories") {
             bigDecimalOf(42).toString() shouldBe "42"
             bigDecimalOf(42L).toString() shouldBe "42"
+            bigDecimalOf(1.25).toString() shouldBe "1.25"
+            bigDecimalOf(1.0e3).toString() shouldBe "1000.0"
+            bigDecimalOf(0.1).toString() shouldBe "0.1"
+        }
+
+        test("factory extensions") {
+            "1.25".bignumToBigDecimal().toString() shouldBe "1.25"
+            bi("12345").bignumToBigDecimal().toString() shouldBe "12345"
+            bi("12345").bignumToBigDecimal(3).toString() shouldBe "12.345"
+            42.bignumToBigDecimal().toString() shouldBe "42"
+            42L.bignumToBigDecimal().toString() shouldBe "42"
+            1.25.bignumToBigDecimal().toString() shouldBe "1.25"
         }
     }
 

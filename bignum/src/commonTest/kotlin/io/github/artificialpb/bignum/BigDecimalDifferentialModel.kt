@@ -10,6 +10,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import io.github.artificialpb.bignum.toBigDecimal as bignumToBigDecimal
 
 enum class BigDecimalDifferentialGroup {
     CONSTRUCTION,
@@ -93,6 +94,13 @@ enum class BigDecimalDifferentialOperation {
     MATH_CONTEXT_GET_ROUNDING_MODE,
     MATH_CONTEXT_TO_STRING,
     MATH_CONTEXT_EQUALS,
+    FACTORY_OF_DOUBLE,
+    FACTORY_EXTENSION_STRING,
+    FACTORY_EXTENSION_BIGINT,
+    FACTORY_EXTENSION_BIGINT_SCALE,
+    FACTORY_EXTENSION_LONG,
+    FACTORY_EXTENSION_INT,
+    FACTORY_EXTENSION_DOUBLE,
 }
 
 val BigDecimalDifferentialOperation.group: BigDecimalDifferentialGroup
@@ -116,6 +124,13 @@ val BigDecimalDifferentialOperation.group: BigDecimalDifferentialGroup
         BigDecimalDifferentialOperation.FACTORY_OF_BIGINT_SCALE,
         BigDecimalDifferentialOperation.FACTORY_OF_LONG,
         BigDecimalDifferentialOperation.FACTORY_OF_INT,
+        BigDecimalDifferentialOperation.FACTORY_OF_DOUBLE,
+        BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING,
+        BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT,
+        BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT_SCALE,
+        BigDecimalDifferentialOperation.FACTORY_EXTENSION_LONG,
+        BigDecimalDifferentialOperation.FACTORY_EXTENSION_INT,
+        BigDecimalDifferentialOperation.FACTORY_EXTENSION_DOUBLE,
         -> BigDecimalDifferentialGroup.FACTORY
 
         BigDecimalDifferentialOperation.ADD,
@@ -191,6 +206,7 @@ data class BigDecArg(val decimal: String) : BigDecimalDifferentialArg
 data class BigIntArg2(val decimal: String) : BigDecimalDifferentialArg
 data class IntArg2(val value: Int) : BigDecimalDifferentialArg
 data class LongArg2(val value: Long) : BigDecimalDifferentialArg
+data class DoubleArg2(val value: Double) : BigDecimalDifferentialArg
 data class StringArg2(val value: String) : BigDecimalDifferentialArg
 data class RoundingModeArg(val value: String) : BigDecimalDifferentialArg
 data class MathContextArg(val value: String) : BigDecimalDifferentialArg
@@ -297,6 +313,11 @@ object BigDecimalDifferentialFixtureJsonCodec {
         is BigIntArg2 -> jsonType("big_integer", "decimal", decimal)
         is IntArg2 -> jsonType("int", "value", value)
         is LongArg2 -> jsonType("long", "value", value)
+        is DoubleArg2 -> buildJsonObject {
+            put("type", JsonPrimitive("double"))
+            put("value", JsonPrimitive(value.toString()))
+            put("bits", JsonPrimitive(value.toRawBits().toString()))
+        }
         is StringArg2 -> jsonType("string", "value", value)
         is RoundingModeArg -> jsonType("rounding_mode", "value", value)
         is MathContextArg -> jsonType("math_context", "value", value)
@@ -340,6 +361,7 @@ object BigDecimalDifferentialFixtureJsonCodec {
         "big_integer" -> BigIntArg2(requireString("decimal"))
         "int" -> IntArg2(requireInt("value"))
         "long" -> LongArg2(requireLong("value"))
+        "double" -> DoubleArg2(this["bits"]?.jsonPrimitive?.content?.toLong()?.let(Double::fromBits) ?: requireDouble("value"))
         "string" -> StringArg2(requireString("value"))
         "rounding_mode" -> RoundingModeArg(requireString("value"))
         "math_context" -> MathContextArg(requireString("value"))
@@ -365,12 +387,15 @@ object BigDecimalDifferentialFixtureJsonCodec {
     private fun JsonObject.requireString(name: String): String = requireNotNull(this[name]).jsonPrimitive.content
     private fun JsonObject.requireInt(name: String): Int = requireString(name).toInt()
     private fun JsonObject.requireLong(name: String): Long = requireString(name).toLong()
+    private fun JsonObject.requireDouble(name: String): Double = requireString(name).toDouble()
     private fun JsonObject.requireBoolean(name: String): Boolean = requireString(name).toBooleanStrict()
 }
 
 expect object BigDecimalDifferentialFixtureTextLoader {
     fun load(operation: BigDecimalDifferentialOperation): String
 }
+
+expect val verifiesJvmBigDecimalDoubleFactoryCorpus: Boolean
 
 object BigDecimalDifferentialFixtureRepository {
     private val cache = mutableMapOf<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>>()
@@ -442,6 +467,27 @@ object BigDecimalDifferentialExecutor {
 
             BigDecimalDifferentialOperation.FACTORY_OF_INT ->
                 normalizeBigDecimal(bigDecimalOf(args.int(0)))
+
+            BigDecimalDifferentialOperation.FACTORY_OF_DOUBLE ->
+                normalizeBigDecimal(bigDecimalOf(args.double(0)))
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING ->
+                normalizeBigDecimal(args.string(0).bignumToBigDecimal())
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT ->
+                normalizeBigDecimal(args.bigInt(0).bignumToBigDecimal())
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_BIGINT_SCALE ->
+                normalizeBigDecimal(args.bigInt(0).bignumToBigDecimal(args.int(1)))
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_LONG ->
+                normalizeBigDecimal(args.long(0).bignumToBigDecimal())
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_INT ->
+                normalizeBigDecimal(args.int(0).bignumToBigDecimal())
+
+            BigDecimalDifferentialOperation.FACTORY_EXTENSION_DOUBLE ->
+                normalizeBigDecimal(args.double(0).bignumToBigDecimal())
 
             BigDecimalDifferentialOperation.ADD ->
                 normalizeBigDecimal(args.bigDec(0) + args.bigDec(1))
@@ -620,7 +666,10 @@ object BigDecimalDifferentialExecutor {
         throwable: Throwable,
     ): FailureKind2 = when {
         operation == BigDecimalDifferentialOperation.CONSTRUCTOR_STRING ||
-            operation == BigDecimalDifferentialOperation.FACTORY_OF_STRING ->
+            operation == BigDecimalDifferentialOperation.FACTORY_OF_STRING ||
+            operation == BigDecimalDifferentialOperation.FACTORY_OF_DOUBLE ||
+            operation == BigDecimalDifferentialOperation.FACTORY_EXTENSION_STRING ||
+            operation == BigDecimalDifferentialOperation.FACTORY_EXTENSION_DOUBLE ->
             FailureKind2.INVALID_FORMAT
 
         operation in setOf(
@@ -819,6 +868,11 @@ private fun List<BigDecimalDifferentialArg>.int(index: Int): Int = when (val arg
 private fun List<BigDecimalDifferentialArg>.long(index: Int): Long = when (val arg = get(index)) {
     is LongArg2 -> arg.value
     else -> error("Expected LongArg2 at $index, found ${arg::class.simpleName}")
+}
+
+private fun List<BigDecimalDifferentialArg>.double(index: Int): Double = when (val arg = get(index)) {
+    is DoubleArg2 -> arg.value
+    else -> error("Expected DoubleArg2 at $index, found ${arg::class.simpleName}")
 }
 
 private fun List<BigDecimalDifferentialArg>.string(index: Int): String = when (val arg = get(index)) {

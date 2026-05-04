@@ -804,6 +804,8 @@ actual fun bigDecimalOf(value: Int): BigDecimal = when (value) {
     else -> BigDecimal(value)
 }
 
+actual fun bigDecimalOf(value: Double): BigDecimal = BigDecimal(value.toString())
+
 private data class PowerOfTenDivision(
     val quotient: BigInteger,
     val remainder: BigInteger,

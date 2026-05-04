@@ -2,6 +2,8 @@ package io.github.artificialpb.bignum
 
 import java.io.File
 
+actual val verifiesJvmBigDecimalDoubleFactoryCorpus: Boolean = true
+
 actual object BigDecimalDifferentialFixtureTextLoader {
     actual fun load(operation: BigDecimalDifferentialOperation): String {
         val directory = System.getProperty("bignum.bigdecimal.differential.fixtureDir")

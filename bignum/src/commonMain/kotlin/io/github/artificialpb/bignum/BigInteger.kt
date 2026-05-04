@@ -65,6 +65,12 @@ expect fun bigIntegerOf(value: String): BigInteger
 expect fun bigIntegerOf(value: Long): BigInteger
 expect fun bigIntegerOf(value: Int): BigInteger
 
+fun String.toBigInteger(): BigInteger = bigIntegerOf(this)
+
+fun Long.toBigInteger(): BigInteger = bigIntegerOf(this)
+
+fun Int.toBigInteger(): BigInteger = bigIntegerOf(this)
+
 // Operators
 operator fun BigInteger.plus(other: BigInteger): BigInteger = add(other)
 operator fun BigInteger.minus(other: BigInteger): BigInteger = subtract(other)

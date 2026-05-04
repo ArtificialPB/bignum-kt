@@ -10,6 +10,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import io.github.artificialpb.bignum.toBigInteger as bignumToBigInteger
 
 enum class DifferentialGroup {
     CONSTRUCTION,
@@ -82,6 +83,9 @@ enum class DifferentialOperation {
     HASH_CODE,
     RANGE_TO_LIST,
     FACTORY_OF_INT,
+    FACTORY_EXTENSION_STRING,
+    FACTORY_EXTENSION_LONG,
+    FACTORY_EXTENSION_INT,
 }
 
 val DifferentialOperation.group: DifferentialGroup
@@ -99,6 +103,9 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.FACTORY_OF_STRING,
         DifferentialOperation.FACTORY_OF_LONG,
         DifferentialOperation.FACTORY_OF_INT,
+        DifferentialOperation.FACTORY_EXTENSION_STRING,
+        DifferentialOperation.FACTORY_EXTENSION_LONG,
+        DifferentialOperation.FACTORY_EXTENSION_INT,
         -> DifferentialGroup.FACTORY
 
         DifferentialOperation.ADD,
@@ -477,6 +484,15 @@ object DifferentialExecutor {
             DifferentialOperation.FACTORY_OF_INT ->
                 normalizeBigInt(bigIntegerOf(args.int(0)))
 
+            DifferentialOperation.FACTORY_EXTENSION_STRING ->
+                normalizeBigInt(args.string(0).bignumToBigInteger())
+
+            DifferentialOperation.FACTORY_EXTENSION_LONG ->
+                normalizeBigInt(args.long(0).bignumToBigInteger())
+
+            DifferentialOperation.FACTORY_EXTENSION_INT ->
+                normalizeBigInt(args.int(0).bignumToBigInteger())
+
             DifferentialOperation.ADD ->
                 normalizeBigInt(args.bigInt(0) + args.bigInt(1))
 
@@ -647,6 +663,7 @@ object DifferentialExecutor {
             DifferentialOperation.CONSTRUCTOR_BYTES,
             DifferentialOperation.CONSTRUCTOR_BYTES_SLICE,
             DifferentialOperation.FACTORY_OF_STRING,
+            DifferentialOperation.FACTORY_EXTENSION_STRING,
         ) -> FailureKind.INVALID_FORMAT
 
         operation in setOf(
