@@ -1,0 +1,61 @@
+name: Scheduled Full Test Suite
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: scheduled-full-test-suite
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Full Test Suite
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: ./.github/actions/environment-setup
+
+      - name: Resolve differential seed
+        id: differential-seed
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          seed="0x$(openssl rand -hex 8)"
+          echo "seed=${seed}" >> "${GITHUB_OUTPUT}"
+
+          {
+            echo "### Differential Seed"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Seed | \`${seed}\` |"
+            echo "| Source | random-per-run |"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Run full test suite
+        env:
+          BIGNUM_DIFFERENTIAL_SEED: ${{ steps.differential-seed.outputs.seed }}
+        run: >-
+          ./gradlew
+          :bignum:generateDifferentialFixtures
+          :bignum:generateBigDecimalDifferentialFixtures
+          allTests
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: report-full-test-suite
+          path: |
+            bignum/build/reports/tests
+            bignum/build/test-results
