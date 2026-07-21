@@ -5,7 +5,7 @@ actual typealias BigInteger = java.math.BigInteger
 // Cached constants
 private val ZERO = java.math.BigInteger.ZERO
 private val ONE = java.math.BigInteger.ONE
-private val TWO = java.math.BigInteger.TWO
+private val TWO = java.math.BigInteger.valueOf(2)
 private val TEN = java.math.BigInteger.TEN
 private val HUNDRED = java.math.BigInteger.valueOf(100)
 
