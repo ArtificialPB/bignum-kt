@@ -12,6 +12,13 @@ import kotlin.random.Random
 import java.math.BigInteger as JavaBigInteger
 
 object DifferentialFixtureGenerator {
+    private data class SignMagnitudeSliceLiteral(
+        val signum: Int,
+        val magnitude: List<Int>,
+        val off: Int,
+        val len: Int,
+    )
+
     private const val OUTPUT_DIR = "src/commonTest/resources/differential"
     private const val RANDOM_CASES_PER_OPERATION = 2_500
     private const val MAX_RANDOM_GENERATION_ATTEMPTS = RANDOM_CASES_PER_OPERATION * 32
@@ -271,6 +278,12 @@ object DifferentialFixtureGenerator {
             DifferentialOperation.CONSTRUCTOR_BYTES_SLICE ->
                 randomByteSliceArgs(rs)
 
+            DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE ->
+                listOf(IntArg(randomSignum(rs)), byteListArgArb.next(rs = rs))
+
+            DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE ->
+                listOf(IntArg(randomSignum(rs))) + randomByteSliceArgs(rs)
+
             DifferentialOperation.CONSTANT_ZERO,
             DifferentialOperation.CONSTANT_ONE,
             DifferentialOperation.CONSTANT_TWO,
@@ -398,6 +411,24 @@ object DifferentialFixtureGenerator {
             builder.add(
                 DifferentialOperation.CONSTRUCTOR_BYTES_SLICE,
                 ByteListArg(bytes),
+                IntArg(off),
+                IntArg(len),
+            )
+        }
+
+        signMagnitudeConstructorLiterals().forEach { (signum, magnitude) ->
+            builder.add(
+                DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE,
+                IntArg(signum),
+                ByteListArg(magnitude),
+            )
+        }
+
+        signMagnitudeSliceConstructorLiterals().forEach { (signum, magnitude, off, len) ->
+            builder.add(
+                DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE,
+                IntArg(signum),
+                ByteListArg(magnitude),
                 IntArg(off),
                 IntArg(len),
             )
@@ -626,6 +657,11 @@ object DifferentialFixtureGenerator {
         }
 
         return listOf(ByteListArg(bytes), IntArg(offset), IntArg(length))
+    }
+
+    private fun randomSignum(rs: RandomSource): Int = when (nextChoice(rs, 5)) {
+        0, 1, 2, 3 -> listOf(-2, -1, 0, 1, 2).pick(rs)
+        else -> Arb.int().next(rs = rs)
     }
 
     private fun randomLongValue(rs: RandomSource): Long = when (nextChoice(rs, 6)) {
@@ -1044,6 +1080,32 @@ object DifferentialFixtureGenerator {
             add(Triple(bytes, off, len))
         }
     }
+
+    private fun signMagnitudeConstructorLiterals(): List<Pair<Int, List<Int>>> = buildList {
+        listOf(-1, 0, 1).forEach { signum ->
+            byteListEdgeValues.forEach { magnitude ->
+                add(signum to magnitude)
+            }
+        }
+        add(-2 to emptyList())
+        add(2 to listOf(1))
+        add(Int.MIN_VALUE to listOf(0))
+        add(Int.MAX_VALUE to listOf(1))
+    }
+
+    private fun signMagnitudeSliceConstructorLiterals(): List<SignMagnitudeSliceLiteral> = listOf(
+        SignMagnitudeSliceLiteral(1, listOf(127, 0, -128, 1, 127), 1, 3),
+        SignMagnitudeSliceLiteral(-1, listOf(127, 0, -128, 1, 127), 1, 3),
+        SignMagnitudeSliceLiteral(0, listOf(1, 0, 0), 1, 2),
+        SignMagnitudeSliceLiteral(0, listOf(1, 0, 0), 0, 1),
+        SignMagnitudeSliceLiteral(1, emptyList(), 0, 0),
+        SignMagnitudeSliceLiteral(-1, listOf(1, 2, 3), 3, 0),
+        SignMagnitudeSliceLiteral(2, listOf(1, 2, 3), 0, 1),
+        SignMagnitudeSliceLiteral(1, listOf(1, 2, 3), -1, 1),
+        SignMagnitudeSliceLiteral(1, listOf(1, 2, 3), 0, -1),
+        SignMagnitudeSliceLiteral(1, listOf(1, 2, 3), 2, 2),
+        SignMagnitudeSliceLiteral(Int.MIN_VALUE, emptyList(), 1, 1),
+    )
 
     private fun longFactoryValues(): List<Long> = buildList {
         addAll(

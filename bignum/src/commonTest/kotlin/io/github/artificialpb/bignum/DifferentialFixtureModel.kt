@@ -28,6 +28,8 @@ enum class DifferentialOperation {
     CONSTRUCTOR_STRING_RADIX,
     CONSTRUCTOR_BYTES,
     CONSTRUCTOR_BYTES_SLICE,
+    CONSTRUCTOR_SIGN_MAGNITUDE,
+    CONSTRUCTOR_SIGN_MAGNITUDE_SLICE,
     CONSTANT_ZERO,
     CONSTANT_ONE,
     CONSTANT_TWO,
@@ -94,6 +96,8 @@ val DifferentialOperation.group: DifferentialGroup
         DifferentialOperation.CONSTRUCTOR_STRING_RADIX,
         DifferentialOperation.CONSTRUCTOR_BYTES,
         DifferentialOperation.CONSTRUCTOR_BYTES_SLICE,
+        DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE,
+        DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE,
         -> DifferentialGroup.CONSTRUCTION
 
         DifferentialOperation.CONSTANT_ZERO,
@@ -213,6 +217,8 @@ enum class FailureKind {
     INVALID_FORMAT,
     INVALID_RADIX,
     INVALID_SLICE,
+    INVALID_SIGNUM,
+    SIGNUM_MAGNITUDE_MISMATCH,
     DIVIDE_BY_ZERO,
     NON_POSITIVE_MODULUS,
     NEGATIVE_EXPONENT,
@@ -463,6 +469,12 @@ object DifferentialExecutor {
             DifferentialOperation.CONSTRUCTOR_BYTES_SLICE ->
                 normalizeBigInt(BigInteger(args.byteArray(0), args.int(1), args.int(2)))
 
+            DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE ->
+                normalizeBigInt(BigInteger(args.int(0), args.byteArray(1)))
+
+            DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE ->
+                normalizeBigInt(BigInteger(args.int(0), args.byteArray(1), args.int(2), args.int(3)))
+
             DifferentialOperation.CONSTANT_ZERO ->
                 normalizeBigInt(bigIntegerOf(0L))
 
@@ -657,6 +669,18 @@ object DifferentialExecutor {
         operation == DifferentialOperation.CONSTRUCTOR_BYTES_SLICE &&
             !isValidSlice(args.bytes(0).size, args.int(1), args.int(2)) -> FailureKind.INVALID_SLICE
 
+        operation in signMagnitudeOperations && args.int(0) !in -1..1 -> FailureKind.INVALID_SIGNUM
+
+        operation == DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE &&
+            !isValidSlice(args.bytes(1).size, args.int(2), args.int(3)) -> FailureKind.INVALID_SLICE
+
+        operation == DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE &&
+            args.int(0) == 0 && args.bytes(1).any { it != 0 } -> FailureKind.SIGNUM_MAGNITUDE_MISMATCH
+
+        operation == DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE &&
+            args.int(0) == 0 && args.bytes(1).subList(args.int(2), args.int(2) + args.int(3)).any { it != 0 } ->
+            FailureKind.SIGNUM_MAGNITUDE_MISMATCH
+
         operation in setOf(
             DifferentialOperation.CONSTRUCTOR_STRING,
             DifferentialOperation.CONSTRUCTOR_STRING_RADIX,
@@ -711,6 +735,11 @@ object DifferentialExecutor {
             DifferentialOperation.MOD_INVERSE -> 1
             else -> error("No modulus argument for $this")
         }
+
+    private val signMagnitudeOperations = setOf(
+        DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE,
+        DifferentialOperation.CONSTRUCTOR_SIGN_MAGNITUDE_SLICE,
+    )
 
     private fun isValidSlice(size: Int, off: Int, len: Int): Boolean = off >= 0 && len >= 0 && off <= size && len <= size - off
 }

@@ -79,6 +79,24 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         }
     }
 
+    actual constructor(signum: Int, magnitude: ByteArray) : this(signum, magnitude, 0, magnitude.size)
+
+    actual constructor(signum: Int, magnitude: ByteArray, off: Int, len: Int) : this() {
+        if (signum !in -1..1) {
+            throw NumberFormatException("Invalid signum value")
+        }
+        if (off < 0 || len < 0 || off.toLong() + len.toLong() > magnitude.size) {
+            throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${magnitude.size}")
+        }
+
+        constructPositiveBigEndian(magnitude, off, off + len) { magnitudeSign, size, limbs ->
+            if (magnitudeSign != 0 && signum == 0) {
+                throw NumberFormatException("signum-magnitude mismatch")
+            }
+            initialize(if (magnitudeSign == 0) 0 else signum, size, limbs)
+        }
+    }
+
     private fun initialize(sign: Int, size: Int, limbs: ULongArray) {
         require(sign in -1..1) { "Invalid signum: $sign" }
         require(size in 0..limbs.size) { "Invalid magnitude size: $size for capacity ${limbs.size}" }
