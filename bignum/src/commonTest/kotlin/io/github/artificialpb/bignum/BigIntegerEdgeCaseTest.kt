@@ -497,6 +497,33 @@ class ErrorHandlingTest : FunSpec({
         }
     }
 
+    test("constructor(signum, magnitude) validates signum") {
+        shouldThrow<NumberFormatException> { BigInteger(-2, byteArrayOf()) }.message shouldBe "Invalid signum value"
+        shouldThrow<NumberFormatException> { BigInteger(2, byteArrayOf(1)) }.message shouldBe "Invalid signum value"
+    }
+
+    test("constructor(signum, magnitude) rejects zero signum for a non-zero magnitude") {
+        shouldThrow<NumberFormatException> {
+            BigInteger(0, byteArrayOf(0, 1))
+        }.message shouldBe "signum-magnitude mismatch"
+    }
+
+    test("constructor(signum, magnitude, off, len) validates bounds") {
+        val magnitude = byteArrayOf(1, 2, 3)
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(1, magnitude, -1, 1) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(1, magnitude, 0, -1) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(1, magnitude, 2, 2) }
+        shouldThrow<IndexOutOfBoundsException> { BigInteger(1, magnitude, Int.MAX_VALUE, Int.MAX_VALUE) }
+    }
+
+    test("constructor(signum, magnitude, off, len) applies validation to the selected range") {
+        val magnitude = byteArrayOf(1, 0, 0)
+        BigInteger(0, magnitude, 1, 2) shouldBe bigIntegerOf(0)
+        shouldThrow<NumberFormatException> {
+            BigInteger(0, magnitude, 0, 1)
+        }.message shouldBe "signum-magnitude mismatch"
+    }
+
     test("malformed leading plus throws NumberFormatException with JVM-matching message") {
         shouldThrow<NumberFormatException> { BigInteger("+") }.message shouldBe "Zero length BigInteger"
         shouldThrow<NumberFormatException> { BigInteger("+-1") }.message shouldBe "Illegal embedded sign character"

@@ -169,6 +169,35 @@ class BigIntegerConstructionTest : FunSpec({
         }
     }
 
+    context("from signum and magnitude") {
+        withData(
+            Triple(1, listOf(0x01), "1"),
+            Triple(-1, listOf(0x01), "-1"),
+            Triple(1, listOf(0xFF), "255"),
+            Triple(-1, listOf(0xFF), "-255"),
+            Triple(1, listOf(0x00, 0x80), "128"),
+            Triple(-1, listOf(0x00, 0x80), "-128"),
+            Triple(1, listOf(0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00), "18446744073709551616"),
+        ) { (signum, magnitude, expected) ->
+            BigInteger(signum, magnitude.map(Int::toByte).toByteArray()) shouldBe bi(expected)
+        }
+    }
+
+    test("zero magnitude ignores a valid signum") {
+        for (signum in -1..1) {
+            BigInteger(signum, byteArrayOf()) shouldBe bi("0")
+            BigInteger(signum, byteArrayOf(0, 0, 0)) shouldBe bi("0")
+        }
+    }
+
+    test("signum and magnitude slice constructor uses only the selected range") {
+        val magnitude = byteArrayOf(0x7F, 0x00, 0x80.toByte(), 0x01, 0x7F)
+        BigInteger(1, magnitude, 1, 3) shouldBe bi("32769")
+        BigInteger(-1, magnitude, 1, 3) shouldBe bi("-32769")
+        BigInteger(1, magnitude, 2, 0) shouldBe bi("0")
+        BigInteger(-1, magnitude, magnitude.size, 0) shouldBe bi("0")
+    }
+
     test("constants") {
         bigIntegerOf(0L) shouldBe bi("0")
         bigIntegerOf(1L) shouldBe bi("1")

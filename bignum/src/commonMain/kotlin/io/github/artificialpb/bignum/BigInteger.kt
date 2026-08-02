@@ -5,6 +5,8 @@ expect class BigInteger : Comparable<BigInteger> {
     constructor(value: String, radix: Int)
     constructor(bytes: ByteArray)
     constructor(bytes: ByteArray, off: Int, len: Int)
+    constructor(signum: Int, magnitude: ByteArray)
+    constructor(signum: Int, magnitude: ByteArray, off: Int, len: Int)
 
     // Arithmetic
     fun add(other: BigInteger): BigInteger
