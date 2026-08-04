@@ -216,6 +216,8 @@ class BigIntegerConstructionTest : FunSpec({
 
     test("factory extensions") {
         "12345678901234567890".bignumToBigInteger() shouldBe bi("12345678901234567890")
+        "ff".bignumToBigInteger(16) shouldBe bi("255")
+        "-111".bignumToBigInteger(2) shouldBe bi("-7")
         42.bignumToBigInteger() shouldBe bi("42")
         42L.bignumToBigInteger() shouldBe bi("42")
     }
@@ -335,6 +337,7 @@ class BigIntegerArithmeticTest : FunSpec({
             UnaryOpCase("999999999999999999", "-999999999999999999"),
         ) { (input, expected) ->
             (-bi(input)) shouldBe bi(expected)
+            bi(input).negate() shouldBe bi(expected)
         }
     }
 

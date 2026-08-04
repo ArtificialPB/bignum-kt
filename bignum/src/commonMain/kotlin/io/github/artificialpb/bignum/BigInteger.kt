@@ -1,5 +1,10 @@
 package io.github.artificialpb.bignum
 
+/**
+ * Platform implementations should also implement [Number] for parity with `java.math.BigInteger`.
+ * [Number] is not declared as a common supertype because Kotlin cannot actualize that hierarchy
+ * through the JVM `java.math.BigInteger` typealias.
+ */
 expect class BigInteger : Comparable<BigInteger> {
     constructor(value: String)
     constructor(value: String, radix: Int)
@@ -14,6 +19,7 @@ expect class BigInteger : Comparable<BigInteger> {
     fun multiply(other: BigInteger): BigInteger
     fun divide(other: BigInteger): BigInteger
     fun abs(): BigInteger
+    fun negate(): BigInteger
     fun pow(exponent: Int): BigInteger
     fun mod(modulus: BigInteger): BigInteger
     fun modPow(exponent: BigInteger, modulus: BigInteger): BigInteger
@@ -68,6 +74,8 @@ expect fun bigIntegerOf(value: Long): BigInteger
 expect fun bigIntegerOf(value: Int): BigInteger
 
 fun String.toBigInteger(): BigInteger = bigIntegerOf(this)
+
+fun String.toBigInteger(radix: Int): BigInteger = BigInteger(this, radix)
 
 fun Long.toBigInteger(): BigInteger = bigIntegerOf(this)
 

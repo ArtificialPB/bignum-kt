@@ -26,6 +26,11 @@ val MathContext.precision: Int
 val MathContext.roundingMode: RoundingMode
     get() = getRoundingMode()
 
+/**
+ * Platform implementations should also implement [Number] for parity with `java.math.BigDecimal`.
+ * [Number] is not declared as a common supertype because Kotlin cannot actualize that hierarchy
+ * through the JVM `java.math.BigDecimal` typealias.
+ */
 expect class BigDecimal : Comparable<BigDecimal> {
     constructor(value: String)
     constructor(value: BigInteger)

@@ -72,7 +72,7 @@ actual class MathContext {
     override fun toString(): String = "precision=$precision roundingMode=$roundingMode"
 }
 
-actual class BigDecimal private constructor() : Comparable<BigDecimal> {
+actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal> {
     private var unscaled: BigInteger = ZERO
     private var scaleValue: Int = 0
     private var precisionCache: Int = 0
@@ -104,6 +104,18 @@ actual class BigDecimal private constructor() : Comparable<BigDecimal> {
     internal constructor(unscaled: BigInteger, scale: Int, trusted: Boolean) : this() {
         initialize(unscaled, scale, trusted)
     }
+
+    override fun toByte(): Byte = toInt().toByte()
+
+    override fun toShort(): Short = toInt().toShort()
+
+    override fun toInt(): Int = toBigInteger().toInt()
+
+    override fun toLong(): Long = toBigInteger().toLong()
+
+    override fun toFloat(): Float = toString().toFloat()
+
+    override fun toDouble(): Double = toString().toDouble()
 
     private fun initialize(unscaled: BigInteger, scale: Int, trusted: Boolean) {
         this.unscaled = unscaled

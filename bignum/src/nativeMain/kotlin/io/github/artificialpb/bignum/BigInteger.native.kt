@@ -5,7 +5,7 @@ package io.github.artificialpb.bignum
 import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
 
-actual class BigInteger private constructor() : Comparable<BigInteger> {
+actual class BigInteger private constructor() : Number(), Comparable<BigInteger> {
     private var sign: Int = Int.MIN_VALUE
     internal var size: Int = Int.MIN_VALUE
         private set
@@ -182,6 +182,8 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
     }
 
     actual fun abs(): BigInteger = if (sign >= 0) this else BigInteger(1, size, limbs)
+
+    actual fun negate(): BigInteger = if (sign == 0) this else BigInteger(-sign, size, limbs)
 
     actual fun pow(exponent: Int): BigInteger {
         when {
@@ -574,13 +576,17 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         }
     }
 
-    actual fun toInt(): Int {
+    override fun toByte(): Byte = toInt().toByte()
+
+    override fun toShort(): Short = toInt().toShort()
+
+    actual override fun toInt(): Int {
         if (sign == 0) return 0
         val lowBits = limbs[0].toUInt()
         return if (sign > 0) lowBits.toInt() else (0u - lowBits).toInt()
     }
 
-    actual fun toLong(): Long {
+    actual override fun toLong(): Long {
         if (sign == 0) return 0L
         val lowBits = if (size == 0) 0UL else {
             val upperNibble = if (size > 1) limbs[1] and (UNSIGNED_LONG_UPPER_LIMB_EXCLUSIVE - 1UL) else 0UL
@@ -589,7 +595,9 @@ actual class BigInteger private constructor() : Comparable<BigInteger> {
         return if (sign > 0) lowBits.toLong() else (0UL - lowBits).toLong()
     }
 
-    actual fun toDouble(): Double = toString().toDouble()
+    override fun toFloat(): Float = toString().toFloat()
+
+    actual override fun toDouble(): Double = toString().toDouble()
 
     actual fun signum(): Int = sign
 
@@ -699,7 +707,7 @@ actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     }
 }
 
-actual operator fun BigInteger.unaryMinus(): BigInteger = if (signum() == 0) this else BigInteger(-signum(), size, limbs)
+actual operator fun BigInteger.unaryMinus(): BigInteger = negate()
 
 // inc/dec
 
