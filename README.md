@@ -412,7 +412,7 @@ of the public `BigDecimal` surface that `bignum-kt` covers.
 **Constructors** - `BigInteger(String)`, `BigInteger(String, radix)`, `BigInteger(ByteArray)`,
 `BigInteger(ByteArray, off, len)`
 
-**Arithmetic** - `add`, `subtract`, `multiply`, `divide`, `mod`, `divideAndRemainder`, `abs`, `pow`, `gcd`, `lcm`,
+**Arithmetic** - `add`, `subtract`, `multiply`, `divide`, `mod`, `divideAndRemainder`, `abs`, `negate`, `pow`, `gcd`, `lcm`,
 `sqrt`, `modPow`, `modInverse`
 
 **Operators** - `+`, `-`, `*`, `/`, `%`, unary `-`, `++`, `--`, `..`
@@ -427,7 +427,7 @@ of the public `BigDecimal` surface that `bignum-kt` covers.
 **Comparison** - `compareTo`, `min`, `max`, `equals`, `hashCode`
 
 **Factory and extensions** - `bigIntegerOf(String)`, `bigIntegerOf(Long)`, `bigIntegerOf(Int)`, `String.toBigInteger()`,
-`Long.toBigInteger()`, `Int.toBigInteger()`
+`String.toBigInteger(radix)`, `Long.toBigInteger()`, `Int.toBigInteger()`
 
 ### BigDecimal
 
