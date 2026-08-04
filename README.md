@@ -33,7 +33,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("io.github.artificialpb:bignum:1.0.4")
+                implementation("io.github.artificialpb:bignum:1.0.5")
             }
         }
     }
@@ -44,7 +44,7 @@ For JVM or Android-only projects, add the same dependency in the regular `depend
 
 ```kotlin
 dependencies {
-    implementation("io.github.artificialpb:bignum:1.0.4")
+    implementation("io.github.artificialpb:bignum:1.0.5")
 }
 ```
 
@@ -56,7 +56,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.artificialpb:bignum:1.0.5-SNAPSHOT")
+    implementation("io.github.artificialpb:bignum:1.0.6-SNAPSHOT")
 }
 ```
 

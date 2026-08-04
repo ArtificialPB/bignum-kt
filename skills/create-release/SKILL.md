@@ -39,14 +39,18 @@ Use this workflow to publish a new bignum-kt version through GitHub Actions. The
 
 4. Confirm the next snapshot version, usually the next patch such as `1.0.2-SNAPSHOT`. The next snapshot can be inferred from the explicit release version unless the user gives a different next snapshot.
 
-5. Set the release version in `gradle.properties`:
+5. Set the release version in `gradle.properties` and update stable dependency examples in `README.md` to the same version:
    ```properties
    VERSION_NAME=1.0.1
    ```
 
-6. Commit only `gradle.properties`:
+   ```kotlin
+   implementation("io.github.artificialpb:bignum:1.0.1")
+   ```
+
+6. Commit only `gradle.properties` and `README.md`:
    ```bash
-   git add gradle.properties
+   git add gradle.properties README.md
    git commit -m "chore: release 1.0.1"
    ```
 
@@ -55,14 +59,18 @@ Use this workflow to publish a new bignum-kt version through GitHub Actions. The
    git tag v1.0.1
    ```
 
-8. Set the next snapshot version in `gradle.properties`:
+8. Set the next snapshot version in `gradle.properties` and update the snapshot dependency example in `README.md`:
    ```properties
    VERSION_NAME=1.0.2-SNAPSHOT
    ```
 
-9. Commit only `gradle.properties` again:
+   ```kotlin
+   implementation("io.github.artificialpb:bignum:1.0.2-SNAPSHOT")
+   ```
+
+9. Commit only `gradle.properties` and `README.md` again:
    ```bash
-   git add gradle.properties
+   git add gradle.properties README.md
    git commit -m "chore: start 1.0.2 snapshot"
    ```
 
@@ -91,6 +99,7 @@ Use this workflow to publish a new bignum-kt version through GitHub Actions. The
 ## Guardrails
 
 - Do not include unrelated worktree files in the release commits.
+- Keep stable and snapshot dependency examples in `README.md` aligned with the release and next snapshot versions.
 - Do not push the release commit to `master` by itself unless the user explicitly wants the branch workflow to publish a non-snapshot version.
 - Never infer the release version. The user must provide it explicitly.
 - If `git tag`, `git push`, `git ls-remote`, or `gh run list` needs elevated/network permissions, request approval with the narrow command prefix.
