@@ -764,12 +764,12 @@ internal val BORROWED_ZERO_LIMBS = ULongArray(1)
 
 // Cached constants
 
-internal val ZERO = BigInteger(0, 0, EMPTY_LIMBS)
-internal val ONE = newBigIntegerFromLong(1L)
+internal actual val ZERO = BigInteger(0, 0, EMPTY_LIMBS)
+internal actual val ONE = newBigIntegerFromLong(1L)
 private val TWO = newBigIntegerFromLong(2L)
 private val TEN = newBigIntegerFromLong(10L)
 private val HUNDRED = newBigIntegerFromLong(100L)
-internal val MINUS_ONE = bigIntegerOf(-1L)
+internal actual val MINUS_ONE = bigIntegerOf(-1L)
 
 // Factory functions
 
@@ -782,7 +782,7 @@ actual fun bigIntegerOf(value: String): BigInteger = when (value) {
     else -> BigInteger(value)
 }
 
-internal fun parseDecimalBigIntegerSkippingIndex(
+internal actual fun parseDecimalBigIntegerSkippingIndex(
     value: String,
     digitsStart: Int,
     digitsEnd: Int,
@@ -1492,7 +1492,7 @@ internal fun bigIntegerFromLimbs(sign: Int, size: Int, limbs: ULongArray): BigIn
     return BigInteger(sign, normalizedSize, limbs)
 }
 
-internal fun compareMagnitudes(left: BigInteger, right: BigInteger): Int {
+internal actual fun compareMagnitudes(left: BigInteger, right: BigInteger): Int {
     if (left.size != right.size) return left.size.compareTo(right.size)
     for (index in left.size - 1 downTo 0) {
         val leftDigit = left.limbs[index]

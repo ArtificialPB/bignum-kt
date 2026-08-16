@@ -97,6 +97,8 @@ jobs:
           ktlintKotlinScriptCheck
           :bignum:ktlintCommonMainSourceSetCheck
           :bignum:ktlintCommonTestSourceSetCheck
+          :bignum:ktlintJsMainSourceSetCheck
+          :bignum:ktlintJsTestSourceSetCheck
           :bignum:ktlintJvmMainSourceSetCheck
           :bignum:ktlintJvmTestSourceSetCheck
           :benchmarks:ktlintKotlinScriptCheck
@@ -141,6 +143,39 @@ jobs:
         with:
           name: report-jvm-coverage
           path: bignum/build/reports/kover
+
+  test-js:
+    name: Test (JavaScript / Node.js)
+    needs: resolve-differential-seed
+    runs-on: ubuntu-latest
+    env:
+      BIGNUM_DIFFERENTIAL_SEED: ${{ needs.resolve-differential-seed.outputs.seed }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: ./.github/actions/environment-setup
+
+      - name: Generate fixtures and run JavaScript tests
+        run: >-
+          ./gradlew
+          :bignum:generateDifferentialFixtures
+          :bignum:generateBigDecimalDifferentialFixtures
+          :bignum:jsNodeTest
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: report-js-test
+          path: |
+            bignum/build/reports/tests/jsNodeTest
+            bignum/build/test-results/jsNodeTest
 
   test-native:
     name: Test (macOS ARM64)

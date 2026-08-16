@@ -432,18 +432,26 @@ object DifferentialFixtureJsonCodec {
 }
 
 expect object DifferentialFixtureTextLoader {
+    val retainsCases: Boolean
+
     fun load(operation: DifferentialOperation): String
 }
 
 object DifferentialFixtureRepository {
     private val cache = mutableMapOf<DifferentialOperation, List<DifferentialCase>>()
 
-    fun loadCases(operation: DifferentialOperation): List<DifferentialCase> = cache.getOrPut(operation) {
+    fun loadCases(operation: DifferentialOperation): List<DifferentialCase> = if (DifferentialFixtureTextLoader.retainsCases) {
+        cache.getOrPut(operation) { decodeCases(operation) }
+    } else {
+        decodeCases(operation)
+    }
+
+    private fun decodeCases(operation: DifferentialOperation): List<DifferentialCase> {
         val decoded = DifferentialFixtureJsonCodec.decode(DifferentialFixtureTextLoader.load(operation))
         require(decoded.operation == operation) {
             "Loaded ${decoded.operation} from ${operation.fixtureFileName}"
         }
-        decoded.cases
+        return decoded.cases
     }
 
     fun loadAll(): Map<DifferentialOperation, List<DifferentialCase>> = DifferentialOperation.entries.associateWith(::loadCases)

@@ -54,6 +54,9 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     jvm()
+    js {
+        nodejs()
+    }
     macosArm64()
     iosArm64()
     iosX64()
@@ -84,6 +87,7 @@ allOpen {
 benchmark {
     targets {
         register("jvm")
+        register("js")
         register("macosArm64")
     }
 
@@ -148,6 +152,7 @@ tasks.register("compileAllBenchmarks") {
     description = "Compiles benchmark sources for every multiplatform benchmark target."
     dependsOn(
         "compileKotlinJvm",
+        "compileKotlinJs",
         "compileKotlinMacosArm64",
         "compileKotlinIosArm64",
         "compileKotlinIosX64",

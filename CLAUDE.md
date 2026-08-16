@@ -4,9 +4,11 @@ Kotlin Multiplatform library providing a common BigInteger abstraction that dele
 
 ## Architecture
 
-- **commonMain**: Defines the common `BigInteger` API using `expect` declarations
-- **jvmMain**: `actual typealias BigInteger = java.math.BigInteger` — zero-overhead delegation to the JVM standard library
-- **nativeMain**: LibTomMath-backed `BigInteger` implementation via `cinterop` for Kotlin/Native (macOS, iOS)
+- **commonMain**: Defines the common `BigInteger` and `BigDecimal` APIs using `expect` declarations
+- **jvmAndroidMain**: Zero-overhead typealiases to `java.math.BigInteger` and `java.math.BigDecimal`
+- **nonJvmMain**: Shared pure Kotlin `BigDecimal` implementation and JVM-compatible `Double` conversion
+- **jsMain**: ECMAScript `BigInt` implementation and JavaScript-specific decimal backend hooks
+- **nativeMain**: Hybrid Kotlin and LibTomMath-backed `BigInteger` plus optimized native decimal backend hooks
 
 ## Project Structure
 
@@ -17,9 +19,12 @@ bignum-kt/
 │   ├── src/
 │   │   ├── commonMain/        # expect declarations + common API
 │   │   ├── commonTest/        # shared tests
-│   │   ├── jvmMain/           # typealias to java.math.BigInteger
+│   │   ├── jvmAndroidMain/    # typealiases to java.math big-number types
 │   │   ├── jvmTest/
-│   │   ├── nativeMain/        # LibTomMath cinterop implementation
+│   │   ├── nonJvmMain/        # shared BigDecimal implementation
+│   │   ├── jsMain/            # ECMAScript BigInt + decimal backend
+│   │   ├── jsTest/
+│   │   ├── nativeMain/        # LibTomMath cinterop + decimal backend
 │   │   └── nativeTest/
 │   └── build.gradle.kts
 ├── build.gradle.kts           # Root build file
@@ -42,15 +47,20 @@ bignum-kt/
 # Native only (LibTomMath built from submodule automatically)
 ./gradlew macosArm64Test
 
+# JavaScript only (Node.js)
+./gradlew jsNodeTest
+
 # Compile benchmark sources for every benchmark target
 ./gradlew :benchmarks:compileAllBenchmarks
 
 # Run benchmark smoke profiles
 ./gradlew :benchmarks:jvmSmokeBenchmark
+./gradlew :benchmarks:jsSmokeBenchmark
 ./gradlew :benchmarks:macosArm64SmokeBenchmark
 
 # Run full benchmark profiles
 ./gradlew :benchmarks:jvmBenchmark
+./gradlew :benchmarks:jsBenchmark
 ./gradlew :benchmarks:macosArm64Benchmark
 
 # Run only one benchmark suite/file during optimization work
@@ -65,7 +75,7 @@ bignum-kt/
 
 - Benchmarks live in the `:benchmarks` module and are implemented in `benchmarks/src/commonMain`
 - The benchmark module depends on `:bignum`, so shared benchmark code is compiled against every library target
-- Runnable benchmark targets are `jvm` and `macosArm64`
+- Runnable benchmark targets are `jvm`, `js`, and `macosArm64`
 - iOS benchmark targets are compile-checked via `:benchmarks:compileAllBenchmarks`, but not executed as part of the benchmark plugin task set on this host
 - Each benchmark file has dedicated Gradle configurations/tasks: `arithmetic`, `bitwise`, `comparison`, `construction`, `conversion`, `numberTheory`, and `range`, each with both full and `Smoke` variants
 

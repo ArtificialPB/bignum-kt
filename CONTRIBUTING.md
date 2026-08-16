@@ -13,7 +13,7 @@
   brew install openjdk@17    # Homebrew
   ```
 
-No other dependencies are needed. LibTomMath (the native math library) is included as a git submodule and compiled from source during the build.
+Node.js is used for JavaScript tests and is provisioned by the Kotlin Gradle plugin. LibTomMath (the native math library) is included as a git submodule and compiled from source during the build.
 
 ## Getting Started
 
@@ -26,7 +26,7 @@ cd bignum-kt
 git submodule update --init --recursive
 
 # Build and test
-./gradlew jvmTest macosArm64Test
+./gradlew jvmTest jsNodeTest macosArm64Test
 ```
 
 ## Project Structure
@@ -38,6 +38,7 @@ bignum-kt/
 │   │   ├── commonMain/                  # expect class BigInteger + operators
 │   │   ├── commonTest/                  # Shared test suite
 │   │   ├── jvmAndroidMain/              # shared actuals for JVM + Android
+│   │   ├── jsMain/                      # ECMAScript BigInt-backed actuals
 │   │   ├── nativeMain/                  # actual class backed by LibTomMath
 │   │   └── nativeInterop/
 │   │       ├── cinterop/tommath.def     # cinterop definition
@@ -54,6 +55,7 @@ bignum-kt/
 ./gradlew ktlintCheck              # Kotlin + Gradle Kotlin DSL lint
 ./gradlew ktlintFormat             # Apply ktlint formatting
 ./gradlew jvmTest                 # JVM tests only
+./gradlew jsNodeTest              # JavaScript tests under Node.js
 ./gradlew macosArm64Test          # Native tests (macOS ARM64)
 ./gradlew allTests                # All platform tests
 ./gradlew build                   # Full build (all targets)
@@ -87,20 +89,25 @@ Zero-overhead: our `BigInteger` IS `java.math.BigInteger` on JVM. This means:
 - Operators and extra functions are top-level `expect`/`actual` extension functions
 - Factory functions are top-level: `bigIntegerOf(String)`, `bigIntegerOf(Long)`, `bigIntegerOf(Int)`
 
-### Native — LibTomMath via cinterop
+### Native — Kotlin hot paths and LibTomMath via cinterop
 
-The `actual class BigInteger` wraps LibTomMath's `mp_int`. LibTomMath is compiled from source (git submodule) during the Gradle build for each target architecture.
+The native `actual class BigInteger` stores a Kotlin-owned magnitude, uses Kotlin hot paths for common operations, and delegates selected large or specialized operations to LibTomMath. LibTomMath is compiled from source during the build for each target architecture.
 
 Supported native targets: macOS ARM64, iOS ARM64, iOS x64, iOS Simulator ARM64.
+
+### JavaScript — ECMAScript `BigInt`
+
+The JS `actual class BigInteger` wraps the host's native arbitrary-precision `BigInt`. `BigDecimal` is implemented in Kotlin as an unscaled `BigInteger` plus an `Int` scale. Run the shared suite with `./gradlew jsNodeTest`.
 
 ### Adding a new method
 
 1. Check that `java.math.BigInteger` has the method (otherwise it must be an extension function)
 2. Add the declaration to `commonMain/.../BigInteger.kt`
 3. JVM/Android: the shared `jvmAndroidMain` typealias implementation picks it up automatically (for class body members) or implement the `actual` extension there
-4. Native: implement using LibTomMath functions in `nativeMain/.../BigInteger.native.kt`
-5. Add tests in `commonTest/.../BigIntegerTest.kt`
-6. Run `./gradlew jvmTest macosArm64Test` to verify both platforms
+4. JS: implement using ECMAScript `BigInt` in `jsMain/.../BigInteger.js.kt`
+5. Native: implement using Kotlin hot paths or LibTomMath in `nativeMain/.../BigInteger.native.kt`
+6. Add tests in `commonTest/.../BigIntegerTest.kt`
+7. Run `./gradlew jvmTest jsNodeTest macosArm64Test` to verify all backends
 
 ## Conventions
 

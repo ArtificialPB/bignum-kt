@@ -22,7 +22,7 @@ import platform.posix.getcwd
 import platform.posix.getenv
 import platform.posix.rewind
 
-actual val verifiesJvmBigDecimalDoubleFactoryCorpus: Boolean = false
+actual val verifiesJvmBigDecimalDoubleFactoryCorpus: Boolean = true
 
 actual object BigDecimalDifferentialFixtureTextLoader {
     @OptIn(ExperimentalForeignApi::class)

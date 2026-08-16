@@ -400,10 +400,16 @@ expect val verifiesJvmBigDecimalDoubleFactoryCorpus: Boolean
 object BigDecimalDifferentialFixtureRepository {
     private val cache = mutableMapOf<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>>()
 
-    fun loadCases(operation: BigDecimalDifferentialOperation): List<BigDecimalDifferentialCase> = cache.getOrPut(operation) {
+    fun loadCases(operation: BigDecimalDifferentialOperation): List<BigDecimalDifferentialCase> = if (DifferentialFixtureTextLoader.retainsCases) {
+        cache.getOrPut(operation) { decodeCases(operation) }
+    } else {
+        decodeCases(operation)
+    }
+
+    private fun decodeCases(operation: BigDecimalDifferentialOperation): List<BigDecimalDifferentialCase> {
         val decoded = BigDecimalDifferentialFixtureJsonCodec.decode(BigDecimalDifferentialFixtureTextLoader.load(operation))
         require(decoded.operation == operation) { "Loaded ${decoded.operation} from ${operation.fixtureFileName}" }
-        decoded.cases
+        return decoded.cases
     }
 
     fun loadAll(): Map<BigDecimalDifferentialOperation, List<BigDecimalDifferentialCase>> = BigDecimalDifferentialOperation.entries.associateWith(::loadCases)

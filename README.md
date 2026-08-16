@@ -1,11 +1,12 @@
 # bignum-kt
 
-High-performance Kotlin Multiplatform `BigInteger` and `BigDecimal` for JVM, Android, and Apple native targets.
+High-performance Kotlin Multiplatform `BigInteger` and `BigDecimal` for JVM, Android, JavaScript, and Apple native targets.
 
 On JVM and Android, `BigInteger` and `BigDecimal` are zero-overhead typealiases to `java.math.BigInteger` and
-`java.math.BigDecimal`. On Apple native targets, `BigInteger` uses pure Kotlin hot paths plus LibTomMath for larger or
-specialized work, and `BigDecimal` is implemented in Kotlin on top of the shared API. The library is zero-dependency
-except for LibTomMath on native targets.
+`java.math.BigDecimal`. JavaScript and Apple native targets share a pure Kotlin `BigDecimal` implementation. On
+JavaScript, `BigInteger` uses the host's native ECMAScript `BigInt`; on Apple native targets, it uses pure Kotlin hot
+paths plus LibTomMath for larger or specialized work. The library is zero-dependency except for LibTomMath on native
+targets.
 
 ## Supported platforms
 
@@ -13,6 +14,7 @@ except for LibTomMath on native targets.
 |-------------------|------------------------------------------------------------------------|
 | JVM               | `java.math.BigInteger` and `java.math.BigDecimal` typealiases          |
 | Android (API 21+) | `java.math.BigInteger` and `java.math.BigDecimal` typealiases          |
+| JavaScript        | ECMAScript `BigInt`; pure Kotlin `BigDecimal`                         |
 | macOS ARM64       | Pure Kotlin `BigDecimal`; hybrid Kotlin + LibTomMath `BigInteger`      |
 | iOS ARM64         | Pure Kotlin `BigDecimal`; hybrid Kotlin + LibTomMath `BigInteger`      |
 
@@ -457,16 +459,16 @@ The library is tested at several levels:
 
 - Data-driven tests validate operations against known inputs and expected outputs.
 - Property-based tests verify algebraic laws and invariants with generated values.
-- Differential fuzz tests generate a JVM fixture corpus and replay it on native targets to catch semantic drift.
+- Differential fuzz tests generate a JVM fixture corpus and replay it on JS and native targets to catch semantic drift.
 - Edge-case tests cover sign handling, negative bitwise behavior, and boundary conditions.
 
-Tests live in `commonTest`, so the same cases run across JVM, Android, and Apple native targets.
+Tests live in `commonTest`, so the same cases run across JVM, Android, JavaScript, and Apple native targets.
 
 Coverage reports are generated with Kover for the JVM target, which means `commonMain` and `jvmAndroidMain` code exercised by JVM tests is reported. Apple native tests still run via the normal test tasks, but Kotlin-native coverage is not collected by the current JetBrains coverage tooling.
 
 ## Build, test, and benchmark
 
-Requires JDK 17+. Xcode is required for Apple targets. The Android SDK is required if you build the Android artifact.
+Requires JDK 17+. The Kotlin Gradle plugin provisions Node.js for JS tests. Xcode is required for Apple targets, and the Android SDK is required if you build the Android artifact.
 
 ```bash
 # Build everything
@@ -481,6 +483,7 @@ Requires JDK 17+. Xcode is required for Apple targets. The Android SDK is requir
 
 # Library tests only
 ./gradlew :bignum:jvmTest
+./gradlew :bignum:jsNodeTest
 ./gradlew :bignum:macosArm64Test
 
 # Generate JVM/common coverage reports
@@ -562,8 +565,10 @@ bignum-kt/
 │   └── src/
 │       ├── commonMain/        # expect declarations + common API
 │       ├── commonTest/        # shared tests and differential fixtures
-│       ├── jvmMain/           # actual typealias to java.math.BigInteger
-│       ├── nativeMain/        # hybrid Kotlin + LibTomMath native implementation
+│       ├── jvmAndroidMain/    # typealiases to java.math big-number types
+│       ├── nonJvmMain/        # shared pure Kotlin BigDecimal implementation
+│       ├── jsMain/            # ECMAScript BigInt + decimal backend
+│       ├── nativeMain/        # hybrid Kotlin + LibTomMath + decimal backend
 │       └── nativeInterop/     # LibTomMath sources and cinterop glue
 ├── benchmarks/
 │   └── src/

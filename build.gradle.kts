@@ -29,7 +29,7 @@ allprojects {
 
 val ktlintToolVersion = libs.versions.ktlint.tool.get()
 val mavenGroupId = group.toString()
-val pomDescription = "High-performance Kotlin Multiplatform BigInteger library with JVM semantics across JVM, Android, and Apple native."
+val pomDescription = "High-performance Kotlin Multiplatform BigInteger library with JVM semantics across JVM, Android, JavaScript, and Apple native."
 val githubRepoUrl = "https://github.com/ArtificialPB/bignum-kt"
 
 fun Project.configureKtlint() {
@@ -112,6 +112,7 @@ jreleaser {
             "bignum-iosarm64",
             "bignum-iossimulatorarm64",
             "bignum-iosx64",
+            "bignum-js",
             "bignum-macosarm64",
         ).forEach { id ->
             artifactOverride {

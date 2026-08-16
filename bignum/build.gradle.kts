@@ -55,6 +55,9 @@ kotlin {
     androidTarget {
         publishLibraryVariants("release")
     }
+    js {
+        nodejs()
+    }
 
     macosArm64()
     iosArm64()
@@ -100,12 +103,20 @@ kotlin {
             dependsOn(commonMain)
         }
 
+        val nonJvmMain by creating {
+            dependsOn(commonMain)
+        }
+
         val jvmMain by getting {
             dependsOn(jvmAndroidMain)
         }
 
         val androidMain by getting {
             dependsOn(jvmAndroidMain)
+        }
+
+        val jsMain by getting {
+            dependsOn(nonJvmMain)
         }
 
         val jvmTest by getting {
@@ -115,6 +126,7 @@ kotlin {
         }
 
         val nativeMain by getting {
+            dependsOn(nonJvmMain)
             dependencies {
             }
         }
@@ -131,7 +143,7 @@ val configurePublishingRepositories: Action<RepositoryHandler> = Action {
 
 val configurePom = Action<MavenPom> {
     name.set("bignum-kt")
-    description.set("High-performance Kotlin Multiplatform BigInteger library with JVM semantics across JVM, Android, and Apple native.")
+    description.set("High-performance Kotlin Multiplatform BigInteger library with JVM semantics across JVM, Android, JavaScript, and Apple native.")
     url.set(githubRepoUrl)
 
     licenses {

@@ -23,6 +23,8 @@ import platform.posix.getenv
 import platform.posix.rewind
 
 actual object DifferentialFixtureTextLoader {
+    actual val retainsCases: Boolean = true
+
     @OptIn(ExperimentalForeignApi::class)
     actual fun load(operation: DifferentialOperation): String {
         val fileName = operation.fixtureFileName

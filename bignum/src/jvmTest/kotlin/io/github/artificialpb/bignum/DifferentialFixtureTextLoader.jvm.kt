@@ -3,6 +3,8 @@ package io.github.artificialpb.bignum
 import java.io.File
 
 actual object DifferentialFixtureTextLoader {
+    actual val retainsCases: Boolean = true
+
     actual fun load(operation: DifferentialOperation): String {
         val directory = System.getProperty("bignum.differential.fixtureDir")
         if (directory != null) {
