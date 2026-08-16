@@ -1,26 +1,26 @@
 package io.github.artificialpb.bignum
 
+/** Compile-time marker for the primitive ECMAScript BigInt; erased by Kotlin/JS. */
+internal external interface JsBigInt
+
 /** Kotlin/JS implementation backed by the host's arbitrary-precision ECMAScript BigInt. */
 actual class BigInteger internal constructor(
-    internal val raw: dynamic,
-    @Suppress("UNUSED_PARAMETER") trusted: Boolean,
+    internal val raw: JsBigInt,
 ) : Number(), Comparable<BigInteger> {
-    actual constructor(value: String) : this(parseBigInteger(value, 10), true)
+    actual constructor(value: String) : this(parseBigInteger(value, 10))
 
-    actual constructor(value: String, radix: Int) : this(parseBigInteger(value, radix), true)
+    actual constructor(value: String, radix: Int) : this(parseBigInteger(value, radix))
 
-    actual constructor(bytes: ByteArray) : this(parseTwosComplement(bytes, 0, bytes.size), true)
+    actual constructor(bytes: ByteArray) : this(parseTwosComplement(bytes, 0, bytes.size))
 
-    actual constructor(bytes: ByteArray, off: Int, len: Int) : this(parseTwosComplement(bytes, off, len), true)
+    actual constructor(bytes: ByteArray, off: Int, len: Int) : this(parseTwosComplement(bytes, off, len))
 
     actual constructor(signum: Int, magnitude: ByteArray) : this(
         parseSignMagnitude(signum, magnitude, 0, magnitude.size),
-        true,
     )
 
     actual constructor(signum: Int, magnitude: ByteArray, off: Int, len: Int) : this(
         parseSignMagnitude(signum, magnitude, off, len),
-        true,
     )
 
     actual fun add(other: BigInteger): BigInteger = fromRaw(rawAdd(raw, other.raw))
@@ -34,9 +34,9 @@ actual class BigInteger internal constructor(
         return fromRaw(rawDivide(raw, other.raw))
     }
 
-    actual fun abs(): BigInteger = if (signum() >= 0) this else fromRaw(rawNegate(raw))
+    actual fun abs(): BigInteger = if (rawIsNegative(raw)) fromRaw(rawNegate(raw)) else this
 
-    actual fun negate(): BigInteger = if (signum() == 0) this else fromRaw(rawNegate(raw))
+    actual fun negate(): BigInteger = if (rawIsZero(raw)) this else fromRaw(rawNegate(raw))
 
     actual fun pow(exponent: Int): BigInteger {
         if (exponent < 0) throw ArithmeticException("Negative exponent")
@@ -98,7 +98,9 @@ actual class BigInteger internal constructor(
 
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {
         requireNonZero(other)
-        return arrayOf(fromRaw(rawDivide(raw, other.raw)), fromRaw(rawRemainder(raw, other.raw)))
+        val quotient = rawDivide(raw, other.raw)
+        val remainder = rawSubtract(raw, rawMultiply(quotient, other.raw))
+        return arrayOf(fromRaw(quotient), fromRaw(remainder))
     }
 
     actual fun and(other: BigInteger): BigInteger = fromRaw(rawAnd(raw, other.raw))
@@ -120,7 +122,7 @@ actual class BigInteger internal constructor(
         if (bitLength().toLong() + n.toLong() > MAX_BIT_LENGTH) {
             throw ArithmeticException("BigInteger would overflow supported range")
         }
-        return fromRaw(rawShiftLeft(raw, rawBigInt(n.toString())))
+        return fromRaw(rawShiftLeft(raw, rawBigInt(n)))
     }
 
     actual fun shiftRight(n: Int): BigInteger {
@@ -133,27 +135,27 @@ actual class BigInteger internal constructor(
         }
         if (signum() == 0 || n == 0) return this
         if (n >= bitLength() + 1) return if (signum() < 0) MINUS_ONE else ZERO
-        return fromRaw(rawShiftRight(raw, rawBigInt(n.toString())))
+        return fromRaw(rawShiftRight(raw, rawBigInt(n)))
     }
 
     actual fun testBit(n: Int): Boolean {
         requireBitIndex(n)
-        return rawEquals(rawAnd(rawShiftRight(raw, rawBigInt(n.toString())), RAW_ONE), RAW_ONE)
+        return rawEquals(rawAnd(rawShiftRight(raw, rawBigInt(n)), RAW_ONE), RAW_ONE)
     }
 
     actual fun setBit(n: Int): BigInteger {
         requireBitIndex(n)
-        return fromRaw(rawOr(raw, rawShiftLeft(RAW_ONE, rawBigInt(n.toString()))))
+        return fromRaw(rawOr(raw, rawShiftLeft(RAW_ONE, rawBigInt(n))))
     }
 
     actual fun clearBit(n: Int): BigInteger {
         requireBitIndex(n)
-        return fromRaw(rawAnd(raw, rawNot(rawShiftLeft(RAW_ONE, rawBigInt(n.toString())))))
+        return fromRaw(rawAnd(raw, rawNot(rawShiftLeft(RAW_ONE, rawBigInt(n)))))
     }
 
     actual fun flipBit(n: Int): BigInteger {
         requireBitIndex(n)
-        return fromRaw(rawXor(raw, rawShiftLeft(RAW_ONE, rawBigInt(n.toString()))))
+        return fromRaw(rawXor(raw, rawShiftLeft(RAW_ONE, rawBigInt(n))))
     }
 
     actual fun getLowestSetBit(): Int {
@@ -172,7 +174,9 @@ actual class BigInteger internal constructor(
         if (signum() == 0) return 0
         val magnitude = if (signum() < 0) rawSubtract(rawNegate(raw), RAW_ONE) else raw
         if (rawIsZero(magnitude)) return 0
-        return rawToString(magnitude, 2).length
+        val hexadecimal = rawToString(magnitude, 16)
+        val leadingDigit = hexadecimal[0].digitToInt(16)
+        return (hexadecimal.length - 1) * 4 + (Int.SIZE_BITS - leadingDigit.countLeadingZeroBits())
     }
 
     actual fun bitCount(): Int {
@@ -196,12 +200,20 @@ actual class BigInteger internal constructor(
         }
         if (!candidate.testBit(0)) return false
 
-        val rounds = primeTrialsForCertainty(certainty, candidate.bitLength())
+        val bitLength = candidate.bitLength()
+        val deterministic64Bit = bitLength <= 64
+        val rounds = if (deterministic64Bit) DETERMINISTIC_64_BIT_BASES.size else primeTrialsForCertainty(certainty, bitLength)
         val minusOne = candidate - ONE
         val powersOfTwo = minusOne.getLowestSetBit()
         val oddPart = minusOne.shiftRight(powersOfTwo)
         for (index in 0 until rounds) {
-            val base = millerRabinBase(index).mod(candidate - TWO) + TWO
+            val base = if (deterministic64Bit) {
+                val reduced = bigIntegerOf(DETERMINISTIC_64_BIT_BASES[index]).mod(candidate)
+                if (reduced.signum() == 0) continue
+                reduced
+            } else {
+                millerRabinBase(index).mod(candidate - TWO) + TWO
+            }
             var witness = base.modPow(oddPart, candidate)
             if (witness == ONE || witness == minusOne) continue
             var passed = false
@@ -230,12 +242,12 @@ actual class BigInteger internal constructor(
     }
 
     actual fun sqrt(): BigInteger {
-        if (signum() < 0) throw ArithmeticException("Negative BigInteger")
-        if (signum() == 0) return ZERO
-        var estimate = ONE.shiftLeft((bitLength() + 1) / 2)
+        if (rawIsNegative(raw)) throw ArithmeticException("Negative BigInteger")
+        if (rawIsZero(raw)) return ZERO
+        var estimate = rawShiftLeft(RAW_ONE, rawBigInt((bitLength() + 1) / 2))
         while (true) {
-            val next = (estimate + divide(estimate)).shiftRight(1)
-            if (next >= estimate) return estimate
+            val next = rawShiftRight(rawAdd(estimate, rawDivide(raw, estimate)), RAW_ONE)
+            if (!rawLessThan(next, estimate)) return fromRaw(estimate)
             estimate = next
         }
     }
@@ -244,14 +256,25 @@ actual class BigInteger internal constructor(
         if (signum() == 0) return byteArrayOf(0)
         val byteCount = bitLength() / 8 + 1
         var encoded = if (signum() < 0) {
-            rawAdd(raw, rawShiftLeft(RAW_ONE, rawBigInt((byteCount * 8).toString())))
+            rawAdd(raw, rawShiftLeft(RAW_ONE, rawBigInt(byteCount * 8)))
         } else {
             raw
         }
         return ByteArray(byteCount).also { result ->
-            for (index in result.lastIndex downTo 0) {
+            var index = result.lastIndex
+            while (index >= 3) {
+                val word = rawAsInt(encoded)
+                result[index] = word.toByte()
+                result[index - 1] = (word ushr 8).toByte()
+                result[index - 2] = (word ushr 16).toByte()
+                result[index - 3] = (word ushr 24).toByte()
+                encoded = rawShiftRight(encoded, RAW_WORD_BITS)
+                index -= 4
+            }
+            while (index >= 0) {
                 result[index] = rawLowByte(encoded).toByte()
                 encoded = rawShiftRight(encoded, RAW_EIGHT)
+                index--
             }
         }
     }
@@ -262,7 +285,11 @@ actual class BigInteger internal constructor(
 
     actual override fun toInt(): Int = rawAsInt(raw)
 
-    actual override fun toLong(): Long = rawToString(rawAsInt64(raw), 10).toLong()
+    actual override fun toLong(): Long {
+        val low = rawAsInt(raw).toLong() and 0xFFFF_FFFFL
+        val high = rawAsInt(rawShiftRight(raw, RAW_WORD_BITS)).toLong()
+        return (high shl 32) or low
+    }
 
     override fun toFloat(): Float = toString().toFloat()
 
@@ -291,18 +318,17 @@ actual class BigInteger internal constructor(
     actual override fun equals(other: Any?): Boolean = other is BigInteger && rawEquals(raw, other.raw)
 
     actual override fun hashCode(): Int {
-        if (signum() == 0) return 0
-        var magnitude = if (signum() < 0) rawNegate(raw) else raw
-        val words = mutableListOf<Int>()
+        val sign = signum()
+        if (sign == 0) return 0
+        var magnitude = if (sign < 0) rawNegate(raw) else raw
+        var multiplier = 1
+        var result = 0
         while (!rawIsZero(magnitude)) {
-            words += rawAsInt(magnitude)
+            result += rawAsInt(magnitude) * multiplier
+            multiplier *= 31
             magnitude = rawShiftRight(magnitude, RAW_WORD_BITS)
         }
-        var result = 0
-        for (index in words.indices.reversed()) {
-            result = 31 * result + words[index]
-        }
-        return result * signum()
+        return result * sign
     }
 }
 
@@ -321,7 +347,7 @@ actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
     2L -> TWO
     10L -> TEN
     100L -> HUNDRED
-    else -> fromRaw(rawBigInt(value.toString()))
+    else -> fromRaw(rawBigInt(value))
 }
 
 actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
@@ -330,7 +356,7 @@ actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
     2 -> TWO
     10 -> TEN
     100 -> HUNDRED
-    else -> fromRaw(rawBigInt(value.toString()))
+    else -> fromRaw(rawBigInt(value))
 }
 
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
@@ -358,12 +384,13 @@ private val MILLER_RABIN_BASES = intArrayOf(
     127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181,
     191, 193, 197, 199, 211, 223, 227, 229,
 )
+private val DETERMINISTIC_64_BIT_BASES = intArrayOf(2, 325, 9375, 28178, 450775, 9780504, 1795265022)
 
-private val RAW_ZERO: dynamic = rawBigInt("0")
-private val RAW_ONE: dynamic = rawBigInt("1")
-private val RAW_EIGHT: dynamic = rawBigInt("8")
-private val RAW_WORD_BITS: dynamic = rawBigInt("32")
-private val RAW_WORD_MASK: dynamic = rawBigInt("4294967295")
+private val RAW_ZERO: JsBigInt = rawBigInt("0")
+private val RAW_ONE: JsBigInt = rawBigInt("1")
+private val RAW_EIGHT: JsBigInt = rawBigInt("8")
+private val RAW_WORD_BITS: JsBigInt = rawBigInt("32")
+private val RAW_WORD_MASK: JsBigInt = rawBigInt("4294967295")
 
 internal actual val ZERO = fromRaw(RAW_ZERO)
 internal actual val ONE = fromRaw(RAW_ONE)
@@ -392,7 +419,7 @@ internal actual fun parseDecimalBigIntegerSkippingIndex(
 
 internal actual fun compareMagnitudes(left: BigInteger, right: BigInteger): Int = left.abs().compareTo(right.abs())
 
-private fun fromRaw(value: dynamic): BigInteger = BigInteger(value, true)
+private fun fromRaw(value: JsBigInt): BigInteger = BigInteger(value)
 
 private fun requireNonZero(value: BigInteger) {
     if (value.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
@@ -402,7 +429,7 @@ private fun requireBitIndex(index: Int) {
     if (index < 0) throw ArithmeticException("Negative bit address")
 }
 
-private fun parseBigInteger(value: String, radix: Int): dynamic {
+private fun parseBigInteger(value: String, radix: Int): JsBigInt {
     if (radix !in 2..36) throw NumberFormatException("Radix out of range: $radix")
     if (value.isEmpty()) throw NumberFormatException("Zero length BigInteger")
     var index = 0
@@ -423,16 +450,32 @@ private fun parseBigInteger(value: String, radix: Int): dynamic {
     }
     if (index == value.length) throw NumberFormatException("Zero length BigInteger")
 
-    val rawRadix = rawBigInt(radix.toString())
+    if (radix == 10 && value.hasOnlyAsciiDigits(index)) {
+        return rawBigInt(value)
+    }
+    if (radix == 16 && value.hasOnlyAsciiHexDigits(index)) {
+        val result = rawBigInt("0x${value.substring(index)}")
+        return if (negative && !rawIsZero(result)) rawNegate(result) else result
+    }
+
+    val rawRadix = rawBigInt(radix)
     var result = RAW_ZERO
     while (index < value.length) {
         val digit = value[index].digitToIntOrNull(radix) ?: throw NumberFormatException(
             if (radix == 10) "For input string: \"$value\"" else "For input string: \"$value\" under radix $radix",
         )
-        result = rawAdd(rawMultiply(result, rawRadix), rawBigInt(digit.toString()))
+        result = rawAdd(rawMultiply(result, rawRadix), rawBigInt(digit))
         index++
     }
     return if (negative && !rawIsZero(result)) rawNegate(result) else result
+}
+
+private fun String.hasOnlyAsciiDigits(startIndex: Int): Boolean {
+    return rawHasOnlyAsciiDigits(this, startIndex)
+}
+
+private fun String.hasOnlyAsciiHexDigits(startIndex: Int): Boolean {
+    return rawHasOnlyAsciiHexDigits(this, startIndex)
 }
 
 private fun checkSlice(bytes: ByteArray, off: Int, len: Int) {
@@ -441,40 +484,96 @@ private fun checkSlice(bytes: ByteArray, off: Int, len: Int) {
     }
 }
 
-private fun parseTwosComplement(bytes: ByteArray, off: Int, len: Int): dynamic {
+private fun parseTwosComplement(bytes: ByteArray, off: Int, len: Int): JsBigInt {
     checkSlice(bytes, off, len)
     if (bytes.isEmpty()) throw NumberFormatException("Zero length BigInteger")
     if (len == 0) {
         if (bytes[off] >= 0) return RAW_ZERO
         val magnitude = -(((bytes[off - 1].toInt().inv()) and 0xFF) + 1).toLong()
-        return rawBigInt(magnitude.toString())
+        return rawBigInt(magnitude)
     }
-    var result = RAW_ZERO
-    for (index in off until off + len) {
-        result = rawAdd(rawShiftLeft(result, RAW_EIGHT), rawBigInt((bytes[index].toInt() and 0xFF).toString()))
-    }
+    var result = parseUnsignedMagnitude(bytes, off, len)
     if (bytes[off] < 0) {
-        result = rawSubtract(result, rawShiftLeft(RAW_ONE, rawBigInt((len * 8).toString())))
+        result = rawSubtract(result, rawShiftLeft(RAW_ONE, rawBigInt(len * 8)))
     }
     return result
 }
 
-private fun parseSignMagnitude(signum: Int, magnitude: ByteArray, off: Int, len: Int): dynamic {
+private fun parseSignMagnitude(signum: Int, magnitude: ByteArray, off: Int, len: Int): JsBigInt {
     if (signum !in -1..1) throw NumberFormatException("Invalid signum value")
     checkSlice(magnitude, off, len)
-    var result = RAW_ZERO
-    for (index in off until off + len) {
-        result = rawAdd(rawShiftLeft(result, RAW_EIGHT), rawBigInt((magnitude[index].toInt() and 0xFF).toString()))
-    }
+    val result = parseUnsignedMagnitude(magnitude, off, len)
     if (rawIsZero(result)) return result
     if (signum == 0) throw NumberFormatException("signum-magnitude mismatch")
     return if (signum < 0) rawNegate(result) else result
 }
 
-private fun rawModPow(baseValue: dynamic, exponentValue: dynamic, modulus: dynamic): dynamic {
-    var result = RAW_ONE
+private fun parseUnsignedMagnitude(bytes: ByteArray, off: Int, len: Int): JsBigInt {
+    var result = RAW_ZERO
+    var index = off
+    val end = off + len
+    val leadingByteCount = len and 3
+    repeat(leadingByteCount) {
+        result = rawAdd(rawShiftLeft(result, RAW_EIGHT), rawBigInt(bytes[index].toInt() and 0xFF))
+        index++
+    }
+    while (index < end) {
+        val word =
+            ((bytes[index].toInt() and 0xFF) shl 24) or
+                ((bytes[index + 1].toInt() and 0xFF) shl 16) or
+                ((bytes[index + 2].toInt() and 0xFF) shl 8) or
+                (bytes[index + 3].toInt() and 0xFF)
+        result = rawAdd(rawShiftLeft(result, RAW_WORD_BITS), rawAnd(rawBigInt(word), RAW_WORD_MASK))
+        index += 4
+    }
+    return result
+}
+
+private fun rawModPow(baseValue: JsBigInt, exponentValue: JsBigInt, modulus: JsBigInt): JsBigInt {
     var base = rawRemainder(baseValue, modulus)
     if (rawIsNegative(base)) base = rawAdd(base, modulus)
+    if (rawIsZero(exponentValue)) return RAW_ONE
+
+    val exponentBits = rawToString(exponentValue, 2)
+    if (exponentBits.length < 32) return rawBinaryModPow(base, exponentValue, modulus)
+
+    val windowSize = when {
+        exponentBits.length < 128 -> 3
+        exponentBits.length < 512 -> 4
+        else -> 5
+    }
+    val oddPowers = arrayOfNulls<JsBigInt>(1 shl (windowSize - 1))
+    oddPowers[0] = base
+    val squaredBase = rawRemainder(rawMultiply(base, base), modulus)
+    for (index in 1 until oddPowers.size) {
+        oddPowers[index] = rawRemainder(rawMultiply(oddPowers[index - 1]!!, squaredBase), modulus)
+    }
+
+    var result = RAW_ONE
+    var bitIndex = 0
+    while (bitIndex < exponentBits.length) {
+        if (exponentBits[bitIndex] == '0') {
+            result = rawRemainder(rawMultiply(result, result), modulus)
+            bitIndex++
+            continue
+        }
+
+        var windowEnd = minOf(bitIndex + windowSize, exponentBits.length)
+        while (exponentBits[windowEnd - 1] == '0') windowEnd--
+        var windowValue = 0
+        for (index in bitIndex until windowEnd) {
+            windowValue = (windowValue shl 1) or (exponentBits[index].code - '0'.code)
+            result = rawRemainder(rawMultiply(result, result), modulus)
+        }
+        result = rawRemainder(rawMultiply(result, oddPowers[(windowValue - 1) / 2]!!), modulus)
+        bitIndex = windowEnd
+    }
+    return result
+}
+
+private fun rawBinaryModPow(baseValue: JsBigInt, exponentValue: JsBigInt, modulus: JsBigInt): JsBigInt {
+    var result = RAW_ONE
+    var base = baseValue
     var exponent = exponentValue
     while (!rawIsZero(exponent)) {
         if (rawEquals(rawAnd(exponent, RAW_ONE), RAW_ONE)) {
@@ -502,24 +601,39 @@ private fun primeTrialsForCertainty(certainty: Int, bitLength: Int): Int {
 private fun millerRabinBase(index: Int): BigInteger = bigIntegerOf(MILLER_RABIN_BASES[index % MILLER_RABIN_BASES.size])
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawBigInt(stringValue: String): dynamic = js("BigInt(stringValue)")
+private fun rawBigInt(stringValue: String): JsBigInt = js("BigInt(stringValue)")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawAdd(left: dynamic, right: dynamic): dynamic = js("left + right")
+private fun rawBigInt(intValue: Int): JsBigInt = js("BigInt(intValue)")
+
+private fun rawBigInt(longValue: Long): JsBigInt {
+    val low = rawAnd(rawBigInt(longValue.toInt()), RAW_WORD_MASK)
+    val high = rawShiftLeft(rawBigInt((longValue shr 32).toInt()), RAW_WORD_BITS)
+    return rawAdd(high, low)
+}
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawSubtract(left: dynamic, right: dynamic): dynamic = js("left - right")
+private fun rawHasOnlyAsciiDigits(value: String, startIndex: Int): Boolean = js("/^[0-9]+$/.test(value.slice(startIndex))")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawMultiply(left: dynamic, right: dynamic): dynamic = js("left * right")
+private fun rawHasOnlyAsciiHexDigits(value: String, startIndex: Int): Boolean = js("/^[0-9a-fA-F]+$/.test(value.slice(startIndex))")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawDivide(left: dynamic, right: dynamic): dynamic = js("left / right")
+private fun rawAdd(left: JsBigInt, right: JsBigInt): JsBigInt = js("left + right")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawRemainder(left: dynamic, right: dynamic): dynamic = js("left % right")
+private fun rawSubtract(left: JsBigInt, right: JsBigInt): JsBigInt = js("left - right")
 
-private fun rawPow(base: dynamic, exponent: Int): dynamic {
+@Suppress("UnsafeCastFromDynamic")
+private fun rawMultiply(left: JsBigInt, right: JsBigInt): JsBigInt = js("left * right")
+
+@Suppress("UnsafeCastFromDynamic")
+private fun rawDivide(left: JsBigInt, right: JsBigInt): JsBigInt = js("left / right")
+
+@Suppress("UnsafeCastFromDynamic")
+private fun rawRemainder(left: JsBigInt, right: JsBigInt): JsBigInt = js("left % right")
+
+private fun rawPow(base: JsBigInt, exponent: Int): JsBigInt {
     var result = RAW_ONE
     var factor = base
     var remaining = exponent
@@ -532,53 +646,50 @@ private fun rawPow(base: dynamic, exponent: Int): dynamic {
 }
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawNegate(value: dynamic): dynamic = js("-value")
+private fun rawNegate(value: JsBigInt): JsBigInt = js("-value")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawAnd(left: dynamic, right: dynamic): dynamic = js("left & right")
+private fun rawAnd(left: JsBigInt, right: JsBigInt): JsBigInt = js("left & right")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawOr(left: dynamic, right: dynamic): dynamic = js("left | right")
+private fun rawOr(left: JsBigInt, right: JsBigInt): JsBigInt = js("left | right")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawXor(left: dynamic, right: dynamic): dynamic = js("left ^ right")
+private fun rawXor(left: JsBigInt, right: JsBigInt): JsBigInt = js("left ^ right")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawNot(value: dynamic): dynamic = js("~value")
+private fun rawNot(value: JsBigInt): JsBigInt = js("~value")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawShiftLeft(value: dynamic, bits: dynamic): dynamic = js("value << bits")
+private fun rawShiftLeft(value: JsBigInt, bits: JsBigInt): JsBigInt = js("value << bits")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawShiftRight(value: dynamic, bits: dynamic): dynamic = js("value >> bits")
+private fun rawShiftRight(value: JsBigInt, bits: JsBigInt): JsBigInt = js("value >> bits")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawEquals(left: dynamic, right: dynamic): Boolean = js("left === right")
+private fun rawEquals(left: JsBigInt, right: JsBigInt): Boolean = js("left === right")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawLessThan(left: dynamic, right: dynamic): Boolean = js("left < right")
+private fun rawLessThan(left: JsBigInt, right: JsBigInt): Boolean = js("left < right")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawGreaterThan(left: dynamic, right: dynamic): Boolean = js("left > right")
+private fun rawGreaterThan(left: JsBigInt, right: JsBigInt): Boolean = js("left > right")
 
-private fun rawIsZero(value: dynamic): Boolean = rawEquals(value, RAW_ZERO)
+private fun rawIsZero(value: JsBigInt): Boolean = rawEquals(value, RAW_ZERO)
 
-private fun rawIsNegative(value: dynamic): Boolean = rawLessThan(value, RAW_ZERO)
-
-@Suppress("UnsafeCastFromDynamic")
-private fun rawToString(value: dynamic, radix: Int): String = js("value.toString(radix)")
+private fun rawIsNegative(value: JsBigInt): Boolean = rawLessThan(value, RAW_ZERO)
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawAsInt(value: dynamic): Int = js("Number(BigInt.asIntN(32, value))")
+private fun rawToString(value: JsBigInt, radix: Int): String = js("value.toString(radix)")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawAsInt64(value: dynamic): dynamic = js("BigInt.asIntN(64, value)")
+private fun rawAsInt(value: JsBigInt): Int = js("Number(BigInt.asIntN(32, value))")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawAsDouble(value: dynamic): Double = js("Number(value)")
+private fun rawAsDouble(value: JsBigInt): Double = js("Number(value)")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawLowUnsignedInt(value: dynamic): Int = js("Number(BigInt.asIntN(32, value))")
+private fun rawLowUnsignedInt(value: JsBigInt): Int = js("Number(BigInt.asIntN(32, value))")
 
 @Suppress("UnsafeCastFromDynamic")
-private fun rawLowByte(value: dynamic): Int = js("Number(BigInt.asUintN(8, value))")
+private fun rawLowByte(value: JsBigInt): Int = js("Number(BigInt.asUintN(8, value))")

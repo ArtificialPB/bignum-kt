@@ -1,0 +1,70 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :benchmarks:jsArithmeticSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-13T13.33.32.664086/js.json`
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+absMethod                                0.030 / 0.028 / 0.045
+addMethod                                0.015 / 0.019 / 0.030
+decrementOperator                        0.028 / 0.033 / 0.034
+divOperator                              0.048 / 0.272 / 1.212
+divideAndRemainderMethod                 0.079 / 0.534 / 2.384
+divideMethod                             0.051 / 0.271 / 1.233
+gcdMethod                                0.158 / 6.774 / 6.714
+incrementOperator                        0.024 / 0.027 / 0.032
+lcmMethod                                0.245 / 6.876 / 7.224
+minusOperator                            0.020 / 0.021 / 0.033
+modInverseMethod                         0.319 / 0.332 / 0.449
+modMethod                                0.062 / 0.192 / 0.513
+modPowMethod                             1.552 / 3.902 / 10.953
+multiplyMethod                           0.021 / 0.045 / 0.300
+plusOperator                             0.015 / 0.022 / 0.034
+powMethod                                0.315 / 0.404 / 0.436
+remainderOperator                        0.047 / 0.281 / 1.224
+subtractMethod                           0.016 / 0.025 / 0.032
+timesOperator                            0.026 / 0.044 / 0.296
+unaryMinusOperator                       0.030 / 0.032 / 0.035
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Replace the Kotlin binary-exponentiation loop with ECMAScript's native `BigInt ** BigInt`
+operator.
+
+Result: Rejected before benchmarking. Kotlin's embedded JavaScript expression parser reports
+`Power expressions are not supported yet`, so the candidate does not compile. The existing loop
+was restored; runtime evaluation workarounds were not pursued because they add parsing overhead and
+weaken static checking.
+
+=== RUN 2 — 2026-08-13 ===
+Change: Make `abs()` test only negativity and `negate()` test only zero instead of routing both
+through the three-way `signum()` helper.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-13T14.52.18.756067/js.json`
+
+- absMethod:          0.030/0.028/0.045 -> 0.021/0.025/0.031 us/op
+- unaryMinusOperator: 0.030/0.032/0.035 -> 0.019/0.026/0.031 us/op
+
+Observed effect:
+- `abs()` improved by about 11%-32% and unary minus by about 11%-36% across the profiles.
+- The rest of the arithmetic suite stayed within its previous benchmark band.
+- All 1,224 JS tests passed.
+
+=== RUN 3 — 2026-08-13 ===
+Change: Compute `divideAndRemainder()` with one host division, then derive the exact remainder as
+`dividend - quotient * divisor`, instead of executing independent host `/` and `%` operations.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-13T17.04.26.57078/js.json`
+
+- divideAndRemainderMethod: 0.093/0.563/2.387 -> 0.099/0.358/1.595 us/op
+
+Observed effect:
+- Medium and large operands improved by about 36% and 33% respectively by eliminating the second
+  expensive division.
+- The small profile regressed by about 6%, where multiplication and subtraction cost slightly more
+  than a second division. The large real-world win outweighs this 0.006 us absolute small-value cost.
+- Division, remainder, and unrelated arithmetic operations stayed within their prior benchmark band.
+- All 1,224 JS tests passed.

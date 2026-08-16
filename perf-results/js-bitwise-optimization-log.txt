@@ -1,0 +1,95 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :benchmarks:jsBitwiseSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-08-13T13.33.32.664086/js.json`
+
+Each cell is positive/negative operand timing in us/op.
+
+Benchmark                         small          medium         large
+--------------------------------------------------------------------------
+andMethod                         0.029/0.026    0.028/0.031    0.027/0.040
+andNotMethod                      0.046/0.045    0.047/0.044    0.056/0.059
+bitCountMethod                    0.176/0.166    0.457/0.476    1.513/1.532
+bitLengthMethod                   0.149/0.126    0.293/0.315    0.799/0.827
+clearBitMethod                    0.102/0.112    0.104/0.113    0.112/0.117
+flipBitMethod                     0.081/0.087    0.082/0.089    0.091/0.106
+getLowestSetBitMethod             0.069/0.062    0.072/0.066    0.107/0.101
+notMethod                         0.028/0.025    0.032/0.028    0.030/0.029
+orMethod                          0.020/0.023    0.023/0.029    0.026/0.035
+setBitMethod                      0.080/0.080    0.081/0.081    0.085/0.091
+shiftLeftMethod                   0.245/0.249    0.424/0.435    0.926/0.953
+shiftRightMethod                  0.190/0.200    0.373/0.389    0.873/0.900
+testBitMethod                     0.083/0.086    0.085/0.089    0.095/0.096
+xorMethod                         0.021/0.021    0.024/0.024    0.028/0.040
+
+=== RUN 2 — 2026-08-13 ===
+Change: Convert shift counts and bit indices directly from Kotlin `Int` to ECMAScript `BigInt`,
+removing an intermediate decimal string allocation and parse from every indexed bit operation.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBitwiseSmokeBenchmark :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-08-13T13.44.00.886878/js.json`
+
+Key positive/negative deltas across small / medium / large:
+- `setBit`:   0.080/0.080, 0.081/0.081, 0.085/0.091 -> 0.038/0.039, 0.040/0.040, 0.045/0.049 us/op
+- `clearBit`: 0.102/0.112, 0.104/0.113, 0.112/0.117 -> 0.061/0.071, 0.064/0.072, 0.069/0.081 us/op
+- `flipBit`:  0.081/0.087, 0.082/0.089, 0.091/0.106 -> 0.047/0.047, 0.044/0.053, 0.050/0.064 us/op
+- `testBit`:  0.083/0.086, 0.085/0.089, 0.095/0.096 -> 0.058/0.061, 0.062/0.060, 0.072/0.068 us/op
+- `shiftLeft`:  0.245/0.249, 0.424/0.435, 0.926/0.953 -> 0.218/0.222, 0.398/0.406, 0.904/0.926 us/op
+- `shiftRight`: 0.190/0.200, 0.373/0.389, 0.873/0.900 -> 0.152/0.157, 0.337/0.346, 0.831/0.859 us/op
+
+Observed effect:
+- Indexed bit operations improved by about 30%-53%; shifts improved by about 3%-20% depending on
+  operand size, where the actual large shift increasingly dominates conversion overhead.
+- Unchanged bitwise operations remained within their previous benchmark band.
+- All 1,224 JS tests passed.
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Count set bits by formatting the adjusted magnitude as hexadecimal and summing a nibble
+lookup table instead of extracting 32-bit words.
+
+Result: Regressed every size and was reverted. Kotlin per-character decoding and table lookup cost
+more than the saved host `BigInt` shifts.
+
+- positive/negative small:  0.176/0.166 -> 0.188/0.202 us/op
+- positive/negative medium: 0.457/0.476 -> 0.702/0.723 us/op
+- positive/negative large:  1.513/1.532 -> 2.570/2.575 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBitwiseSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-08-13T14.04.49.696815/js.json`
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Keep binary formatting and zero removal entirely inside the JS engine with
+`value.toString(2).replace(...)`, avoiding Kotlin character iteration from the prior discarded
+hexadecimal attempt.
+
+Result: Regressed by roughly 4.4x-7.4x and was reverted. Materializing the binary string and running
+a regular-expression replacement is much more expensive than extracting 32-bit words.
+
+- positive/negative small:  0.176/0.166 -> 0.803/0.726 us/op
+- positive/negative medium: 0.457/0.476 -> 3.241/3.131 us/op
+- positive/negative large:  1.513/1.532 -> 11.122/10.666 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBitwiseSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-08-13T14.48.01.336886/js.json`
+
+=== RUN 3 — 2026-08-13 ===
+Change: Compute `bitLength()` from a hexadecimal host string plus the leading nibble width instead
+of materializing a binary string four times as long.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBitwiseSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bitwiseSmoke/2026-08-13T14.00.29.827996/js.json`
+
+Positive/negative deltas across small / medium / large:
+- `bitLength`: 0.149/0.126, 0.293/0.315, 0.799/0.827 -> 0.125/0.120, 0.169/0.163, 0.342/0.354 us/op
+- `shiftLeft`: 0.218/0.222, 0.398/0.406, 0.904/0.926 -> 0.195/0.193, 0.243/0.246, 0.426/0.433 us/op
+- `shiftRight`: 0.152/0.157, 0.337/0.346, 0.831/0.859 -> 0.159/0.146, 0.205/0.198, 0.383/0.385 us/op
+
+Observed effect:
+- `bitLength()` improved most as values grew: up to about 57% on the large profile.
+- Shift validation shares `bitLength()`, producing an additional 38%-55% improvement for medium
+  and large shifts beyond RUN 2's direct-index conversion gain.
+- All 1,224 JS tests passed.

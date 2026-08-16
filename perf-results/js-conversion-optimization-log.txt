@@ -1,0 +1,61 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :benchmarks:jsConversionSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-13T13.33.32.664086/js.json`
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+signumMethod                             0.015 / 0.017 / 0.015
+toByteArrayMethod                        0.368 / 1.353 / 5.118
+toDoubleMethod                           0.021 / 0.025 / 0.019
+toIntMethod                              0.015 / 0.015 / 0.015
+toLongMethod                             6.410 / 4.978 / 6.061
+toStringMethod                           0.044 / 0.327 / 2.614
+toStringRadixMethod                      0.044 / 0.082 / 0.215
+
+Initial target:
+- `toLong()` converts the low signed 64 bits from `BigInt` to decimal text and then parses that text
+  back into Kotlin `Long`. Reconstructing the low/high 32-bit words should avoid both conversions.
+
+=== RUN 2 — 2026-08-13 ===
+Change: Reconstruct the low 64 bits directly from two signed 32-bit words instead of formatting the
+value as decimal text and parsing it back into Kotlin `Long`.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConversionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-13T13.41.30.688282/js.json`
+
+toLongMethod: 6.410/4.978/6.061 -> 0.075/0.079/0.089 us/op
+
+Observed effect:
+- `toLong()` improved by about 85.5x / 63.0x / 68.1x across small / medium / large.
+- Other conversion methods stayed within their prior benchmark band.
+- All 1,224 JS tests passed.
+
+=== RUN 3 — 2026-08-13 ===
+Change: Export four bytes from each low 32-bit word before shifting the ECMAScript `BigInt`, while
+retaining the existing bytewise path for the leading one-to-three bytes.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConversionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-13T13.58.20.0019/js.json`
+
+toByteArrayMethod: 0.368/1.353/5.118 -> 0.225/0.579/2.074 us/op
+
+Observed effect:
+- `toByteArray()` improved by about 38.9% / 57.2% / 59.5% across small / medium / large.
+- Other conversion methods, including the optimized `toLong()`, stayed within their prior band.
+- All 1,224 JS tests passed.
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Format the encoded two's-complement value as hexadecimal and decode pairs of characters
+into the result byte array instead of extracting 32-bit words.
+
+Result: Regressed every profile versus RUN 3 and was reverted. Per-character Kotlin decoding costs
+more than the host shifts saved by formatting once.
+
+toByteArrayMethod: 0.225/0.579/2.074 -> 0.261/0.736/2.424 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConversionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-13T14.21.50.139483/js.json`

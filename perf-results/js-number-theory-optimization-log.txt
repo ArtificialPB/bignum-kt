@@ -1,0 +1,96 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :benchmarks:jsNumberTheorySmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/numberTheorySmoke/2026-08-13T13.33.32.664086/js.json`
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+isProbablePrimeMethod                    93.510 / 372.348 / 5753.682
+nextProbablePrimeMethod                  566.195 / 1935.867 / 14862.328
+sqrtMethod                               2.414 / 6.997 / 23.958
+
+Initial target:
+- The small fixture is a 61-bit value, but certainty 100 currently runs 50 Miller-Rabin rounds.
+  Seven established bases are deterministic for every unsigned 64-bit candidate, providing a
+  stronger result with far fewer modular exponentiations.
+
+=== RUN 2 — 2026-08-13 ===
+Change: Use the established seven deterministic Miller-Rabin bases for candidates with at most 64
+bits. Larger candidates retain the certainty-dependent trial count and existing base sequence.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsNumberTheorySmokeBenchmark --rerun-tasks --no-configuration-cache`
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Keep small-prime checks, exponent decomposition, modular exponentiation, witness squaring,
+and comparisons on raw host `BigInt` values throughout Miller-Rabin to avoid Kotlin wrapper objects.
+
+Result: Effectively neutral and substantially less readable, so it was reverted.
+
+- isProbablePrimeMethod:   65.070/370.135/4815.913 -> 62.303/365.397/4837.027 us/op
+- nextProbablePrimeMethod: 154.328/1884.189/14728.911 -> 154.287/1878.523/14721.451 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsNumberTheorySmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/numberTheorySmoke/2026-08-13T14.09.32.879742/js.json`
+
+isProbablePrimeMethod:   93.510/372.348/5753.682 -> 65.070/370.135/4815.913 us/op
+nextProbablePrimeMethod: 566.195/1935.867/14862.328 -> 154.328/1884.189/14728.911 us/op
+sqrtMethod:              2.414/6.997/23.958 -> 1.870/4.797/16.972 us/op
+
+Observed effect:
+- On the 61-bit small fixture, primality testing improved by about 30% and next-prime search by
+  about 73% while becoming deterministic rather than probabilistic.
+- Medium/large primality paths were unchanged; their movements are ordinary run-to-run variance.
+- The `sqrt()` improvement comes from RUN 3 in the bitwise log: hexadecimal `bitLength()` was
+  committed before this suite was rerun and reduces its initial-estimate overhead.
+- All 1,224 JS tests passed.
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Scan `nextProbablePrime()` candidates as `6k ± 1` after initial alignment to avoid passing
+multiples of three into `isProbablePrime()`.
+
+Result: No measurable gain after the deterministic 64-bit base optimization, so the added state and
+special case were reverted. Existing small-prime filtering already rejects multiples of three
+cheaply.
+
+nextProbablePrimeMethod: 154.328/1884.189/14728.911 -> 154.674/1893.640/14727.731 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsNumberTheorySmokeBenchmark --rerun-tasks --no-configuration-cache`
+
+=== RUN 3 — 2026-08-13 ===
+Change: Keep every Newton iteration in `sqrt()` on raw ECMAScript `BigInt` values, wrapping only
+the final estimate instead of allocating `BigInteger` wrappers for add, divide, and shift results.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsNumberTheorySmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/numberTheorySmoke/2026-08-13T17.08.17.675284/js.json`
+
+- sqrtMethod: 1.934/4.897/17.145 -> 0.642/2.934/13.503 us/op
+
+Observed effect:
+- Square root improved by about 67% / 40% / 21% across small / medium / large operands.
+- Primality and next-prime benchmarks remained within their normal run-to-run range.
+- All 1,224 JS tests passed.
+
+=== RUN 4 — 2026-08-13 ===
+Change: Use adaptive left-to-right sliding-window modular exponentiation for exponents of at least
+32 bits, with window sizes of three to five bits. Short exponents retain the allocation-free binary
+loop, avoiding setup overhead for the common public exponent 65537.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest --rerun-tasks --no-configuration-cache`
+- `./gradlew :benchmarks:jsArithmeticSmokeBenchmark :benchmarks:jsNumberTheorySmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/numberTheorySmoke/2026-08-13T17.11.08.716209/js.json`
+- `benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-13T17.11.08.716209/js.json`
+
+- isProbablePrimeMethod:   64.249/373.861/4846.013 -> 30.896/206.140/2463.071 us/op
+- nextProbablePrimeMethod: 167.272/1893.709/14766.822 -> 87.950/1069.826/7471.689 us/op
+- modPowMethod (17-bit exponent): 1.775/3.909/10.869 -> 1.677/3.979/10.933 us/op
+
+Observed effect:
+- Primality testing improved by about 52% / 45% / 49%, and next-prime search improved by about
+  47% / 44% / 49% across small / medium / large operands.
+- The short-exponent direct `modPow()` benchmark stayed within its previous performance band.
+- All 1,224 JS tests passed.

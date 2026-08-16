@@ -1,0 +1,31 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :benchmarks:jsComparisonSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/comparisonSmoke/2026-08-13T13.33.32.664086/js.json`
+
+Benchmark                                small  / medium / large   us/op
+-----------------------------------------------------------------------
+compareToMethod                          0.013 / 0.014 / 0.021
+equalsMethod                             0.011 / 0.011 / 0.011
+hashCodeMethod                           0.225 / 0.638 / 2.058
+maxMethod                                0.011 / 0.013 / 0.017
+minMethod                                0.011 / 0.012 / 0.019
+
+Initial target:
+- `hashCode()` collects every low 32-bit word into a mutable list and traverses it again in reverse.
+  The same polynomial can be accumulated low-word-first with an increasing power-of-31 multiplier.
+
+=== RUN 2 — 2026-08-13 ===
+Change: Accumulate the JVM-compatible word polynomial from low words upward with an increasing
+power-of-31 multiplier. This removes the mutable list, its boxed words, and the reverse traversal.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsComparisonSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/comparisonSmoke/2026-08-13T13.50.43.225029/js.json`
+
+hashCodeMethod: 0.225/0.638/2.058 -> 0.116/0.422/1.513 us/op
+
+Observed effect:
+- `hashCode()` improved by about 48.7% / 33.9% / 26.5% across small / medium / large.
+- Compare, equality, min, and max stayed within their previous benchmark band.
+- All 1,224 JS tests passed.

@@ -1,0 +1,176 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsArithmeticSmokeBenchmark :benchmarks:jsNumberTheorySmokeBenchmark :benchmarks:jsConstructionSmokeBenchmark :benchmarks:jsBigDecimalArithmeticSmokeBenchmark :benchmarks:jsBigDecimalComparisonSmokeBenchmark :benchmarks:jsBigDecimalConstructionSmokeBenchmark :benchmarks:jsBigDecimalConversionSmokeBenchmark :benchmarks:jsBigDecimalScaleSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T16.49.34.857179/js.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalComparisonSmoke/2026-08-13T16.49.34.857179/js.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalConstructionSmoke/2026-08-13T16.49.34.857179/js.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalConversionSmoke/2026-08-13T16.49.34.857179/js.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalScaleSmoke/2026-08-13T16.49.34.857179/js.json`
+
+Representative baseline timings (small / medium / large, us/op):
+- multiply:                  13.553 / 0.750 / 1.541
+- multiplySingleLimbLeft:     1.109 / 1.151 / 1.296
+- multiplySingleLimbRight:    1.221 / 1.289 / 1.582
+- divide:                     4.921 / 4.957 / 5.478
+- divideRoundingMode:         0.365 / 0.490 / 0.697
+- divideScaleRoundingMode:    1.253 / 1.441 / 1.789
+- sqrtMathContext:           20.643 / 26.215 / 65.377
+- compareTo:                  0.852 / 0.020 / 0.020
+- toDouble:                   0.083 / 0.178 / 0.526
+- setScaleRounded:            0.756 / 0.824 / 1.156
+- stripTrailingZeros:         0.816 / 0.454 / 0.739
+
+All 1,224 JS tests passed before optimization.
+
+=== RUN 2 — 2026-08-13 ===
+Change: Construct ECMAScript `BigInt` values for unsigned 64-bit magnitudes directly from their high
+and low 32-bit words, avoiding decimal `ULong.toString()` formatting and host reparsing.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.10.59.879054/js.json`
+
+- multiply:                13.553/0.750/1.541 -> 9.450/0.727/1.505 us/op
+- multiplySingleLimbLeft:   1.109/1.151/1.296 -> 0.787/0.815/0.970 us/op
+- multiplySingleLimbRight:  1.221/1.289/1.582 -> 0.872/0.951/1.239 us/op
+
+Observed effect:
+- Compact small multiplication improved by about 30%.
+- Single-limb multiplication improved by about 25%-29% across all profiles.
+- All 1,224 JS tests passed.
+
+=== RUN 3 — 2026-08-13 ===
+Change: Extract compact unsigned magnitudes directly from raw ECMAScript `BigInt` words, replacing
+`abs()`, hexadecimal `bitLength()`, decimal formatting, and `ULong` parsing on every compact-path
+probe.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark :benchmarks:jsBigDecimalComparisonSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.18.00.170496/js.json`
+- `benchmarks/build/reports/benchmarks/bigDecimalComparisonSmoke/2026-08-13T18.18.00.170496/js.json`
+
+- multiply:               9.450/0.727/1.505 -> 0.414/0.229/0.441 us/op
+- multiplySingleLimbLeft: 0.787/0.815/0.970 -> 0.387/0.394/0.401 us/op
+- divide:                 4.301/4.320/4.769 -> 3.365/3.384/3.638 us/op
+- divideGenericExact:     1.061/1.106/1.294 -> 0.770/0.782/0.951 us/op
+- divideRoundingMode:     0.330/0.449/0.572 -> 0.316/0.419/0.508 us/op
+- sqrtMathContext:       15.682/22.355/53.911 -> 14.041/18.787/44.856 us/op
+- compareTo:              0.852/0.020/0.020 baseline -> 0.012/0.012/0.018 us/op
+
+Observed effect:
+- Compact multiplication improved by 68%-96%, and single-limb multiplication improved by another
+  51%-59% over RUN 2.
+- Exact division improved by about 22%-27%, rounded division by up to 11%, and decimal square root
+  by about 10%-17%.
+- Avoiding the compact-probe formatting path removed the anomalous small comparison cost.
+- All 1,224 JS tests passed.
+
+=== RUN 4 — 2026-08-13 ===
+Change: Compute small-divisor quotient and remainder directly on raw ECMAScript `BigInt` values,
+avoiding a signed-divisor `BigInteger`, the public result array, and intermediate wrappers.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.34.06.859117/js.json`
+
+- divideAndRemainderNegativeScaleSmallDivisor: 0.234/0.195/0.196 -> 0.194/0.191/0.192 us/op
+- divideGenericExact: 0.770/0.782/0.951 -> 0.711/0.742/0.899 us/op
+- remainder:          1.367/1.404/1.633 -> 1.321/1.361/1.519 us/op
+
+Observed effect:
+- The direct small-divisor path improved by up to 17%, with 2%-8% gains in downstream exact
+  division and remainder operations.
+- All 1,224 JS tests passed.
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Probe general exact quotients directly on raw `BigInt` values instead of calling the public
+`BigInteger.divideAndRemainder()` API.
+
+Result: Mixed and reverted. Ordinary terminating division moved slightly, but the specifically
+targeted generic exact path regressed small and large operands, so the candidate was not retained.
+
+- divideGenericExact: 0.711/0.742/0.899 -> 0.766/0.748/0.925 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.40.24.994448/js.json`
+
+=== RUN 5 — 2026-08-13 ===
+Change: Strip repeated small factors on raw ECMAScript `BigInt` values and wrap only the final
+reduced value, avoiding a result array and two wrappers per successful division.
+
+Validation source:
+- Candidate and JS tests: `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalScaleSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- Control without this change: `./gradlew :benchmarks:jsBigDecimalScaleSmokeBenchmark --rerun-tasks --no-configuration-cache`
+
+- stripTrailingZeros: 0.385/0.231/0.377 -> 0.376/0.229/0.374 us/op
+
+Observed effect:
+- Trailing-zero stripping improved by about 2.4% / 1.0% / 0.9% across small / medium / large.
+- All 1,224 JS tests passed with the candidate applied.
+
+=== RUN 6 — 2026-08-13 ===
+Change: Divide by powers of ten directly on raw ECMAScript `BigInt` values, reusing compact
+unsigned divisors and wrapping only the returned quotient and remainder.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalScaleSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- Control: `benchmarks/build/reports/benchmarks/bigDecimalScaleSmoke/2026-08-13T18.49.36.878877/js.json`
+- Candidate: `benchmarks/build/reports/benchmarks/bigDecimalScaleSmoke/2026-08-13T18.51.25.892643/js.json`
+
+- setScaleRounded: 0.687/0.737/0.923 -> 0.651/0.708/0.896 us/op
+- setScaleExact:   0.762/0.798/0.931 -> 0.753/0.790/0.932 us/op
+
+Observed effect:
+- Rounded rescaling improved by about 5.3% / 3.9% / 3.0% across small / medium / large.
+- Exact rescaling was effectively unchanged to about 1% faster.
+- All 1,224 JS tests passed.
+
+=== RUN 7 — 2026-08-13 ===
+Change: Multiply two compact decimal magnitudes directly as raw ECMAScript `BigInt` values and
+apply the sign before constructing the single result wrapper.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- Previous retained report: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.34.06.859117/js.json`
+- Candidate: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.54.51.134091/js.json`
+
+- multiply: 0.408/0.229/0.441 -> 0.385/0.227/0.444 us/op
+
+Observed effect:
+- The compact small-profile multiplication path improved by about 5.7%; medium and large were
+  effectively unchanged.
+- All 1,224 JS tests passed.
+
+=== RUN 8 — 2026-08-13 ===
+Change: Multiply a decimal's unscaled value by an unsigned compact magnitude directly on raw
+ECMAScript `BigInt` values, applying the requested sign before constructing the result wrapper.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- Control: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T18.54.51.134091/js.json`
+- Candidate: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T19.01.44.566425/js.json`
+
+- multiplySingleLimbLeft:  0.373/0.373/0.385 -> 0.355/0.347/0.359 us/op
+- multiplySingleLimbRight: 0.391/0.386/0.396 -> 0.367/0.359/0.366 us/op
+- multiply:                0.385/0.227/0.444 -> 0.367/0.209/0.422 us/op
+
+Observed effect:
+- Single-limb multiplication improved by about 4.8%-7.6%; ordinary multiplication improved by
+  about 4.8%-8.2% through the same backend path.
+- All 1,224 JS tests passed.
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Fuse small-digit division and quotient rescaling into one raw `BigInt` backend operation,
+avoiding an intermediate quotient wrapper.
+
+Result: Regressed and reverted. The target positive-scale division case became 3.4% slower for
+small values and 1.5% slower for medium values; large values were effectively unchanged.
+
+- divideAndRemainderPositiveScaleGenericDivisor:
+  2.407/1.801/3.118 -> 2.489/1.827/3.110 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBigDecimalArithmeticSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- Control: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T19.01.44.566425/js.json`
+- Candidate: `benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-13T19.08.53.178253/js.json`

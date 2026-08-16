@@ -1,0 +1,50 @@
+=== FINAL — 2026-08-13 JS TYPES CONTINUATION ===
+Branch: `autoresearch/2026-08-13-js-biginteger`
+
+Scope:
+- Continued from the fresh JS baseline at report timestamp `2026-08-13T16.49.34.857179`.
+- Ten independently benchmarked implementation changes were retained: three BigInteger changes
+  and seven BigDecimal backend changes.
+- Two candidates regressed and were reverted. Their results remain in the suite logs.
+
+Final validation:
+- `./gradlew :bignum:jsNodeTest :benchmarks:compileAllBenchmarks --rerun-tasks --no-configuration-cache`
+  — passed; all 1,224 JS tests passed and every benchmark target compiled.
+
+Representative same-mode smoke timings (small / medium / large, us/op):
+
+Benchmark                                      Fresh baseline             Retained result
+-----------------------------------------------------------------------------------------------
+BigInteger.divideAndRemainder                  0.093 / 0.563 / 2.387      0.109 / 0.361 / 1.610
+BigInteger.sqrt                                1.934 / 4.897 / 17.145     0.645 / 2.923 / 13.504
+BigInteger.isProbablePrime                    64.585 / 372.149 / 4943.087 30.896 / 206.140 / 2463.071
+BigInteger.nextProbablePrime                 169.677 / 1921.379 / 14947.767 87.950 / 1069.826 / 7471.689
+BigInteger.modPow (short exponent)              1.539 / 3.812 / 11.101     1.677 / 3.979 / 10.933
+
+BigDecimal.multiply                            13.553 / 0.750 / 1.541      0.367 / 0.209 / 0.422
+BigDecimal.multiplySingleLimbLeft               1.109 / 1.151 / 1.296      0.355 / 0.347 / 0.359
+BigDecimal.multiplySingleLimbRight              1.221 / 1.289 / 1.582      0.367 / 0.359 / 0.366
+BigDecimal.divide                               4.921 / 4.957 / 5.478      3.070 / 3.096 / 3.357
+BigDecimal.divideGenericExact                   1.408 / 1.447 / 1.756      0.677 / 0.705 / 0.868
+BigDecimal.divideBySmallDigit                    0.235 / 0.228 / 0.231      0.185 / 0.179 / 0.181
+BigDecimal.sqrtMathContext                     20.643 / 26.215 / 65.793   12.912 / 18.172 / 43.787
+BigDecimal.compareTo                            0.852 / 0.020 / 0.020      0.012 / 0.012 / 0.018
+BigDecimal.setScaleRounded                      0.756 / 0.824 / 1.156      0.651 / 0.708 / 0.896
+BigDecimal.stripTrailingZeros                   0.816 / 0.454 / 0.739      0.363 / 0.222 / 0.369
+
+Highlights:
+- Sliding-window modular exponentiation roughly halved primality and next-prime time for all three
+  profiles while preserving the fast binary path for short exponents.
+- Raw `BigInt` Newton iterations improved square root by about 21%-67%.
+- Direct compact-magnitude extraction removed string formatting/parsing from BigDecimal hot paths.
+  Compact multiplication improved by up to 97%, single-limb multiplication by 68%-77%, exact
+  division by about 50%, and trailing-zero stripping by about 50%-56% versus the fresh baseline.
+- Reusing one quotient for `divideAndRemainder` improved medium and large BigInteger operands by
+  about 36% and 33%. The small profile became 0.015 us slower in the combined final report; its
+  isolated A/B regression was 0.006 us.
+- Short-exponent `modPow` remained in its prior performance band.
+
+Detailed per-change measurements and discarded attempts:
+- `perf-results/js-arithmetic-optimization-log.txt`
+- `perf-results/js-number-theory-optimization-log.txt`
+- `perf-results/js-bigdecimal-optimization-log.txt`

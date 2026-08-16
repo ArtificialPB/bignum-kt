@@ -1,0 +1,151 @@
+=== BASELINE — 2026-08-13 ===
+Source:
+- `./gradlew :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T13.33.32.664086/js.json`
+- Full `allTests` baseline passed before measurement.
+
+Benchmark                                     small  / medium / large   us/op
+---------------------------------------------------------------------------
+constructorBytes                              0.817 / 3.966 / 12.212
+constructorBytesSlice                         0.689 / 3.204 / 12.030
+constructorString                             1.492 / 7.373 / 27.896
+constructorStringRadix                        1.271 / 6.528 / 25.330
+factoryInt                                    0.059 / 0.058 / 0.061
+factoryLong                                   1.104 / 0.646 / 0.644
+factoryString                                 1.398 / 7.359 / 27.827
+
+Initial target:
+- Decimal and hexadecimal strings are parsed one digit at a time, creating multiple intermediate
+  ECMAScript `BigInt` values. Validated ASCII inputs can use the host parser in one operation.
+- Byte constructors and `Long` factories also contain string-mediated primitive-to-`BigInt`
+  conversions, but those will be measured as separate changes.
+
+=== RUN 2 — 2026-08-13 ===
+Change: After preserving the existing sign checks, route validated ASCII decimal strings directly
+to ECMAScript `BigInt`. Non-ASCII digits retain the existing JVM-compatible digit-by-digit parser.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T13.37.59.705329/js.json`
+
+constructorString: 1.492/7.373/27.896 -> 0.169/0.526/1.843 us/op
+factoryString:     1.398/7.359/27.827 -> 0.150/0.517/1.834 us/op
+
+Observed effect:
+- Decimal construction improved by about 8.8x / 14.0x / 15.1x across small / medium / large.
+- Radix-16 construction stayed in its prior band, confirming the improvement is isolated to the
+  new decimal fast path.
+- All 1,224 JS tests passed.
+
+=== RUN 3 — 2026-08-13 ===
+Change: Route validated ASCII hexadecimal strings through ECMAScript `BigInt` with a `0x` prefix.
+Signed values preserve the existing explicit sign handling, and non-ASCII digits retain the generic
+JVM-compatible parser.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks`
+- Console summary; configuration-cache reuse updated the previous report directory in place.
+
+constructorStringRadix: 1.271/6.528/25.330 -> 0.181/0.437/1.321 us/op
+
+Observed effect:
+- Radix-16 construction improved by about 7.0x / 14.9x / 19.2x across small / medium / large.
+- Decimal construction retained the RUN 2 improvement.
+- All 1,224 JS tests passed.
+
+=== RUN 4 — 2026-08-13 ===
+Change: Convert Kotlin `Int` values directly to ECMAScript `BigInt` instead of formatting decimal
+strings first. In the construction suite this covers byte values, bit counts, parser radix/digits,
+and the `Int` factory.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsBitwiseSmokeBenchmark :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T13.44.00.886878/js.json`
+
+constructorBytes:      0.817/3.966/12.212 -> 0.263/1.240/4.985 us/op
+constructorBytesSlice: 0.689/3.204/12.030 -> 0.298/1.281/4.978 us/op
+factoryInt:            0.059/0.058/0.061 -> 0.016/0.016/0.017 us/op
+
+Observed effect:
+- Byte construction improved by about 2.3x-3.2x across both constructor forms.
+- `factoryInt()` improved by about 3.5x-3.7x.
+- String and `Long` factories retained their prior performance.
+- All 1,224 JS tests passed.
+
+=== RUN 5 — 2026-08-13 ===
+Change: Reconstruct ECMAScript `BigInt` directly from the signed high and unsigned low 32-bit halves
+of Kotlin `Long`, avoiding decimal formatting and parsing while preserving all 64 bits.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T13.53.01.340949/js.json`
+
+factoryLong: 1.104/0.646/0.644 -> 0.110/0.110/0.112 us/op
+
+Observed effect:
+- `factoryLong()` improved by about 10.0x / 5.9x / 5.8x across small / medium / large.
+- Other construction methods stayed within their previous benchmark band.
+- All 1,224 JS tests passed.
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: For inputs of at least 16 bytes, build one hexadecimal string and invoke the host `BigInt`
+parser once instead of importing four-byte words incrementally.
+
+Result: Regressed medium and large byte construction and was reverted. Kotlin string building costs
+more than the saved host operations.
+
+- constructorBytes:      0.126/0.389/1.554 -> 0.126/0.759/2.359 us/op
+- constructorBytesSlice: 0.160/0.427/1.565 -> 0.174/0.794/2.369 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T14.23.47.983713/js.json`
+
+=== DISCARDED ATTEMPT — 2026-08-13 ===
+Change: Import eight-byte chunks through the optimized Kotlin `Long` to ECMAScript `BigInt`
+reconstruction, halving the outer shift/add count compared with RUN 6.
+
+Result: Regressed severely and was reverted. Kotlin `Long` assembly and its two-word reconstruction
+cost far more than the saved outer host operations.
+
+- constructorBytes:      0.126/0.389/1.554 -> 0.260/1.086/3.898 us/op
+- constructorBytesSlice: 0.160/0.427/1.565 -> 0.294/1.129/3.849 us/op
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T14.26.05.937568/js.json`
+
+=== RUN 7 — 2026-08-13 ===
+Change: Validate ASCII decimal and hexadecimal fast paths with host regular expressions instead of
+generated Kotlin character-range loops. The generic parser remains the fallback for Unicode digits.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T14.31.12.5991/js.json`
+
+- constructorString:      0.160/0.522/1.860 -> 0.158/0.341/1.200 us/op
+- factoryString:          0.155/0.528/1.862 -> 0.155/0.342/1.202 us/op
+- constructorStringRadix: 0.190/0.459/1.389 -> 0.195/0.380/1.054 us/op
+
+Observed effect:
+- Medium/large decimal construction improved by about 35%, while small construction stayed flat.
+- Medium/large radix-16 construction improved by about 17% / 24%; the small movement is noise-level.
+- All 1,224 JS tests passed.
+
+=== RUN 6 — 2026-08-13 ===
+Change: Import byte-array magnitudes four bytes at a time. Each chunk performs one 32-bit shift,
+primitive-to-`BigInt` conversion, and add instead of repeating those operations for every byte.
+
+Validation source:
+- `./gradlew :bignum:jsNodeTest :benchmarks:jsConstructionSmokeBenchmark --rerun-tasks --no-configuration-cache`
+- `benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-13T13.55.52.689382/js.json`
+
+Compared with RUN 4's direct-`Int` byte import:
+- constructorBytes:      0.263/1.240/4.985 -> 0.126/0.389/1.554 us/op
+- constructorBytesSlice: 0.298/1.281/4.978 -> 0.160/0.427/1.565 us/op
+
+Observed effect:
+- Full byte construction improved another 2.1x / 3.2x / 3.2x.
+- Sliced byte construction improved another 1.9x / 3.0x / 3.2x.
+- Other construction methods stayed within their previous benchmark band.
+- All 1,224 JS tests passed.

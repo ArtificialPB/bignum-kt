@@ -1,0 +1,35 @@
+=== FINAL — 2026-08-13 ===
+Branch: `autoresearch/2026-08-13-js-biginteger`
+
+Final validation:
+- `./gradlew allTests` — passed
+- `./gradlew :bignum:ktlintJsMainSourceSetCheck --no-configuration-cache` — passed
+- `./gradlew :benchmarks:jsArithmeticBenchmark :benchmarks:jsBitwiseBenchmark :benchmarks:jsComparisonBenchmark :benchmarks:jsConstructionBenchmark :benchmarks:jsConversionBenchmark :benchmarks:jsNumberTheoryBenchmark :benchmarks:jsRangeBenchmark --rerun-tasks --no-configuration-cache` — passed in 18m 1s
+- Full benchmark reports: `benchmarks/build/reports/benchmarks/<suite>/2026-08-13T15.02.04.197649/js.json`
+
+Representative final full-suite timings (small / medium / large, us/op):
+
+Benchmark                              Original smoke baseline     Final full run
+-----------------------------------------------------------------------------------
+constructorString                      1.492 / 7.373 / 27.896       0.159 / 0.338 / 1.201
+constructorStringRadix                 1.271 / 6.528 / 25.330       0.196 / 0.378 / 1.090
+constructorBytes                       0.817 / 3.966 / 12.212       0.128 / 0.392 / 1.566
+factoryInt                             0.059 / 0.058 / 0.061        0.012 / 0.011 / 0.011
+factoryLong                            1.104 / 0.646 / 0.644        0.115 / 0.114 / 0.114
+toLongMethod                           6.410 / 4.978 / 6.061        0.078 / 0.082 / 0.093
+toByteArrayMethod                      0.368 / 1.353 / 5.118        0.206 / 0.487 / 1.740
+hashCodeMethod                         0.225 / 0.638 / 2.058        0.120 / 0.424 / 1.516
+bitLengthMethod (positive)             0.149 / 0.293 / 0.799        0.126 / 0.168 / 0.339
+shiftLeftMethod (positive)             0.245 / 0.424 / 0.926        0.205 / 0.250 / 0.434
+shiftRightMethod (positive)            0.190 / 0.373 / 0.873        0.171 / 0.216 / 0.394
+isProbablePrimeMethod                  93.510 / 372.348 / 5753.682  64.541 / 372.655 / 4896.340
+nextProbablePrimeMethod                566.195 / 1935.867 / 14862  169.271 / 1914.256 / 14900
+absMethod                              0.030 / 0.028 / 0.045        0.021 / 0.026 / 0.033
+unaryMinusOperator                     0.030 / 0.032 / 0.035        0.020 / 0.021 / 0.029
+
+Notes:
+- Per-change smoke A/B measurements and discarded attempts are recorded in the suite-specific JS
+  optimization logs. The final table combines the original smoke baseline with the more rigorous
+  final full-suite run, so it is a directional end-to-end summary rather than a same-mode A/B table.
+- Twelve independently measured implementation changes were retained. Eight candidates that failed
+  compilation, regressed, or did not provide a meaningful improvement were reverted and documented.
