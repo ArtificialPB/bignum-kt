@@ -2,20 +2,16 @@
 
 package io.github.artificialpb.bignum
 
-import io.github.artificialpb.bignum.tommath.MP_EQ
-import io.github.artificialpb.bignum.tommath.MP_GT
-import io.github.artificialpb.bignum.tommath.MP_LT
 import io.github.artificialpb.bignum.tommath.MP_OKAY
-import io.github.artificialpb.bignum.tommath.mp_cmp_mag
 import io.github.artificialpb.bignum.tommath.mp_div
 import io.github.artificialpb.bignum.tommath.mp_div_d
 import io.github.artificialpb.bignum.tommath.mp_expt_u32
 import io.github.artificialpb.bignum.tommath.mp_mul
-import io.github.artificialpb.bignum.tommath.mp_mul_2
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ULongVar
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.get
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
@@ -37,35 +33,37 @@ internal actual object BigDecimalBackend {
 
     actual fun stripSmallFactor(value: BigInteger, factor: ULong, maxCount: Int): SmallFactorReduction {
         if (maxCount <= 0 || value.signum() == 0) return SmallFactorReduction(value, 0)
+        check(factor == 5UL) { "Unsupported small factor: $factor" }
 
-        return value.withBorrowedHandle { handle ->
-            var current = handle
-            var ownedCurrent: CPointer<io.github.artificialpb.bignum.tommath.mp_int>? = null
-            var count = 0
-
-            memScoped {
-                val remainder = alloc<ULongVar>()
-                while (count < maxCount) {
-                    val quotient = allocMp(maxOf(current.pointed.used, 1))
-                    val err = mp_div_d(current, factor, quotient, remainder.ptr)
-                    if (err != MP_OKAY) {
-                        ownedCurrent?.let { freeMp(it) }
-                        checkMp(err, quotient)
-                    }
-                    if (remainder.value != 0UL) {
-                        freeMp(quotient)
-                        break
-                    }
-
-                    ownedCurrent?.let { freeMp(it) }
-                    current = quotient
-                    ownedCurrent = quotient
-                    count++
-                }
+        val reduced = value.limbs.copyOf(value.size)
+        var reducedSize = value.size
+        var count = 0
+        while (count < maxCount) {
+            var remainder = 0UL
+            // 2^60 is 1 modulo 5, so the magnitude remainder is the sum of its limb remainders.
+            for (index in reducedSize - 1 downTo 0) {
+                remainder += reduced[index] % 5UL
+                if (remainder >= 5UL) remainder -= 5UL
             }
 
-            val reduced = ownedCurrent ?: return@withBorrowedHandle SmallFactorReduction(value, 0)
-            SmallFactorReduction(BigInteger(reduced), count)
+            if (remainder != 0UL) break
+
+            remainder = 0UL
+            for (index in reducedSize - 1 downTo 0) {
+                // remainder < 5, so this 60-bit-limb partial fits in ULong.
+                val partial = (remainder shl CANONICAL_LIMB_BITS) or reduced[index]
+                val quotient = partial / 5UL
+                reduced[index] = quotient
+                remainder = partial - quotient * 5UL
+            }
+            while (reducedSize > 0 && reduced[reducedSize - 1] == 0UL) reducedSize--
+            count++
+        }
+
+        return if (count == 0) {
+            SmallFactorReduction(value, 0)
+        } else {
+            SmallFactorReduction(BigInteger(value.signum(), reducedSize, reduced), count)
         }
     }
 
@@ -342,16 +340,26 @@ private fun compareRemainderToHalfDivisor(
     remainderHandle: CPointer<io.github.artificialpb.bignum.tommath.mp_int>,
     divisorHandle: CPointer<io.github.artificialpb.bignum.tommath.mp_int>,
 ): Int {
-    val doubledRemainder = allocMp(maxOf(remainderHandle.pointed.used + 1, 1))
-    checkMp(mp_mul_2(remainderHandle, doubledRemainder), doubledRemainder)
-    val comparison = mp_cmp_mag(doubledRemainder, divisorHandle)
-    freeMp(doubledRemainder)
-    return when (comparison) {
-        MP_LT -> -1
-        MP_EQ -> 0
-        MP_GT -> 1
-        else -> error("Unexpected comparison result: $comparison")
+    val remainderSize = remainderHandle.pointed.used
+    if (remainderSize == 0) return -1
+
+    val remainderDigits = remainderHandle.pointed.dp!!
+    val divisorSize = divisorHandle.pointed.used
+    val doubledSize = remainderSize + (remainderDigits[remainderSize - 1] shr (CANONICAL_LIMB_BITS - 1)).toInt()
+    if (doubledSize != divisorSize) return doubledSize.compareTo(divisorSize)
+
+    val divisorDigits = divisorHandle.pointed.dp!!
+    for (index in doubledSize - 1 downTo 0) {
+        val doubledDigit = if (index == remainderSize) {
+            1UL
+        } else {
+            ((remainderDigits[index] shl 1) and CANONICAL_LIMB_MASK) or
+                if (index == 0) 0UL else remainderDigits[index - 1] shr (CANONICAL_LIMB_BITS - 1)
+        }
+        val comparison = doubledDigit.compareTo(divisorDigits[index])
+        if (comparison != 0) return comparison
     }
+    return 0
 }
 
 private fun compareDigitRemainderToHalfDivisor(remainder: ULong, divisor: ULong): Int {

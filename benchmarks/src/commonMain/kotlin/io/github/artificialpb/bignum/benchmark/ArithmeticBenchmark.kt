@@ -38,6 +38,9 @@ open class ArithmeticBenchmark : ProfiledBenchmarkState() {
     fun multiplyMethod(): BigInteger = fixture.left.multiply(fixture.right)
 
     @Benchmark
+    fun squareMethod(): BigInteger = fixture.left.multiply(fixture.left)
+
+    @Benchmark
     fun timesOperator(): BigInteger = fixture.left * fixture.right
 
     @Benchmark

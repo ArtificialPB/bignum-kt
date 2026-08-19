@@ -152,12 +152,13 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         if (other == ONE) return this
         if (this == MINUS_ONE) return -other
         if (other == MINUS_ONE) return -this
+        if (this === other) return square()
         val resultSign = sign * other.sign
         if (size + other.size <= SCHOOLBOOK_MUL_THRESHOLD) {
             return multiplySmall(resultSign, this, other)
         }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
-            val result = allocMp()
+            val result = allocMp(size + other.size + 1)
             checkMp(mp_mul(leftHandle, rightHandle, result), result)
             BigInteger(result)
         }
@@ -175,7 +176,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             }
         }
         return withBorrowedHandles(this, other) { leftHandle, rightHandle ->
-            val result = allocMp()
+            val result = allocMp(size)
             checkMp(mp_div(leftHandle, rightHandle, result, null), result)
             BigInteger(result)
         }
@@ -234,10 +235,21 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             }
             exp = exp shr 1
             if (exp > 0) {
-                power = power.multiply(power)
+                power = power.square()
             }
         }
         return if (resultSign < 0) -result else result
+    }
+
+    private fun square(): BigInteger {
+        if (sign == 0) return ZERO
+        if (this == ONE || this == MINUS_ONE) return ONE
+        if (size * 2 <= SCHOOLBOOK_MUL_THRESHOLD) return multiplySmall(1, this, this)
+        return withBorrowedHandle { handle ->
+            val result = allocMp(size * 2)
+            checkMp(mp_sqr(handle, result), result)
+            BigInteger(result)
+        }
     }
 
     actual fun mod(modulus: BigInteger): BigInteger {
@@ -251,7 +263,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             }
         }
         return withBorrowedHandles(this, modulus) { handle, modulusHandle ->
-            val result = allocMp()
+            val result = allocMp(modulus.size)
             checkMp(mp_mod(handle, modulusHandle, result), result)
             BigInteger(result)
         }
@@ -266,13 +278,13 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             val inverse = modInverse(modulus)
             val absExponent = exponent.abs()
             return withBorrowedHandles(inverse, absExponent, modulus) { inverseHandle, exponentHandle, modulusHandle ->
-                val result = allocMp()
+                val result = allocMp(modulus.size)
                 checkMp(mp_exptmod(inverseHandle, exponentHandle, modulusHandle, result), result)
                 BigInteger(result)
             }
         }
         return withBorrowedHandles(this, exponent, modulus) { handle, exponentHandle, modulusHandle ->
-            val result = allocMp()
+            val result = allocMp(modulus.size)
             checkMp(mp_exptmod(handle, exponentHandle, modulusHandle, result), result)
             BigInteger(result)
         }
@@ -284,7 +296,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         if (modulus == ONE) return ZERO
         val positiveBase = abs()
         val inverse = withBorrowedHandles(positiveBase, modulus) { baseHandle, modulusHandle ->
-            val result = allocMp()
+            val result = allocMp(modulus.size)
             val err = mp_invmod(baseHandle, modulusHandle, result)
             if (err != MP_OKAY) {
                 freeMp(result)
@@ -313,8 +325,8 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             }
         }
         return withBorrowedHandles(this, other) { handle, otherHandle ->
-            val quotient = allocMp()
-            val remainder = allocMp()
+            val quotient = allocMp(size)
+            val remainder = allocMp(other.size)
             checkMp(mp_div(handle, otherHandle, quotient, remainder), quotient, remainder)
             arrayOf(BigInteger(quotient), BigInteger(remainder))
         }
@@ -324,7 +336,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         if (sign == 0) return other.abs()
         if (other.sign == 0) return abs()
         return withBorrowedHandles(this, other) { handle, otherHandle ->
-            val result = allocMp()
+            val result = allocMp(minOf(size, other.size))
             checkMp(mp_gcd(handle, otherHandle, result), result)
             BigInteger(result)
         }
@@ -520,7 +532,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             nextProbablePrimeLongIfFits(start) { return bigIntegerOf(it) }
         }
         return withBorrowedHandle { handle ->
-            val result = allocMp()
+            val result = allocMp(size + 1)
             checkMp(mp_copy(handle, result), result)
             val defaultRounds = primeTrialsForCertainty(DEFAULT_PRIME_CERTAINTY, bitLength())
             checkMp(mp_prime_next_prime(result, defaultRounds, 0), result)
@@ -534,7 +546,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         if (sign < 0) throw ArithmeticException("Negative BigInteger")
         if (sign == 0) return ZERO
         return withBorrowedHandle { handle ->
-            val result = allocMp()
+            val result = allocMp((size + 1) / 2 + 1)
             checkMp(mp_sqrt(handle, result), result)
             BigInteger(result)
         }
@@ -595,9 +607,27 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return if (sign > 0) lowBits.toLong() else (0UL - lowBits).toLong()
     }
 
-    override fun toFloat(): Float = toString().toFloat()
+    override fun toFloat(): Float = Float.fromBits(
+        magnitudeToFloatingPointBits(
+            value = this,
+            precision = 24,
+            maxExponent = 127,
+            exponentBias = 127,
+            fractionBits = 23,
+            signMask = 0x80000000UL,
+        ).toInt(),
+    )
 
-    actual override fun toDouble(): Double = toString().toDouble()
+    actual override fun toDouble(): Double = Double.fromBits(
+        magnitudeToFloatingPointBits(
+            value = this,
+            precision = 53,
+            maxExponent = 1023,
+            exponentBias = 1023,
+            fractionBits = 52,
+            signMask = 0x8000000000000000UL,
+        ).toLong(),
+    )
 
     actual fun signum(): Int = sign
 
@@ -624,6 +654,10 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         ifMagnitudeFitsInULong { magnitude ->
             val digits = magnitude.toString(effectiveRadix)
             return if (sign < 0) "-$digits" else digits
+        }
+        val bitsPerDigit = powerOfTwoRadixBits(effectiveRadix)
+        if (bitsPerDigit != 0) {
+            return magnitudeToPowerOfTwoString(this, bitsPerDigit)
         }
         return withBorrowedHandle { handle ->
             memScoped {
@@ -701,7 +735,7 @@ actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
         }
     }
     return withBorrowedHandles(this, other) { handle, otherHandle ->
-        val result = allocMp()
+        val result = allocMp(other.size)
         checkMp(mp_div(handle, otherHandle, null, result), result)
         BigInteger(result)
     }
@@ -729,7 +763,7 @@ actual operator fun BigInteger.dec(): BigInteger = when (signum()) {
 actual fun BigInteger.lcm(other: BigInteger): BigInteger {
     if (this.signum() == 0 || other.signum() == 0) return ZERO
     return withBorrowedHandles(this, other) { handle, otherHandle ->
-        val result = allocMp()
+        val result = allocMp(size + other.size + 1)
         checkMp(mp_lcm(handle, otherHandle, result), result)
         // mp_lcm always returns positive; JVM semantics: (this / gcd) * other preserves sign
         if (this.signum() * other.signum() < 0) {
@@ -1093,6 +1127,27 @@ private inline fun fromStringConstructor(
             throw ArithmeticException("BigInteger would overflow supported range")
         }
 
+        val bitsPerDigit = powerOfTwoRadixBits(radix)
+        if (bitsPerDigit != 0) {
+            val digitsPerLimb = CANONICAL_LIMB_BITS / bitsPerDigit
+            val limbCount = ((numDigits.toLong() + digitsPerLimb - 1L) / digitsPerLimb).toInt()
+            val magnitude = ULongArray(limbCount)
+            var end = value.length
+            var limbIndex = 0
+            while (end > metaCursor) {
+                val start = maxOf(metaCursor, end - digitsPerLimb)
+                magnitude[limbIndex++] = parseDigitGroup(value, start, end, radix)
+                end = start
+            }
+            val normalizedSize = normalizeMagnitudeSize(limbIndex, magnitude)
+            if (normalizedSize == 0) {
+                init(0, 0, EMPTY_LIMBS)
+            } else {
+                init(sign, normalizedSize, magnitude)
+            }
+            return@withStringMetadata
+        }
+
         val estimatedLimbs = ((numBits + CANONICAL_LIMB_BITS - 1) / CANONICAL_LIMB_BITS).toInt()
         val magnitude = ULongArray(estimatedLimbs + 1)
         var size = 1
@@ -1290,6 +1345,92 @@ private fun magnitudeBitLength(value: BigInteger): Int {
     val highDigitBits = ULong.SIZE_BITS - value.limbs[value.size - 1].countLeadingZeroBits()
     return (((value.size - 1).toLong() * CANONICAL_LIMB_BITS) + highDigitBits.toLong()).toInt()
 }
+
+private fun magnitudeToFloatingPointBits(
+    value: BigInteger,
+    precision: Int,
+    maxExponent: Int,
+    exponentBias: Int,
+    fractionBits: Int,
+    signMask: ULong,
+): ULong {
+    if (value.signum() == 0) return 0UL
+
+    val signBits = if (value.signum() < 0) signMask else 0UL
+    val bitLength = magnitudeBitLength(value)
+    var exponent = bitLength - 1
+    val infinityBits = (maxExponent + exponentBias + 1).toULong() shl fractionBits
+    if (exponent > maxExponent) return signBits or infinityBits
+
+    var significand = if (bitLength <= precision) {
+        value.limbs[0] shl (precision - bitLength)
+    } else {
+        val discardedBits = bitLength - precision
+        val retained = magnitudeBitsStartingAt(value, discardedBits) and ((1UL shl precision) - 1UL)
+        if (shouldRoundFloatingPoint(value, discardedBits, retained)) retained + 1UL else retained
+    }
+
+    if (significand == (1UL shl precision)) {
+        significand = significand shr 1
+        exponent++
+        if (exponent > maxExponent) return signBits or infinityBits
+    }
+
+    val fractionMask = (1UL shl fractionBits) - 1UL
+    val exponentBits = (exponent + exponentBias).toULong() shl fractionBits
+    return signBits or exponentBits or (significand and fractionMask)
+}
+
+private fun magnitudeBitsStartingAt(value: BigInteger, bitIndex: Int): ULong {
+    val limbIndex = bitIndex / CANONICAL_LIMB_BITS
+    val bitOffset = bitIndex % CANONICAL_LIMB_BITS
+    if (bitOffset == 0) return value.limbs[limbIndex]
+    val upper = if (limbIndex + 1 < value.size) value.limbs[limbIndex + 1] else 0UL
+    return (value.limbs[limbIndex] shr bitOffset) or (upper shl (CANONICAL_LIMB_BITS - bitOffset))
+}
+
+private fun shouldRoundFloatingPoint(value: BigInteger, discardedBits: Int, retained: ULong): Boolean {
+    val guardBitIndex = discardedBits - 1
+    val guardLimb = guardBitIndex / CANONICAL_LIMB_BITS
+    val guardOffset = guardBitIndex % CANONICAL_LIMB_BITS
+    if ((value.limbs[guardLimb] and (1UL shl guardOffset)) == 0UL) return false
+    if ((retained and 1UL) != 0UL) return true
+
+    val fullLimbs = guardBitIndex / CANONICAL_LIMB_BITS
+    for (index in 0 until fullLimbs) {
+        if (value.limbs[index] != 0UL) return true
+    }
+    val remainingBits = guardBitIndex % CANONICAL_LIMB_BITS
+    if (remainingBits == 0) return false
+    val stickyMask = (1UL shl remainingBits) - 1UL
+    return (value.limbs[fullLimbs] and stickyMask) != 0UL
+}
+
+private fun powerOfTwoRadixBits(radix: Int): Int = when (radix) {
+    2 -> 1
+    4 -> 2
+    8 -> 3
+    16 -> 4
+    32 -> 5
+    else -> 0
+}
+
+private fun magnitudeToPowerOfTwoString(value: BigInteger, bitsPerDigit: Int): String {
+    val digitCount = (magnitudeBitLength(value) + bitsPerDigit - 1) / bitsPerDigit
+    val digitsPerLimb = CANONICAL_LIMB_BITS / bitsPerDigit
+    val digitMask = (1UL shl bitsPerDigit) - 1UL
+    return buildString(digitCount + if (value.signum() < 0) 1 else 0) {
+        if (value.signum() < 0) append('-')
+        for (digitIndex in digitCount - 1 downTo 0) {
+            val limbIndex = digitIndex / digitsPerLimb
+            val bitOffset = (digitIndex % digitsPerLimb) * bitsPerDigit
+            val digit = ((value.limbs[limbIndex] shr bitOffset) and digitMask).toInt()
+            append(LOWERCASE_RADIX_DIGITS[digit])
+        }
+    }
+}
+
+private const val LOWERCASE_RADIX_DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 private fun magnitudeToString(value: BigInteger, radix: Int): String {
     val sign = value.signum()

@@ -27,6 +27,9 @@ val benchmarkSuites = listOf(
     BenchmarkSuite("bigDecimalConstruction", "io.github.artificialpb.bignum.benchmark.BigDecimalConstructionBenchmark.*"),
     BenchmarkSuite("bigDecimalConversion", "io.github.artificialpb.bignum.benchmark.BigDecimalConversionBenchmark.*"),
     BenchmarkSuite("bigDecimalScale", "io.github.artificialpb.bignum.benchmark.BigDecimalScaleBenchmark.*"),
+    BenchmarkSuite("bigDecimalRounding", "io.github.artificialpb.bignum.benchmark.BigDecimalArithmeticBenchmark.roundMathContextMethod"),
+    BenchmarkSuite("bigDecimalFactorStripping", "io.github.artificialpb.bignum.benchmark.BigDecimalArithmeticBenchmark.divideLargeFiveFactorExactMethod"),
+    BenchmarkSuite("floatConversion", "io.github.artificialpb.bignum.benchmark.ConversionBenchmark.toFloatMethod"),
 )
 
 val ionspinBenchmarkSuites = listOf(

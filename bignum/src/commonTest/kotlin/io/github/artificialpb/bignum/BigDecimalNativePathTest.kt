@@ -102,6 +102,13 @@ class BigDecimalDivisionPathTest : FunSpec({
         (bd("3") / bd("25")).toString() shouldBe "0.12"
         (bd("1") / bd("5")).toString() shouldBe "0.2"
         (bd("7") / bd("125")).toString() shouldBe "0.056"
+
+        val fiveToForty = bi("5").pow(40)
+        BigDecimal(bi("1")).divide(BigDecimal(fiveToForty)) shouldBe
+            BigDecimal(bi("2").pow(40), 40)
+
+        val quotient = bi("123456789012345678901234567890")
+        BigDecimal(-(quotient * fiveToForty)).divide(BigDecimal(fiveToForty)) shouldBe BigDecimal(-quotient)
     }
 
     test("fastTerminatingDivide - mixed 2 and 5 factors") {

@@ -963,6 +963,25 @@ class ToDoubleEdgeCaseTest : FunSpec({
     }
 })
 
+class ToFloatEdgeCaseTest : FunSpec({
+
+    test("toFloat rounds integer ties to even") {
+        BigInteger("16777217").toFloat().toBits() shouldBeExactly 16777216.0f.toBits()
+        BigInteger("16777219").toFloat().toBits() shouldBeExactly 16777220.0f.toBits()
+    }
+
+    test("toFloat rounds the overflow boundary like JVM") {
+        val twoPow128 = bigIntegerOf(2L).pow(128)
+        val maxFiniteInteger = twoPow128 - bigIntegerOf(2L).pow(104)
+        val overflowTie = twoPow128 - bigIntegerOf(2L).pow(103)
+
+        maxFiniteInteger.toFloat().toBits() shouldBeExactly Float.MAX_VALUE.toBits()
+        (overflowTie - bigIntegerOf(1L)).toFloat().toBits() shouldBeExactly Float.MAX_VALUE.toBits()
+        overflowTie.toFloat().toBits() shouldBeExactly Float.POSITIVE_INFINITY.toBits()
+        (-overflowTie).toFloat().toBits() shouldBeExactly Float.NEGATIVE_INFINITY.toBits()
+    }
+})
+
 // -- String constructor edge cases --
 
 class StringConstructorEdgeCaseTest : FunSpec({

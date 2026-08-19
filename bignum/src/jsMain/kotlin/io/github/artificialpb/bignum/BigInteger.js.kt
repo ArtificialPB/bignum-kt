@@ -291,7 +291,45 @@ actual class BigInteger internal constructor(
         return (high shl 32) or low
     }
 
-    override fun toFloat(): Float = toString().toFloat()
+    override fun toFloat(): Float {
+        val sign = signum()
+        if (sign == 0) return 0.0f
+
+        val magnitude = if (sign < 0) rawNegate(raw) else raw
+        val hexadecimal = rawToString(magnitude, 16)
+        val leadingDigit = hexadecimal[0].digitToInt(16)
+        val bitLength = (hexadecimal.length - 1) * 4 + (Int.SIZE_BITS - leadingDigit.countLeadingZeroBits())
+        val signBits = if (sign < 0) Int.MIN_VALUE else 0
+        var exponent = bitLength - 1
+        if (exponent > FLOAT_MAX_EXPONENT) return Float.fromBits(signBits or FLOAT_INFINITY_BITS)
+
+        var significand = if (bitLength <= FLOAT_PRECISION) {
+            rawAsInt(magnitude) shl (FLOAT_PRECISION - bitLength)
+        } else {
+            val discardedBits = bitLength - FLOAT_PRECISION
+            val retained = rawAsInt(rawShiftRight(magnitude, rawBigInt(discardedBits)))
+            val discardedBase = rawShiftLeft(RAW_ONE, rawBigInt(discardedBits))
+            val discarded = rawRemainder(magnitude, discardedBase)
+            val halfway = rawShiftRight(discardedBase, RAW_ONE)
+            if (
+                rawGreaterThan(discarded, halfway) ||
+                (rawEquals(discarded, halfway) && (retained and 1) != 0)
+            ) {
+                retained + 1
+            } else {
+                retained
+            }
+        }
+
+        if (significand == (1 shl FLOAT_PRECISION)) {
+            significand = significand shr 1
+            exponent++
+            if (exponent > FLOAT_MAX_EXPONENT) return Float.fromBits(signBits or FLOAT_INFINITY_BITS)
+        }
+
+        val exponentBits = (exponent + FLOAT_EXPONENT_BIAS) shl FLOAT_FRACTION_BITS
+        return Float.fromBits(signBits or exponentBits or (significand and FLOAT_FRACTION_MASK))
+    }
 
     actual override fun toDouble(): Double = rawAsDouble(raw)
 
@@ -377,6 +415,12 @@ actual fun BigInteger.lcm(other: BigInteger): BigInteger {
 
 private const val MAX_BIT_LENGTH = Int.MAX_VALUE.toLong()
 private const val DEFAULT_PRIME_CERTAINTY = 100
+private const val FLOAT_PRECISION = 24
+private const val FLOAT_MAX_EXPONENT = 127
+private const val FLOAT_EXPONENT_BIAS = 127
+private const val FLOAT_FRACTION_BITS = 23
+private const val FLOAT_FRACTION_MASK = 0x007F_FFFF
+private const val FLOAT_INFINITY_BITS = 0x7F80_0000
 private val SMALL_PRIMES = intArrayOf(2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37)
 private val MILLER_RABIN_BASES = intArrayOf(
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53,

@@ -102,6 +102,8 @@ data class BigDecimalBenchmarkFixture(
     val divisor: BigDecimal,
     val genericExactDividend: BigDecimal,
     val genericExactDivisor: BigDecimal,
+    val largeFiveFactorDividend: BigDecimal,
+    val largeFiveFactorDivisor: BigDecimal,
     val negativeScaleSmallDividend: BigDecimal,
     val negativeScaleSmallDivisor: BigDecimal,
     val positiveScaleGenericDividend: BigDecimal,
@@ -271,6 +273,7 @@ internal object BenchmarkFixtures {
 internal object BigDecimalBenchmarkFixtures {
     private val one = bigIntegerOf(1)
     private val three = bigIntegerOf(3)
+    private val five = bigIntegerOf(5)
     private val seven = bigIntegerOf(7)
     private val nine = bigIntegerOf(9)
     private val hundred = bigIntegerOf(100)
@@ -308,6 +311,11 @@ internal object BigDecimalBenchmarkFixtures {
         )
         val genericExactDividend = bigDecimalOf((constructorBigInteger.abs() + one) * three, 0)
         val genericExactDivisor = bigDecimalOf(three)
+        val largeFiveFactorDivisorInteger = five.pow(40)
+        val largeFiveFactorDivisor = bigDecimalOf(largeFiveFactorDivisorInteger)
+        val largeFiveFactorDividend = bigDecimalOf(
+            (constructorBigInteger.abs() + one) * largeFiveFactorDivisorInteger,
+        )
         val negativeScaleSmallDividend = bigDecimalOf(constructorBigInteger.abs() + seven, 0)
         val negativeScaleSmallDivisor = bigDecimalOf(one, 2)
 
@@ -362,6 +370,8 @@ internal object BigDecimalBenchmarkFixtures {
             divisor = divisor,
             genericExactDividend = genericExactDividend,
             genericExactDivisor = genericExactDivisor,
+            largeFiveFactorDividend = largeFiveFactorDividend,
+            largeFiveFactorDivisor = largeFiveFactorDivisor,
             negativeScaleSmallDividend = negativeScaleSmallDividend,
             negativeScaleSmallDivisor = negativeScaleSmallDivisor,
             positiveScaleGenericDividend = positiveScaleGenericDividend,

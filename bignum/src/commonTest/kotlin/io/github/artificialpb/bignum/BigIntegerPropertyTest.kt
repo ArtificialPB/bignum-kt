@@ -333,6 +333,12 @@ class BigIntegerConversionPropertyTest : FunSpec({
         }
     }
 
+    test("toFloat matches Long conversion") {
+        checkAll(Arb.long()) { value ->
+            bigIntegerOf(value).toFloat().toBits() shouldBeExactly value.toFloat().toBits()
+        }
+    }
+
     test("signum matches sign of value") {
         checkAll(Arb.long()) { n ->
             val bi = bigIntegerOf(n)

@@ -1,0 +1,224 @@
+=== BASELINE — 2026-08-19 ===
+Branch: optimize/native-paper-2026-08-19
+Validation:
+- ./gradlew :bignum:macosArm64Test --no-configuration-cache
+- 82 specs, 517 tests, all passed
+
+Benchmark sources (one warm-up and one measured iteration, us/op):
+- benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-19T00.57.33.33838/macosArm64.json
+- benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-19T00.57.33.33838/macosArm64.json
+- benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-19T00.57.33.33838/macosArm64.json
+- benchmarks/build/reports/benchmarks/bigDecimalArithmeticSmoke/2026-08-19T00.57.33.33838/macosArm64.json
+- benchmarks/build/reports/benchmarks/bigDecimalScaleSmoke/2026-08-19T00.57.33.33838/macosArm64.json
+
+Benchmark                                      small / medium / large
+------------------------------------------------------------------------
+multiplyMethod                                 0.053 / 0.115 / 0.532
+squareMethod                                   0.054 / 0.115 / 0.537
+powMethod                                      0.159 / 0.157 / 0.124
+constructorStringRadix                         0.120 / 0.446 / 1.670
+toDoubleMethod                                 0.638 / 2.161 / 6.235
+toFloatMethod                                  0.619 / 1.229 / 5.876
+toStringRadixMethod                            0.162 / 3.097 / 11.006
+divideRoundingModeMethod                       0.163 / 0.311 / 1.232
+divideScaleRoundingModeMethod                  0.198 / 0.360 / 1.368
+roundMathContextMethod                         0.301 / 0.827 / 1.333
+sqrtMathContextMethod                          4.285 / 8.908 / 34.521
+setScaleRoundedMethod                          0.245 / 0.317 / 0.580
+stripTrailingZerosMethod                       0.441 / 0.288 / 0.447
+
+Planned isolated trials:
+1. Remove success-path vararg allocation from checkMp.
+2. Use a dedicated square implementation for same-operand multiplication and pow.
+3. Pack and unpack power-of-two radices directly from canonical limbs.
+4. Right-size LibTomMath output storage where ownership is exchanged.
+5. Convert integers directly to IEEE-754 float/double with ties-to-even rounding.
+6. Remove avoidable native temporaries from BigDecimal factor stripping and half comparisons.
+7. Profile large-number conversion and LibTomMath cutoffs; retain only measured wins.
+
+=== DISCARDED TRIAL — fixed-arity checkMp overloads ===
+Change: Replaced the vararg cleanup parameter with zero/one/two/three-pointer overloads.
+Validation: all 82 specs and 517 native tests passed.
+Benchmark source:
+- benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-19T01.08.03.802256/macosArm64.json
+
+Result: discarded. LibTomMath-heavy cases were mixed within smoke-run noise: large mod improved 3.5%,
+medium gcd improved 2.0%, medium divide improved 0.4%, and large divide-and-remainder regressed 1.0%.
+The source duplication was not justified by a repeatable suite-level improvement.
+
+=== RUN 2 — 2026-08-19 ===
+Change: Added a dedicated square path for same-instance multiplication and binary exponentiation.
+- Values within the Kotlin schoolbook threshold retain the existing multiplySmall implementation.
+- Larger values call LibTomMath mp_sqr so its Comba/Karatsuba/Toom square algorithms can exploit symmetry.
+
+Validation: all 82 specs and 517 native tests passed after the final implementation.
+Benchmark sources:
+- First trial (included a discarded Kotlin symmetric loop):
+  benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-19T01.13.31.445315/macosArm64.json
+- Final retained implementation:
+  benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-19T01.17.54.33646/macosArm64.json
+
+Key result:
+- large squareMethod: 0.537 baseline -> 0.448 first trial -> 0.445 us/op final (17.1% faster).
+- large multiplyMethod remained on mp_mul; in the final thermally throttled run it measured 0.640 us/op,
+  making the adjacent mp_sqr measurement 30.4% faster for equal operands.
+- powMethod remained effectively flat at 0.154 / 0.157 / 0.121 us/op versus
+  0.159 / 0.157 / 0.124 baseline.
+
+Discarded sub-trial: a Kotlin symmetry-aware schoolbook square regressed small/medium squareMethod,
+so it was removed. The retained Kotlin path is the previously benchmarked multiplySmall implementation.
+
+=== RUN 3 — 2026-08-19 ===
+Change: Added direct parsing and formatting for power-of-two radices 2, 4, 8, 16, and 32.
+- Parsing fills right-aligned 60-bit limbs directly from fixed-width digit groups.
+- Formatting extracts digits directly from limbs; multi-limb values no longer cross FFI or use repeated division.
+- Other radices retain the existing grouped conversion paths.
+
+Validation: all 82 specs and 517 native tests passed, including differential radix fixtures.
+Benchmark sources:
+- benchmarks/build/reports/benchmarks/constructionSmoke/2026-08-19T01.25.35.590353/macosArm64.json
+- benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-19T01.23.21.809849/macosArm64.json
+
+Key deltas versus baseline (small / medium / large, us/op):
+- constructorStringRadix: 0.120/0.446/1.670 -> 0.118/0.416/1.319
+  (1.7% / 6.7% / 21.0% faster).
+- toStringRadixMethod: 0.162/3.097/11.006 -> 0.177/0.439/1.352.
+  The ULong-backed small path is unchanged and its 9% movement is run noise; the new multi-limb path is
+  85.8% faster for medium and 87.7% faster for large values.
+
+=== RUN 4 — 2026-08-19 ===
+Change: Initialized LibTomMath destinations with operation-specific result bounds instead of the default
+32-limb allocation. Direct-write operations avoid reallocating, while exchange-based operations discard a
+smaller placeholder buffer.
+
+Validation: all 82 specs and 517 native tests passed.
+Benchmark sources:
+- Noisy first run: benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-19T01.29.01.948721/macosArm64.json
+- Repeat: benchmarks/build/reports/benchmarks/arithmeticSmoke/2026-08-19T01.32.31.410556/macosArm64.json
+
+Result and load normalization:
+- The repeat's unaffected Kotlin-only operations averaged 34% slower than baseline, so raw cross-run deltas
+  for the suite cannot be interpreted without a control.
+- The duplicate large LibTomMath multiplication probes nevertheless averaged
+  0.532 us/op baseline -> 0.493 us/op repeat (7.4% faster in absolute time).
+- The duplicate large division probes averaged 2.179 -> 2.286 us/op (+4.9%), while their unchanged small
+  Kotlin paths rose 11.5%; normalized to that in-process control, the native division path improved about 5.9%.
+- Large divide-and-remainder rose 5.5% while its unchanged small path rose 19.4%, also indicating lower
+  destination-allocation overhead after normalization.
+
+The change is retained because FFI paths improved relative to adjacent unchanged controls in both duplicate
+operator/method probes, and large multiplication improved even before normalization.
+
+=== RUN 5 — 2026-08-19 ===
+Change: Replaced decimal-string float/double conversion with direct IEEE-754 bit construction.
+- A shared helper extracts the leading 24 or 53 magnitude bits.
+- Guard and sticky bits implement round-to-nearest, ties-to-even.
+- Sign, significand carry, and the finite-to-infinity boundary are handled without allocation.
+
+Validation:
+- Added float tie and overflow-boundary regression tests plus a property cross-check against Long.toFloat().
+- All 83 specs and 520 native tests passed.
+- The existing 2,525-case toDouble differential fixture passed bit-for-bit.
+
+Benchmark source:
+- benchmarks/build/reports/benchmarks/conversionSmoke/2026-08-19T01.39.20.213126/macosArm64.json
+
+Key deltas versus baseline (small / medium / large, us/op):
+- toDoubleMethod: 0.638/2.161/6.235 -> 0.019/0.025/0.019
+  (33.8x / 87.1x / 330.7x faster).
+- toFloatMethod: 0.619/1.229/5.876 -> 0.021/0.014/0.017
+  (29.7x / 87.9x / 335.8x faster).
+
+Note: the benchmark process was paused much later during toStringRadixMethod, corrupting that unrelated
+medium measurement and total wall time. The float/double iterations above completed before the pause.
+
+=== RUN 6 — 2026-08-19 ===
+Change: Compared a doubled remainder against its divisor directly from LibTomMath's 60-bit digits.
+- Removed the temporary mp_int allocation, mp_mul_2 call, and mp_cmp_mag call from BigDecimal rounding.
+- Added a focused bigDecimalRounding benchmark suite so the affected path can be measured without the
+  unrelated arithmetic suite dominating wall time.
+
+Validation: all 83 specs and 520 native tests passed.
+Benchmark source:
+- benchmarks/build/reports/benchmarks/bigDecimalRounding/2026-08-19T15.22.06.173279/macosArm64.json
+
+Focused interleaved A/B result (previous implementation -> optimized repeat, us/op):
+- roundMathContextMethod medium: 0.989 -> 0.929 (6.1% faster).
+- roundMathContextMethod large: 1.612 -> 1.494 (7.3% faster).
+- The small profile does not exercise the multi-limb helper and remained too noisy to interpret.
+
+=== RUN 7 — 2026-08-19 ===
+Change: Fused repeated small-factor removal into one native in-place kernel.
+- The native backend now copies the immutable input once and strips every exact factor from its 60-bit
+  LibTomMath digits without allocating a quotient for each division.
+- Divisibility is checked before each mutation, so a non-divisible value preserves the original result.
+- Added multi-limb positive and negative power-of-five regression coverage and a focused exact-division
+  benchmark using a 5^40 divisor.
+
+Validation: all 83 specs and 520 native tests passed.
+Benchmark source:
+- benchmarks/build/reports/benchmarks/bigDecimalFactorStripping/2026-08-19T15.24.42.625677/macosArm64.json
+
+Focused baseline -> optimized result (us/op):
+- divideLargeFiveFactorExactMethod small: 8.587 -> 2.150 (75.0% faster).
+- divideLargeFiveFactorExactMethod medium: 10.931 -> 4.058 (62.9% faster).
+- divideLargeFiveFactorExactMethod large: 18.968 -> 9.746 (48.6% faster).
+
+=== DISCARDED TRIAL — LibTomMath algorithm cutoffs ===
+Change trial: Ran LibTomMath's tuner with 40 rounds, 100 loops per sample, monotonic nanosecond timing,
+MP_64BIT, and the production optimization level. It proposed changing multiplication/square cutoffs from
+80/120/350/400 to 122/128/208/128.
+
+Project-level validation used focused 96-, 132-, and 224-limb multiplication and square probes.
+Benchmark source for the final restored-default confirmation:
+- benchmarks/build/reports/benchmarks/nativeCutoff/2026-08-19T15.32.05.85686/macosArm64.json
+
+Result (restored defaults -> tuned cutoffs, us/op):
+- multiply, 96 limbs: 4.635 -> 5.603 (20.9% slower).
+- multiply, 132 limbs: 6.978 -> 6.913 (0.9% faster).
+- multiply, 224 limbs: 13.794 -> 20.157 (46.1% slower).
+- square, 96 limbs: 3.277 -> 3.273 (flat).
+- square, 132 limbs: 4.793 -> 5.003 (4.4% slower).
+- square, 224 limbs: 10.464 -> 10.358 (1.0% faster).
+
+The tuned cutoffs and temporary focused benchmark were discarded. The isolated tuner does not model the
+project's operand distribution well enough, and the two marginal wins do not justify the material regressions.
+
+=== FINAL VALIDATION FIX — exact JS Float conversion ===
+The new common overflow-boundary regression exposed double rounding on JS: converting BigInt to decimal
+text, parsing it as binary64, and then narrowing to Float rounded one-below-tie to infinity. The JS backend now
+constructs binary32 bits directly from BigInt with round-to-nearest, ties-to-even.
+
+Validation: all 1,227 JS tests passed, including the retained overflow-boundary test.
+Benchmark source:
+- benchmarks/build/reports/benchmarks/floatConversion/2026-08-19T15.53.05.480664/js.json
+
+Previous decimal parse -> direct conversion (us/op):
+- toFloatMethod small: 0.117 -> 0.184 (0.067 us/op slower).
+- toFloatMethod medium: 0.532 -> 0.125 (76.5% faster).
+- toFloatMethod large: 3.332 -> 0.268 (91.9% faster).
+
+The exact implementation is retained for correctness; it also removes the size-dependent decimal conversion
+cost and strongly improves the multi-word profiles.
+
+=== RUN 8 — 2026-08-19 ===
+Change: Replaced the fused C/LibTomMath factor-stripping kernel with a native Kotlin loop over the canonical
+60-bit limbs.
+- The only multi-limb caller strips factors of five, so each carry-and-limb partial fits in ULong.
+- The Kotlin path copies the magnitude once, mutates that array in place, and avoids LibTomMath allocation,
+  result copying, and the cinterop call.
+- The C helper and its dependency on LibTomMath's private_mp_word were removed.
+
+Validation: all 83 specs and 520 native tests passed.
+Benchmark sources:
+- C baseline: benchmarks/build/reports/benchmarks/bigDecimalFactorStripping/2026-08-19T21.42.50.788144/macosArm64.json
+- Kotlin implementation: benchmarks/build/reports/benchmarks/bigDecimalFactorStripping/2026-08-19T21.45.27.180088/macosArm64.json
+
+Fresh C baseline -> Kotlin result (us/op):
+- divideLargeFiveFactorExactMethod small: 3.264 -> 1.010 (69.1% faster).
+- divideLargeFiveFactorExactMethod medium: 8.098 -> 1.903 (76.5% faster).
+- divideLargeFiveFactorExactMethod large: 14.151 -> 6.053 (57.2% faster).
+
+The fresh C baseline was noisy, but every individual C iteration was slower than every Kotlin iteration.
+Against the earlier stable retained-C measurements (2.150 / 4.058 / 9.746 us/op), Kotlin is still
+53.0% / 53.1% / 37.9% faster.

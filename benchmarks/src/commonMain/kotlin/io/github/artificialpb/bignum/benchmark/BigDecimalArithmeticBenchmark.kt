@@ -74,6 +74,9 @@ open class BigDecimalArithmeticBenchmark : BigDecimalProfiledBenchmarkState() {
     fun divideGenericExactMethod(): BigDecimal = fixture.genericExactDividend.divide(fixture.genericExactDivisor)
 
     @Benchmark
+    fun divideLargeFiveFactorExactMethod(): BigDecimal = fixture.largeFiveFactorDividend.divide(fixture.largeFiveFactorDivisor)
+
+    @Benchmark
     fun divideRoundingModeMethod(): BigDecimal = fixture.roundedDivideDividend.divide(fixture.roundedDivideDivisor, fixture.roundingMode)
 
     @Benchmark
