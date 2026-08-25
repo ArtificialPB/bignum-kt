@@ -25,9 +25,6 @@ open class ConversionBenchmark : ProfiledBenchmarkState() {
     fun toDoubleMethod(): Double = fixture.left.toDouble()
 
     @Benchmark
-    fun toFloatMethod(): Float = fixture.left.toFloat()
-
-    @Benchmark
     fun toStringMethod(): String = fixture.left.toString()
 
     @Benchmark
