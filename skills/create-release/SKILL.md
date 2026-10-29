@@ -1,106 +1,76 @@
 ---
 name: create-release
-description: Release workflow for bignum-kt. Use when we need to bump VERSION_NAME, create a release commit, tag a v* release, start the next SNAPSHOT version, push the release refs, or inspect GitHub Actions publishing for this repository. Require the user to provide an explicit release version before making release changes.
+description: Release workflow for bignum-kt. Use when we need to cut a release (Maven Central + Swift package XCFramework), bump VERSION_NAME, tag a v* release, start the next SNAPSHOT version, or inspect GitHub Actions publishing for this repository. Require the user to provide an explicit release version before making release changes.
 ---
 
 # Create Release
 
 ## Overview
 
-Use this workflow to publish a new bignum-kt version through GitHub Actions. The release is driven by `gradle.properties`, a lightweight `v*` tag, and the CI workflow in `.github/workflows/publish-library.yml`.
+Releases are cut entirely in GitHub Actions by `.github/workflows/release.yml` (manual `workflow_dispatch`). Do not create release commits or tags locally: the Swift package requires the XCFramework checksum in `Package.swift` of the tagged commit, and only the workflow computes it.
 
 ## CI Facts
 
-- Publishing runs from `.github/workflows/publish-library.yml`.
-- The workflow triggers on pushes to `master`, pushes to tags matching `v*`, and manual dispatch.
-- The deploy job runs `./gradlew clean build`, `./gradlew publish`, then `./gradlew jreleaserDeploy`.
-- The tag workflow should publish the fixed release version.
-- The branch workflow should normally publish the next `-SNAPSHOT` version.
+- `release.yml` takes `version` (required) and `next-snapshot` (optional, defaults to the next patch `-SNAPSHOT`).
+- It runs `./gradlew build :bignum:assembleBignumKtReleaseXCFramework`, zips the XCFramework, runs `swift test` against it, then commits `chore: release X.Y.Z` (via `scripts/release-version.sh release`), tags `vX.Y.Z`, and commits `chore: start X.Y.(Z+1) snapshot`.
+- `BignumKt.xcframework.zip` is uploaded to a draft GitHub release before `master` and the tag are pushed atomically; the release is then published and the downloaded asset checksum is verified.
+- It then calls `publish-library.yml` twice: once for the tag (release to Maven Central), then once for the snapshot commit.
+- `publish-library.yml` also runs on every push to `master` (snapshots) and on manual dispatch. It no longer triggers on tag pushes.
 - Previous releases used lightweight tags, for example `v1.0.0`.
 
 ## Release Workflow
 
-1. Require an explicit release version from the user before changing files, creating commits, creating tags, or pushing refs. Do not infer the release version from `VERSION_NAME`, tags, branch history, or a requested bump type.
+1. Require an explicit release version from the user before dispatching anything. Do not infer the release version from `VERSION_NAME`, tags, branch history, or a requested bump type.
 
-   Acceptable examples: `1.0.1`, `v1.0.1`.
+   Acceptable examples: `1.0.1`, `v1.0.1` (the workflow strips a leading `v`).
 
    If the user has not provided a concrete release version, ask for it and stop.
 
-2. Inspect state before changing anything:
+2. Inspect state before releasing:
    ```bash
-   git status --short --branch
-   git log --oneline --decorate -8
-   git tag --list --sort=-version:refname
-   sed -n '1,80p' gradle.properties
-   sed -n '1,220p' .github/workflows/publish-library.yml
+   git fetch origin --tags
+   git log --oneline --decorate -8 origin/master
+   git tag --list --sort=-version:refname | head -5
+   git show origin/master:gradle.properties | grep VERSION_NAME
+   gh run list --repo ArtificialPB/bignum-kt --branch master --limit 5
    ```
 
-3. Normalize the explicit release version by removing a leading `v` for `VERSION_NAME`, while keeping `v` for the tag. For example, user input `v1.0.1` becomes `VERSION_NAME=1.0.1` and tag `v1.0.1`.
+   `origin/master` must be on a `-SNAPSHOT` version, the release tag must not exist yet, and the latest pull request checks on `master` should be green. Any changes meant for the release must already be merged to `master`.
 
-4. Confirm the next snapshot version, usually the next patch such as `1.0.2-SNAPSHOT`. The next snapshot can be inferred from the explicit release version unless the user gives a different next snapshot.
+3. Confirm the next snapshot version, usually the next patch such as `1.0.2-SNAPSHOT`. Only pass `next-snapshot` when the user wants something other than the next patch.
 
-5. Set the release version in `gradle.properties` and update stable dependency examples in `README.md` to the same version:
-   ```properties
-   VERSION_NAME=1.0.1
-   ```
-
-   ```kotlin
-   implementation("io.github.artificialpb:bignum:1.0.1")
-   ```
-
-6. Commit only `gradle.properties` and `README.md`:
+4. Dispatch the release:
    ```bash
-   git add gradle.properties README.md
-   git commit -m "chore: release 1.0.1"
+   gh workflow run release.yml --repo ArtificialPB/bignum-kt --ref master -f version=1.0.1
+   # or, with an explicit next snapshot:
+   gh workflow run release.yml --repo ArtificialPB/bignum-kt --ref master -f version=1.0.1 -f next-snapshot=1.1.0-SNAPSHOT
    ```
 
-7. Create a lightweight tag on the release commit:
+5. Monitor the run:
    ```bash
-   git tag v1.0.1
+   gh run list --repo ArtificialPB/bignum-kt --workflow release.yml --limit 3
+   gh run watch <run-id> --repo ArtificialPB/bignum-kt
    ```
 
-8. Set the next snapshot version in `gradle.properties` and update the snapshot dependency example in `README.md`:
-   ```properties
-   VERSION_NAME=1.0.2-SNAPSHOT
-   ```
-
-   ```kotlin
-   implementation("io.github.artificialpb:bignum:1.0.2-SNAPSHOT")
-   ```
-
-9. Commit only `gradle.properties` and `README.md` again:
+6. Verify the result:
    ```bash
-   git add gradle.properties README.md
-   git commit -m "chore: start 1.0.2 snapshot"
-   ```
-
-10. Verify local history before pushing:
-   ```bash
-   git log --oneline --decorate -5
-   git status --short --branch
+   git fetch origin --tags
    git show --quiet --format='%h %D %s' v1.0.1
+   git show v1.0.1:Package.swift | grep -E 'releaseVersion|releaseChecksum'
+   gh release view v1.0.1 --repo ArtificialPB/bignum-kt
+   git log --oneline --decorate -3 origin/master
    ```
 
-11. Push the branch and release tag together:
-   ```bash
-   git push origin master v1.0.1
-   ```
+   Expect the `v1.0.1` tag on `chore: release 1.0.1`, a published GitHub release with `BignumKt.xcframework.zip`, `origin/master` on the next snapshot commit, and successful `Publish release` and `Publish next snapshot` jobs.
 
-   This ordering matters: `master` should point at the next snapshot commit by the time GitHub sees the branch push, while the `v1.0.1` tag points at the release commit.
+## Failure Recovery
 
-12. Verify the remote tag and GitHub Actions:
-    ```bash
-    git ls-remote --tags origin v1.0.1
-    gh run list --repo ArtificialPB/bignum-kt --limit 8
-    ```
-
-    Expect one deploy run for `v1.0.1`, one deploy run for `master` at the next snapshot commit, and pull request checks for `master`.
+- Failure before the push step: nothing was pushed (a draft release, if created, is deleted). Fix the cause on `master` and dispatch again.
+- Failure after the push step (publishing the GitHub release, checksum verification, or Maven Central jobs): the tag and commits exist, so do not dispatch again. Inspect the failing job. The exact zip is kept as the `BignumKt.xcframework` workflow artifact; re-attach that file (never a rebuilt one, whose checksum differs) with `gh release upload v1.0.1 BignumKt.xcframework.zip`, or re-run only the failed Maven jobs from the run page, or dispatch `publish-library.yml` with `--ref v1.0.1`.
 
 ## Guardrails
 
-- Do not include unrelated worktree files in the release commits.
-- Keep stable and snapshot dependency examples in `README.md` aligned with the release and next snapshot versions.
-- Do not push the release commit to `master` by itself unless the user explicitly wants the branch workflow to publish a non-snapshot version.
 - Never infer the release version. The user must provide it explicitly.
-- If `git tag`, `git push`, `git ls-remote`, or `gh run list` needs elevated/network permissions, request approval with the narrow command prefix.
+- Never create or push `v*` tags by hand; the tag would lack a valid `Package.swift` checksum and would not publish to Maven Central.
+- If `gh workflow run`, `gh run`, or `git fetch` needs elevated/network permissions, request approval with the narrow command prefix.
 - If CI should be monitored, use `gh run list` first, then inspect failing runs/jobs only when needed.

@@ -5,6 +5,8 @@ import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 
@@ -24,6 +26,8 @@ val bigDecimalDifferentialFixtureDir = projectDir.resolve("src/commonTest/resour
 val differentialFixtureSeed = providers.gradleProperty("differentialFixtureSeed")
     .orElse(providers.environmentVariable("BIGNUM_DIFFERENTIAL_SEED"))
 val githubRepoUrl = "https://github.com/ArtificialPB/bignum-kt"
+// Binary module consumed by the Swift package in Package.swift
+val swiftBinaryName = "BignumKt"
 val tommathPinnedDefines = listOf(
     "MP_NO_FILE",
     "MP_USE_ENUMS",
@@ -59,10 +63,20 @@ kotlin {
         nodejs()
     }
 
-    macosArm64()
-    iosArm64()
-    iosX64()
-    iosSimulatorArm64()
+    val swiftXCFramework = XCFramework(swiftBinaryName)
+    listOf(
+        macosArm64(),
+        iosArm64(),
+        iosX64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.binaries.framework(listOf(NativeBuildType.RELEASE)) {
+            baseName = swiftBinaryName
+            isStatic = true
+            binaryOption("bundleId", "io.github.artificialpb.bignum")
+            swiftXCFramework.add(this)
+        }
+    }
 
     targets.withType<KotlinNativeTarget>().configureEach {
         check(konanTarget.name in pinnedTommathTargets) {

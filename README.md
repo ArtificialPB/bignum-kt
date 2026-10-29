@@ -62,6 +62,31 @@ dependencies {
 }
 ```
 
+### Swift Package Manager
+
+Swift-only iOS and macOS apps can depend on the prebuilt XCFramework published with every GitHub release
+(iOS 15+, macOS 12+, available from 1.0.6):
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/ArtificialPB/bignum-kt.git", from: "1.0.6"),
+],
+targets: [
+    .target(name: "MyApp", dependencies: [.product(name: "Bignum", package: "bignum-kt")]),
+]
+```
+
+```swift
+import Bignum
+
+let a = BigInteger(value: "123456789012345678901234567890")
+let b = a.multiply(other: a)
+```
+
+Kotlin Multiplatform apps should not add the Swift package. Use the Maven dependency instead and expose it to Swift
+through your own framework with `api(...)` plus `export("io.github.artificialpb:bignum:<version>")`. Mixing both
+links two Kotlin runtimes and produces two incompatible `BigInteger` types.
+
 ## Usage
 
 ```kotlin
