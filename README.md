@@ -83,10 +83,15 @@ let a = try BigInteger(string: "123456789012345678901234567890")
 let b = a * a + BigInteger(42)
 let (quotient, remainder) = try b.quotientAndRemainder(dividingBy: a)
 
-let price = try BigDecimal(string: "19.99")
-let total = price * BigDecimal(3)
-let share = try total.divide(other: BigDecimal(7), scale: 2, roundingMode: .halfEven)
+let price: BigDecimal = "19.99"
+let total = price * 3
+let share = try total.divide(other: 7, scale: 2, roundingMode: .halfEven)
 ```
+
+Both types accept integer literals (within `Int` range) and string literals, so `let big: BigInteger =
+"123456789012345678901234567890"` works. Literals are checked at runtime: a malformed string literal traps, so use
+`try BigInteger(string:)` for input you don't control. `BigDecimal` has no float literals, since Swift would round
+them through `Double`; write `"0.1"` instead of `0.1`.
 
 Methods that can fail (parsing, division by zero, inexact `BigDecimal` division, `RoundingMode.unnecessary`) are
 `throws`. The `+`, `-`, `*`, `/` and `%` operators trap on invalid input like Swift's integer operators do;
