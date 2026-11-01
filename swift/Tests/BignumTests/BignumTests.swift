@@ -84,7 +84,7 @@ final class BignumTests: XCTestCase {
         XCTAssertEqual(Int(exactly: BigInteger(Int.min)), Int.min)
         XCTAssertNil(Int(exactly: large))
         XCTAssertEqual(Int(truncatingIfNeeded: BigInteger(Int.max) + BigInteger(1)), Int.min)
-        XCTAssertEqual(Double(BigInteger(1).shiftLeft(n: 70)), 0x1p70)
+        XCTAssertEqual(try Double(BigInteger(1).shiftLeft(n: 70)), 0x1p70)
     }
 
     func testBigDecimalArithmetic() throws {
