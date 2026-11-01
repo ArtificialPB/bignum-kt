@@ -79,9 +79,19 @@ targets: [
 ```swift
 import Bignum
 
-let a = BigInteger(value: "123456789012345678901234567890")
-let b = a.multiply(other: a)
+let a = try BigInteger(string: "123456789012345678901234567890")
+let b = a * a + BigInteger(42)
+let (quotient, remainder) = try b.quotientAndRemainder(dividingBy: a)
+
+let price = try BigDecimal(string: "19.99")
+let total = price * BigDecimal(3)
+let share = try total.divide(other: BigDecimal(7), scale: 2, roundingMode: .halfEven)
 ```
+
+Methods that can fail (parsing, division by zero, inexact `BigDecimal` division, `RoundingMode.unnecessary`) are
+`throws`. The `+`, `-`, `*`, `/` and `%` operators trap on invalid input like Swift's integer operators do;
+`BigDecimal` has no `/` operator because exact division fails for non-terminating results such as 1 / 3. As with
+`java.math.BigDecimal`, `==` compares value and scale (`2.0 != 2.00`) while `<` compares numeric value only.
 
 Kotlin Multiplatform apps should not add the Swift package. Use the Maven dependency instead and expose it to Swift
 through your own framework with `api(...)` plus `export("io.github.artificialpb:bignum:<version>")`. Mixing both

@@ -1,9 +1,14 @@
-@file:OptIn(ExperimentalForeignApi::class)
+@file:OptIn(ExperimentalForeignApi::class, ExperimentalObjCName::class, ExperimentalObjCRefinement::class)
 
 package io.github.artificialpb.bignum
 
 import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
+import kotlin.experimental.ExperimentalObjCName
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
+import kotlin.native.ObjCName
+import kotlin.native.ShouldRefineInSwift
 
 actual class BigInteger private constructor() : Number(), Comparable<BigInteger> {
     private var sign: Int = Int.MIN_VALUE
@@ -39,14 +44,18 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    actual constructor(value: String) : this(value, 10)
+    @Throws(NumberFormatException::class, ArithmeticException::class)
+    actual constructor(@ObjCName("string") value: String) : this(value, 10)
 
-    actual constructor(value: String, radix: Int) : this() {
+    @Throws(NumberFormatException::class, ArithmeticException::class)
+    actual constructor(@ObjCName("string") value: String, radix: Int) : this() {
         fromStringConstructor(value, radix, ::initialize)
     }
 
+    @Throws(NumberFormatException::class, IndexOutOfBoundsException::class)
     actual constructor(bytes: ByteArray) : this(bytes, 0, bytes.size)
 
+    @Throws(NumberFormatException::class, IndexOutOfBoundsException::class)
     actual constructor(bytes: ByteArray, off: Int, len: Int) : this() {
         if (off < 0 || len < 0 || off.toLong() + len.toLong() > bytes.size) {
             throw IndexOutOfBoundsException("Range [$off, ${off.toLong() + len.toLong()}) out of bounds for length ${bytes.size}")
@@ -79,8 +88,10 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(NumberFormatException::class, IndexOutOfBoundsException::class)
     actual constructor(signum: Int, magnitude: ByteArray) : this(signum, magnitude, 0, magnitude.size)
 
+    @Throws(NumberFormatException::class, IndexOutOfBoundsException::class)
     actual constructor(signum: Int, magnitude: ByteArray, off: Int, len: Int) : this() {
         if (signum !in -1..1) {
             throw NumberFormatException("Invalid signum value")
@@ -164,6 +175,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(ArithmeticException::class)
     actual fun divide(other: BigInteger): BigInteger {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return ZERO
@@ -186,6 +198,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 
     actual fun negate(): BigInteger = if (sign == 0) this else BigInteger(-sign, size, limbs)
 
+    @Throws(ArithmeticException::class)
     actual fun pow(exponent: Int): BigInteger {
         when {
             exponent < 0 -> throw ArithmeticException("Negative exponent")
@@ -252,6 +265,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(ArithmeticException::class)
     actual fun mod(modulus: BigInteger): BigInteger {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         if (sign == 0) return ZERO
@@ -269,6 +283,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(ArithmeticException::class)
     actual fun modPow(exponent: BigInteger, modulus: BigInteger): BigInteger {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // x^e mod 1 == 0 for all x, e
@@ -290,6 +305,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(ArithmeticException::class)
     actual fun modInverse(modulus: BigInteger): BigInteger {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // JVM: x.modInverse(1) == 0 for any x
@@ -311,6 +327,8 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return inverse
     }
 
+    @Throws(ArithmeticException::class)
+    @ShouldRefineInSwift
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return arrayOf(ZERO, ZERO)
@@ -397,6 +415,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(ArithmeticException::class)
     actual fun shiftLeft(n: Int): BigInteger {
         if (n < 0) {
             if (n == Int.MIN_VALUE) {
@@ -413,6 +432,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return shiftLeftMagnitude(sign, this, n)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun shiftRight(n: Int): BigInteger {
         if (n < 0) {
             if (n == Int.MIN_VALUE) {
@@ -434,6 +454,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return addMagnitudeOne(-1, shiftedMagnitude)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun testBit(n: Int): Boolean {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) {
@@ -448,6 +469,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return ((negativePayloadDigitAt(this, digitIndex) shr bitIndex) and 1UL) == 0UL
     }
 
+    @Throws(ArithmeticException::class)
     actual fun setBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) {
@@ -458,6 +480,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return subtractSingleBitMagnitude(-1, this, n)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun clearBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) {
@@ -468,6 +491,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return addSingleBitMagnitude(-1, this, n)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun flipBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) return flipBitNonNegative(this, n)
@@ -525,6 +549,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    @Throws(ArithmeticException::class)
     actual fun nextProbablePrime(): BigInteger {
         if (sign < 0) throw ArithmeticException("start < 0: $this")
         if (sign == 0 || this == ONE) return TWO
@@ -542,6 +567,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 
     // Roots
 
+    @Throws(ArithmeticException::class)
     actual fun sqrt(): BigInteger {
         if (sign < 0) throw ArithmeticException("Negative BigInteger")
         if (sign == 0) return ZERO
@@ -725,6 +751,8 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 }
 
 @OptIn(ExperimentalForeignApi::class)
+@Throws(ArithmeticException::class)
+@ObjCName("remainder")
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")
     if (signum() == 0) return ZERO
@@ -741,16 +769,19 @@ actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     }
 }
 
+@HiddenFromObjC
 actual operator fun BigInteger.unaryMinus(): BigInteger = negate()
 
 // inc/dec
 
+@HiddenFromObjC
 actual operator fun BigInteger.inc(): BigInteger = when (signum()) {
     0 -> ONE
     1 -> addMagnitudeOne(1, this)
     else -> subtractMagnitudeOne(-1, this)
 }
 
+@HiddenFromObjC
 actual operator fun BigInteger.dec(): BigInteger = when (signum()) {
     0 -> MINUS_ONE
     -1 -> addMagnitudeOne(-1, this)
@@ -807,6 +838,7 @@ internal actual val MINUS_ONE = bigIntegerOf(-1L)
 
 // Factory functions
 
+@HiddenFromObjC
 actual fun bigIntegerOf(value: String): BigInteger = when (value) {
     "0" -> ZERO
     "1" -> ONE
@@ -864,6 +896,7 @@ internal actual fun parseDecimalBigIntegerSkippingIndex(
     return if (normalizedSize == 0) ZERO else BigInteger(sign, normalizedSize, magnitude)
 }
 
+@HiddenFromObjC
 actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
     0L -> ZERO
     1L -> ONE
@@ -873,6 +906,7 @@ actual fun bigIntegerOf(value: Long): BigInteger = when (value) {
     else -> newBigIntegerFromLong(value)
 }
 
+@HiddenFromObjC
 actual fun bigIntegerOf(value: Int): BigInteger = when (value) {
     0 -> ZERO
     1 -> ONE
