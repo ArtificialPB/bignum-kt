@@ -64,6 +64,9 @@ bignum-kt/
 ./gradlew coverageXml             # JVM/common XML coverage report
 ./gradlew publishToMavenLocal     # Publish artifacts to your local Maven cache
 ./gradlew publish                 # Stage artifacts for Maven Central deployment
+./gradlew :bignum:assembleBignumKtReleaseXCFramework  # Build the Swift package XCFramework (macOS)
+BIGNUM_USE_LOCAL_XCFRAMEWORK=1 swift test             # Test the Swift package against that XCFramework
+scripts/check-xcframework-min-os.sh                   # Check no object needs a newer OS than Package.swift declares
 ```
 
 Coverage is reported through Kover for the JVM target. That includes `commonMain` and `jvmMain` code exercised by JVM tests, but it does not include Kotlin/Native execution coverage.
@@ -78,7 +81,16 @@ GitHub Actions publishes from [publish-library.yml](.github/workflows/publish-li
 - `JRELEASER_GPG_SECRET_KEY`
 - `JRELEASER_GPG_PASSPHRASE`
 
-The build version comes from `VERSION_NAME` in [gradle.properties](gradle.properties). Use a `-SNAPSHOT` version for snapshot publishing from `master`, and update it to the release version before pushing a matching `v*` tag.
+The build version comes from `VERSION_NAME` in [gradle.properties](gradle.properties). `master` always carries a `-SNAPSHOT` version, and every push to `master` publishes that snapshot.
+
+Releases are cut by running the [Release workflow](.github/workflows/release.yml) from the Actions tab (or `gh workflow run release.yml -f version=1.0.6`). It:
+
+1. Builds and tests the project, builds the `BignumKt` XCFramework, and runs `swift test` against it.
+2. Commits the release version (`gradle.properties`, `README.md`, and the `Package.swift` URL and checksum), tags it `vX.Y.Z`, and commits the next `-SNAPSHOT` version.
+3. Uploads `BignumKt.xcframework.zip` to a draft GitHub release, pushes `master` and the tag atomically, then publishes the release and verifies the downloadable asset matches the checksum.
+4. Publishes the release and the next snapshot to Maven Central through `publish-library.yml`, skipping its build and test step since step 1 already ran it.
+
+Pushing a `v*` tag by hand does not publish anything: the Swift package checksum has to be committed in the tagged commit, which only the Release workflow does. Swift Package Manager consumers resolve versions from these tags and download the XCFramework from the matching GitHub release.
 
 ## Architecture
 

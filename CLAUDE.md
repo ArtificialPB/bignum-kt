@@ -15,6 +15,8 @@ Kotlin Multiplatform library providing a common BigInteger abstraction that dele
 ```
 bignum-kt/
 ├── bignum/                    # Library module
+├── swift/                     # Swift package sources and tests (Package.swift at root)
+├── scripts/                   # Release version rewrites + XCFramework minimum-OS check
 ├── benchmarks/                # Multiplatform benchmark module
 │   ├── src/
 │   │   ├── commonMain/        # expect declarations + common API
@@ -49,6 +51,11 @@ bignum-kt/
 
 # JavaScript only (Node.js)
 ./gradlew jsNodeTest
+
+# Build the Swift package XCFramework and test the Swift package against it (macOS only)
+./gradlew :bignum:assembleBignumKtReleaseXCFramework
+BIGNUM_USE_LOCAL_XCFRAMEWORK=1 swift test
+scripts/check-xcframework-min-os.sh
 
 # Compile benchmark sources for every benchmark target
 ./gradlew :benchmarks:compileAllBenchmarks

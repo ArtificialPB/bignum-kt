@@ -5,6 +5,8 @@ import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 
@@ -24,6 +26,8 @@ val bigDecimalDifferentialFixtureDir = projectDir.resolve("src/commonTest/resour
 val differentialFixtureSeed = providers.gradleProperty("differentialFixtureSeed")
     .orElse(providers.environmentVariable("BIGNUM_DIFFERENTIAL_SEED"))
 val githubRepoUrl = "https://github.com/ArtificialPB/bignum-kt"
+// Binary module consumed by the Swift package in Package.swift
+val swiftBinaryName = "BignumKt"
 val tommathPinnedDefines = listOf(
     "MP_NO_FILE",
     "MP_USE_ENUMS",
@@ -35,13 +39,18 @@ val jvmBaselineLauncher = javaToolchains.launcherFor {
     languageVersion.set(JavaLanguageVersion.of(jvmBaselineVersion))
 }
 
+// Minimum Apple OS versions for LibTomMath. Keep in sync with Kotlin/Native's own minimums and the
+// platforms in Package.swift; scripts/check-xcframework-min-os.sh verifies the built XCFramework.
+val iosMinimumVersion = "15.0"
+val macosMinimumVersion = "12.0"
+
 data class TommathAppleTarget(val sdk: String, val clangTarget: String)
 
 val pinnedTommathTargets = mapOf(
-    "macos_arm64" to TommathAppleTarget("macosx", "arm64-apple-macos"),
-    "ios_arm64" to TommathAppleTarget("iphoneos", "arm64-apple-ios"),
-    "ios_x64" to TommathAppleTarget("iphonesimulator", "x86_64-apple-ios-simulator"),
-    "ios_simulator_arm64" to TommathAppleTarget("iphonesimulator", "arm64-apple-ios-simulator"),
+    "macos_arm64" to TommathAppleTarget("macosx", "arm64-apple-macos$macosMinimumVersion"),
+    "ios_arm64" to TommathAppleTarget("iphoneos", "arm64-apple-ios$iosMinimumVersion"),
+    "ios_x64" to TommathAppleTarget("iphonesimulator", "x86_64-apple-ios$iosMinimumVersion-simulator"),
+    "ios_simulator_arm64" to TommathAppleTarget("iphonesimulator", "arm64-apple-ios$iosMinimumVersion-simulator"),
 )
 
 kotlin {
@@ -59,10 +68,20 @@ kotlin {
         nodejs()
     }
 
-    macosArm64()
-    iosArm64()
-    iosX64()
-    iosSimulatorArm64()
+    val swiftXCFramework = XCFramework(swiftBinaryName)
+    listOf(
+        macosArm64(),
+        iosArm64(),
+        iosX64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.binaries.framework(listOf(NativeBuildType.RELEASE)) {
+            baseName = swiftBinaryName
+            isStatic = true
+            binaryOption("bundleId", "io.github.artificialpb.bignum")
+            swiftXCFramework.add(this)
+        }
+    }
 
     targets.withType<KotlinNativeTarget>().configureEach {
         check(konanTarget.name in pinnedTommathTargets) {
