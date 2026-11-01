@@ -233,6 +233,9 @@ jobs:
           --no-watch-fs
           --stacktrace
 
+      - name: Check XCFramework minimum OS versions
+        run: scripts/check-xcframework-min-os.sh
+
       - name: Test Swift package against the built XCFramework
         env:
           BIGNUM_USE_LOCAL_XCFRAMEWORK: '1'

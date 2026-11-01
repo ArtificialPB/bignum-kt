@@ -39,13 +39,18 @@ val jvmBaselineLauncher = javaToolchains.launcherFor {
     languageVersion.set(JavaLanguageVersion.of(jvmBaselineVersion))
 }
 
+// Minimum Apple OS versions for LibTomMath. Keep in sync with Kotlin/Native's own minimums and the
+// platforms in Package.swift; scripts/check-xcframework-min-os.sh verifies the built XCFramework.
+val iosMinimumVersion = "15.0"
+val macosMinimumVersion = "12.0"
+
 data class TommathAppleTarget(val sdk: String, val clangTarget: String)
 
 val pinnedTommathTargets = mapOf(
-    "macos_arm64" to TommathAppleTarget("macosx", "arm64-apple-macos"),
-    "ios_arm64" to TommathAppleTarget("iphoneos", "arm64-apple-ios"),
-    "ios_x64" to TommathAppleTarget("iphonesimulator", "x86_64-apple-ios-simulator"),
-    "ios_simulator_arm64" to TommathAppleTarget("iphonesimulator", "arm64-apple-ios-simulator"),
+    "macos_arm64" to TommathAppleTarget("macosx", "arm64-apple-macos$macosMinimumVersion"),
+    "ios_arm64" to TommathAppleTarget("iphoneos", "arm64-apple-ios$iosMinimumVersion"),
+    "ios_x64" to TommathAppleTarget("iphonesimulator", "x86_64-apple-ios$iosMinimumVersion-simulator"),
+    "ios_simulator_arm64" to TommathAppleTarget("iphonesimulator", "arm64-apple-ios$iosMinimumVersion-simulator"),
 )
 
 kotlin {

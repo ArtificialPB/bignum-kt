@@ -66,6 +66,7 @@ bignum-kt/
 ./gradlew publish                 # Stage artifacts for Maven Central deployment
 ./gradlew :bignum:assembleBignumKtReleaseXCFramework  # Build the Swift package XCFramework (macOS)
 BIGNUM_USE_LOCAL_XCFRAMEWORK=1 swift test             # Test the Swift package against that XCFramework
+scripts/check-xcframework-min-os.sh                   # Check no object needs a newer OS than Package.swift declares
 ```
 
 Coverage is reported through Kover for the JVM target. That includes `commonMain` and `jvmMain` code exercised by JVM tests, but it does not include Kotlin/Native execution coverage.

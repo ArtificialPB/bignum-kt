@@ -79,6 +79,9 @@ jobs:
           --no-watch-fs
           --stacktrace
 
+      - name: Check XCFramework minimum OS versions
+        run: scripts/check-xcframework-min-os.sh
+
       - name: Package XCFramework
         id: xcframework
         run: |
