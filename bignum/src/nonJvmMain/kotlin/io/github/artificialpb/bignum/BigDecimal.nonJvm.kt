@@ -6,7 +6,6 @@ import kotlin.experimental.ExperimentalObjCName
 import kotlin.experimental.ExperimentalObjCRefinement
 import kotlin.native.HiddenFromObjC
 import kotlin.native.ObjCName
-import kotlin.native.ShouldRefineInSwift
 
 actual enum class RoundingMode {
     UP,
@@ -279,7 +278,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
     actual fun remainder(other: BigDecimal, mathContext: MathContext): BigDecimal = divideAndRemainder(other, mathContext)[1]
 
     @Throws(ArithmeticException::class)
-    @ShouldRefineInSwift
+    @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigDecimal): Array<BigDecimal> {
         requireNonZero(other)
         if (signum() == 0) {
@@ -356,7 +355,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
     }
 
     @Throws(ArithmeticException::class)
-    @ShouldRefineInSwift
+    @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigDecimal, mathContext: MathContext): Array<BigDecimal> {
         if (mathContext.precision == 0) {
             return divideAndRemainder(other)
@@ -854,7 +853,7 @@ actual fun bigDecimalOf(value: Int): BigDecimal = when (value) {
 }
 
 @Throws(NumberFormatException::class)
-@ShouldRefineInSwift
+@ObjCName(swiftName = "__bigDecimalOf")
 actual fun bigDecimalOf(@ObjCName("double") value: Double): BigDecimal = BigDecimal(jvmDoubleToString(value))
 
 internal data class PowerOfTenDivision(

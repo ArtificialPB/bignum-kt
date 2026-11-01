@@ -8,7 +8,6 @@ import kotlin.experimental.ExperimentalObjCName
 import kotlin.experimental.ExperimentalObjCRefinement
 import kotlin.native.HiddenFromObjC
 import kotlin.native.ObjCName
-import kotlin.native.ShouldRefineInSwift
 
 actual class BigInteger private constructor() : Number(), Comparable<BigInteger> {
     private var sign: Int = Int.MIN_VALUE
@@ -328,7 +327,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
     }
 
     @Throws(ArithmeticException::class)
-    @ShouldRefineInSwift
+    @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return arrayOf(ZERO, ZERO)
