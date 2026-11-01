@@ -172,6 +172,8 @@ jobs:
     uses: ./.github/workflows/publish-library.yml
     with:
       ref: ${{ needs.release.outputs.tag }}
+      # Already built and tested by the release job; the ref only differs by version strings.
+      run-build: false
     secrets: inherit
 
   # Pushes made with GITHUB_TOKEN don't trigger other workflows, so the snapshot deploy that a
@@ -182,4 +184,6 @@ jobs:
     uses: ./.github/workflows/publish-library.yml
     with:
       ref: ${{ needs.release.outputs.snapshot-sha }}
+      # Already built and tested by the release job; the ref only differs by version strings.
+      run-build: false
     secrets: inherit

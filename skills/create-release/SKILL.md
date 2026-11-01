@@ -14,7 +14,7 @@ Releases are cut entirely in GitHub Actions by `.github/workflows/release.yml` (
 - `release.yml` takes `version` (required) and `next-snapshot` (optional, defaults to the next patch `-SNAPSHOT`).
 - It runs `./gradlew build :bignum:assembleBignumKtReleaseXCFramework`, zips the XCFramework, runs `swift test` against it, then commits `chore: release X.Y.Z` (via `scripts/release-version.sh release`), tags `vX.Y.Z`, and commits `chore: start X.Y.(Z+1) snapshot`.
 - `BignumKt.xcframework.zip` is uploaded to a draft GitHub release before `master` and the tag are pushed atomically; the release is then published and the downloaded asset checksum is verified.
-- It then calls `publish-library.yml` twice: once for the tag (release to Maven Central), then once for the snapshot commit.
+- It then calls `publish-library.yml` twice with `run-build: false` (the release job already built and tested): once for the tag (release to Maven Central), then once for the snapshot commit.
 - `publish-library.yml` also runs on every push to `master` (snapshots) and on manual dispatch. It no longer triggers on tag pushes.
 - Previous releases used lightweight tags, for example `v1.0.0`.
 
