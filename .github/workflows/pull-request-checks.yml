@@ -240,3 +240,10 @@ jobs:
         env:
           BIGNUM_USE_LOCAL_XCFRAMEWORK: '1'
         run: swift test
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: swift-api-header
+          path: bignum/build/XCFrameworks/release/BignumKt.xcframework/macos-arm64/BignumKt.framework/Headers/BignumKt.h
+          if-no-files-found: ignore
