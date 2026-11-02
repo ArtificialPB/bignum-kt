@@ -174,7 +174,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun divide(other: BigInteger): BigInteger {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
         if (sign == 0) return ZERO
@@ -197,7 +196,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 
     actual fun negate(): BigInteger = if (sign == 0) this else BigInteger(-sign, size, limbs)
 
-    @Throws(ArithmeticException::class)
     actual fun pow(exponent: Int): BigInteger {
         when {
             exponent < 0 -> throw ArithmeticException("Negative exponent")
@@ -264,7 +262,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun mod(modulus: BigInteger): BigInteger {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         if (sign == 0) return ZERO
@@ -282,7 +279,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun modPow(exponent: BigInteger, modulus: BigInteger): BigInteger {
         if (modulus.sign <= 0) throw ArithmeticException("BigInteger: modulus not positive")
         // x^e mod 1 == 0 for all x, e
@@ -326,7 +322,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return inverse
     }
 
-    @Throws(ArithmeticException::class)
     @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigInteger): Array<BigInteger> {
         if (other.sign == 0) throw ArithmeticException("BigInteger divide by zero")
@@ -414,7 +409,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun shiftLeft(n: Int): BigInteger {
         if (n < 0) {
             if (n == Int.MIN_VALUE) {
@@ -431,7 +425,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return shiftLeftMagnitude(sign, this, n)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun shiftRight(n: Int): BigInteger {
         if (n < 0) {
             if (n == Int.MIN_VALUE) {
@@ -453,7 +446,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return addMagnitudeOne(-1, shiftedMagnitude)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun testBit(n: Int): Boolean {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) {
@@ -468,7 +460,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return ((negativePayloadDigitAt(this, digitIndex) shr bitIndex) and 1UL) == 0UL
     }
 
-    @Throws(ArithmeticException::class)
     actual fun setBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) {
@@ -479,7 +470,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return subtractSingleBitMagnitude(-1, this, n)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun clearBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) {
@@ -490,7 +480,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         return addSingleBitMagnitude(-1, this, n)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun flipBit(n: Int): BigInteger {
         if (n < 0) throw ArithmeticException("Negative bit address")
         if (sign >= 0) return flipBitNonNegative(this, n)
@@ -548,7 +537,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun nextProbablePrime(): BigInteger {
         if (sign < 0) throw ArithmeticException("start < 0: $this")
         if (sign == 0 || this == ONE) return TWO
@@ -566,7 +554,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 
     // Roots
 
-    @Throws(ArithmeticException::class)
     actual fun sqrt(): BigInteger {
         if (sign < 0) throw ArithmeticException("Negative BigInteger")
         if (sign == 0) return ZERO
@@ -750,7 +737,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 }
 
 @OptIn(ExperimentalForeignApi::class)
-@Throws(ArithmeticException::class)
 @ObjCName("remainder")
 actual operator fun BigInteger.rem(other: BigInteger): BigInteger {
     if (other.signum() == 0) throw ArithmeticException("BigInteger divide by zero")

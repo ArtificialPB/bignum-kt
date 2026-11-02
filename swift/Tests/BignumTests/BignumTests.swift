@@ -22,9 +22,9 @@ final class BignumTests: XCTestCase {
 
     func testLibTomMathBackedOperations() throws {
         let modulus = BigInteger(497)
-        XCTAssertEqual(try BigInteger(4).modPow(exponent: BigInteger(13), modulus: modulus), BigInteger(445))
+        XCTAssertEqual(BigInteger(4).modPow(exponent: BigInteger(13), modulus: modulus), BigInteger(445))
 
-        let mersenne127 = try BigInteger(2).pow(exponent: 127) - BigInteger(1)
+        let mersenne127 = BigInteger(2).pow(exponent: 127) - BigInteger(1)
         XCTAssertTrue(mersenne127.isProbablePrime(certainty: 50))
         let multiple = try BigInteger(string: "510423550381407695195061911147652317181")
         XCTAssertEqual(mersenne127.gcd(other: multiple).description, "170141183460469231731687303715884105727")
@@ -38,21 +38,31 @@ final class BignumTests: XCTestCase {
         XCTAssertEqual(try BigInteger(string: "ff", radix: 16), BigInteger(255))
     }
 
+    // Only failures that depend on the data throw. Precondition violations such as division by
+    // zero or a negative bit index trap, like Swift's integer operations, so they aren't tested here.
     func testBigIntegerThrowingMethods() throws {
         XCTAssertThrowsError(try BigInteger(string: "12a"))
         XCTAssertThrowsError(try BigInteger(string: ""))
-        XCTAssertThrowsError(try BigInteger(1).divide(other: BigInteger(0)))
-        XCTAssertThrowsError(try BigInteger(1).remainder(other: BigInteger(0)))
-        XCTAssertThrowsError(try BigInteger(1).quotientAndRemainder(dividingBy: BigInteger(0)))
-        XCTAssertThrowsError(try BigInteger(-4).sqrt())
+        XCTAssertThrowsError(try BigInteger(string: "12", radix: 99))
         XCTAssertThrowsError(try BigInteger(2).modInverse(modulus: BigInteger(4)))
-        XCTAssertThrowsError(try BigInteger(1).setBit(n: -1))
-        XCTAssertTrue(try BigInteger(5).testBit(n: 0))
-        XCTAssertFalse(try BigInteger(5).testBit(n: 1))
+        XCTAssertEqual(try BigInteger(3).modInverse(modulus: BigInteger(7)), BigInteger(5))
     }
 
-    func testBigIntegerQuotientAndRemainder() throws {
-        let (quotient, remainder) = try BigInteger(-17).quotientAndRemainder(dividingBy: BigInteger(5))
+    func testBigIntegerNonThrowingMethods() {
+        XCTAssertEqual(BigInteger(17).divide(other: BigInteger(5)), BigInteger(3))
+        XCTAssertEqual(BigInteger(17).mod(modulus: BigInteger(5)), BigInteger(2))
+        XCTAssertEqual(BigInteger(16).sqrt(), BigInteger(4))
+        XCTAssertTrue(BigInteger(5).testBit(n: 0))
+        XCTAssertFalse(BigInteger(5).testBit(n: 1))
+        XCTAssertEqual(BigInteger(5).setBit(n: 1), BigInteger(7))
+        XCTAssertEqual(BigInteger(5).clearBit(n: 0), BigInteger(4))
+        XCTAssertEqual(BigInteger(5).flipBit(n: 3), BigInteger(13))
+        XCTAssertEqual(BigInteger(5).shiftRight(n: 1), BigInteger(2))
+        XCTAssertEqual(BigInteger(14).nextProbablePrime(), BigInteger(17))
+    }
+
+    func testBigIntegerQuotientAndRemainder() {
+        let (quotient, remainder) = BigInteger(-17).quotientAndRemainder(dividingBy: BigInteger(5))
         XCTAssertEqual(quotient, BigInteger(-3))
         XCTAssertEqual(remainder, BigInteger(-2))
     }
@@ -84,7 +94,7 @@ final class BignumTests: XCTestCase {
         XCTAssertEqual(Int(exactly: BigInteger(Int.min)), Int.min)
         XCTAssertNil(Int(exactly: large))
         XCTAssertEqual(Int(truncatingIfNeeded: BigInteger(Int.max) + BigInteger(1)), Int.min)
-        XCTAssertEqual(try Double(BigInteger(1).shiftLeft(n: 70)), 0x1p70)
+        XCTAssertEqual(Double(BigInteger(1).shiftLeft(n: 70)), 0x1p70)
     }
 
     func testBigDecimalArithmetic() throws {
@@ -122,10 +132,22 @@ final class BignumTests: XCTestCase {
             "0.33"
         )
         XCTAssertThrowsError(try BigDecimal(string: "1.25").setScale(newScale: 1))
-        XCTAssertThrowsError(try MathContext(precision: -1))
+        XCTAssertThrowsError(try BigDecimal(string: "1.25").round(mathContext: MathContext(precision: 2, roundingMode: .unnecessary)))
         XCTAssertThrowsError(try BigDecimal(string: "1.5").toBigIntegerExact())
         XCTAssertEqual(try BigDecimal(string: "1.00").toIntExact(), 1)
-        XCTAssertEqual(try MathContext(precision: 7).precision, 7)
+        XCTAssertThrowsError(try MathContext(string: "precision=x"))
+    }
+
+    func testBigDecimalNonThrowingMethods() throws {
+        let value = try BigDecimal(string: "12.50")
+        XCTAssertEqual(MathContext(precision: 7).precision, 7)
+        XCTAssertEqual(value.remainder(other: BigDecimal(5)).description, "2.50")
+        XCTAssertEqual(value.divideToIntegralValue(other: BigDecimal(5)).description, "2.00")
+        XCTAssertEqual(value.pow(exponent: 2).description, "156.2500")
+        XCTAssertEqual(value.movePointLeft(n: 1).description, "1.250")
+        XCTAssertEqual(value.movePointRight(n: 1).description, "125.0")
+        XCTAssertEqual(value.scaleByPowerOfTen(n: 2).description, "1250")
+        XCTAssertEqual(value.stripTrailingZeros().description, "12.5")
     }
 
     func testBigDecimalQuotientAndRemainder() throws {

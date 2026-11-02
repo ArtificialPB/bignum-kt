@@ -22,10 +22,8 @@ actual class MathContext {
     private val precisionValue: Int
     private val roundingModeValue: RoundingMode
 
-    @Throws(IllegalArgumentException::class)
     actual constructor(precision: Int) : this(precision, RoundingMode.HALF_UP)
 
-    @Throws(IllegalArgumentException::class)
     actual constructor(precision: Int, roundingMode: RoundingMode) {
         if (precision < 0) {
             throw IllegalArgumentException("Digits < 0")
@@ -123,7 +121,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         this.precisionCache = if (unscaled.signum() == 0) 1 else 0
     }
 
-    @Throws(ArithmeticException::class)
     actual fun add(other: BigDecimal): BigDecimal {
         val targetScale = maxOf(scaleValue, other.scaleValue)
         val left = rescaleUnscaled(unscaled, scaleValue, targetScale)
@@ -134,7 +131,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
     @Throws(ArithmeticException::class)
     actual fun add(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) add(other) else roundToMathContext(add(other), mathContext)
 
-    @Throws(ArithmeticException::class)
     actual fun subtract(other: BigDecimal): BigDecimal {
         val targetScale = maxOf(scaleValue, other.scaleValue)
         val left = rescaleUnscaled(unscaled, scaleValue, targetScale)
@@ -145,7 +141,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
     @Throws(ArithmeticException::class)
     actual fun subtract(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) subtract(other) else roundToMathContext(subtract(other), mathContext)
 
-    @Throws(ArithmeticException::class)
     actual fun multiply(other: BigDecimal): BigDecimal {
         val scale = safeScaleAdd(scaleValue, other.scaleValue)
         val leftSign = signum()
@@ -271,13 +266,11 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return roundToMathContext(quotient, mathContext)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun remainder(other: BigDecimal): BigDecimal = divideAndRemainder(other)[1]
 
     @Throws(ArithmeticException::class)
     actual fun remainder(other: BigDecimal, mathContext: MathContext): BigDecimal = divideAndRemainder(other, mathContext)[1]
 
-    @Throws(ArithmeticException::class)
     @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigDecimal): Array<BigDecimal> {
         requireNonZero(other)
@@ -365,7 +358,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return arrayOf(quotient, remainder)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun divideToIntegralValue(other: BigDecimal): BigDecimal {
         val preferredScale = safeScaleSubtract(scaleValue, other.scaleValue)
         val integerPart = when {
@@ -411,7 +403,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return stripZerosToMatchScale(result.unscaledValue(), result.scale(), preferredScale)
     }
 
-    @Throws(ArithmeticException::class)
     actual fun pow(exponent: Int): BigDecimal {
         if (exponent < 0) throw ArithmeticException("Invalid operation")
         if (exponent == 0) return ONE_DECIMAL
@@ -611,7 +602,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun movePointLeft(n: Int): BigDecimal {
         if (n == 0) return this
         if (signum() == 0) {
@@ -627,7 +617,6 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun movePointRight(n: Int): BigDecimal {
         if (n == 0) return this
         if (signum() == 0) {
@@ -643,13 +632,11 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         }
     }
 
-    @Throws(ArithmeticException::class)
     actual fun scaleByPowerOfTen(n: Int): BigDecimal = bigDecimalOfInternal(
         unscaled,
         if (signum() == 0) saturatingScaleSubtract(scaleValue, n) else safeScaleSubtract(scaleValue, n),
     )
 
-    @Throws(ArithmeticException::class)
     actual fun stripTrailingZeros(): BigDecimal {
         if (signum() == 0) return ZERO_DECIMAL
         var currentUnscaled = unscaled

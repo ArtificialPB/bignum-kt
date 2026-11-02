@@ -17,23 +17,17 @@ extension BigDecimal {
     }
 
     /// Returns the integral quotient and the remainder of dividing by `divisor`.
-    /// Throws if `divisor` is zero.
-    public func quotientAndRemainder(dividingBy divisor: BigDecimal) throws -> (quotient: BigDecimal, remainder: BigDecimal) {
-        let result = try __divideAndRemainder(other: divisor)
+    /// Traps if `divisor` is zero.
+    public func quotientAndRemainder(dividingBy divisor: BigDecimal) -> (quotient: BigDecimal, remainder: BigDecimal) {
+        let result = __divideAndRemainder(other: divisor)
         return (result.get(index: 0)!, result.get(index: 1)!)
     }
 
-    public static func + (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal {
-        trapOnError { try lhs.add(other: rhs) }
-    }
+    public static func + (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal { lhs.add(other: rhs) }
 
-    public static func - (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal {
-        trapOnError { try lhs.subtract(other: rhs) }
-    }
+    public static func - (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal { lhs.subtract(other: rhs) }
 
-    public static func * (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal {
-        trapOnError { try lhs.multiply(other: rhs) }
-    }
+    public static func * (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal { lhs.multiply(other: rhs) }
 
     public static prefix func - (operand: BigDecimal) -> BigDecimal { operand.negate() }
 

@@ -33,9 +33,9 @@ extension BigInteger {
     }
 
     /// Returns the truncated quotient and the remainder of dividing by `divisor`.
-    /// Throws if `divisor` is zero.
-    public func quotientAndRemainder(dividingBy divisor: BigInteger) throws -> (quotient: BigInteger, remainder: BigInteger) {
-        let result = try __divideAndRemainder(other: divisor)
+    /// Traps if `divisor` is zero.
+    public func quotientAndRemainder(dividingBy divisor: BigInteger) -> (quotient: BigInteger, remainder: BigInteger) {
+        let result = __divideAndRemainder(other: divisor)
         return (result.get(index: 0)!, result.get(index: 1)!)
     }
 
@@ -45,16 +45,11 @@ extension BigInteger {
 
     public static func * (lhs: BigInteger, rhs: BigInteger) -> BigInteger { lhs.multiply(other: rhs) }
 
-    /// Truncating division. Traps if `rhs` is zero; use `divide(other:)` to handle that as an error.
-    public static func / (lhs: BigInteger, rhs: BigInteger) -> BigInteger {
-        trapOnError { try lhs.divide(other: rhs) }
-    }
+    /// Truncating division. Traps if `rhs` is zero.
+    public static func / (lhs: BigInteger, rhs: BigInteger) -> BigInteger { lhs.divide(other: rhs) }
 
-    /// Remainder with the sign of `lhs`, like Swift's `%`. Traps if `rhs` is zero; use
-    /// `remainder(other:)` to handle that as an error.
-    public static func % (lhs: BigInteger, rhs: BigInteger) -> BigInteger {
-        trapOnError { try lhs.remainder(other: rhs) }
-    }
+    /// Remainder with the sign of `lhs`, like Swift's `%`. Traps if `rhs` is zero.
+    public static func % (lhs: BigInteger, rhs: BigInteger) -> BigInteger { lhs.remainder(other: rhs) }
 
     public static prefix func - (operand: BigInteger) -> BigInteger { operand.negate() }
 
