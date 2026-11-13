@@ -1,17 +1,28 @@
 name: Deploy SNAPSHOT and new releases to Maven Central
 
+# Releases are published by release.yml, which calls this workflow with the release tag.
+# Tag pushes are deliberately not a trigger so a release can never be deployed twice.
 on:
   push:
     branches:
       - master
-    tags:
-      - 'v*'
 
   workflow_dispatch:
 
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref (tag or commit SHA) to build and publish
+        type: string
+        required: true
+      run-build:
+        description: Run the full build and tests before publishing; callers that already verified the ref can skip it
+        type: boolean
+        default: true
+
 concurrency:
-  group: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'snapshot' }}
-  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+  group: publish-${{ inputs.ref || (startsWith(github.ref, 'refs/tags/') && github.ref_name) || 'snapshot' }}
+  cancel-in-progress: ${{ !inputs.ref && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   deploy:
@@ -20,12 +31,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.ref || github.ref }}
           persist-credentials: false
           submodules: recursive
 
       - uses: ./.github/actions/environment-setup
 
+      # inputs.run-build is unset outside workflow_call, so push and manual runs always build.
       - name: Build project
+        if: inputs.run-build != false
         run: ./gradlew clean build --no-configuration-cache --no-watch-fs --stacktrace
 
       - name: Publish artifacts to staging

@@ -1,4 +1,9 @@
+@file:OptIn(ExperimentalObjCRefinement::class)
+
 package io.github.artificialpb.bignum
+
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 expect enum class RoundingMode {
     UP,
@@ -99,22 +104,33 @@ expect fun bigDecimalOf(value: Long): BigDecimal
 expect fun bigDecimalOf(value: Int): BigDecimal
 expect fun bigDecimalOf(value: Double): BigDecimal
 
+@HiddenFromObjC
 fun String.toBigDecimal(): BigDecimal = bigDecimalOf(this)
 
 fun BigInteger.toBigDecimal(scale: Int = 0): BigDecimal = bigDecimalOf(this, scale)
 
+@HiddenFromObjC
 fun Long.toBigDecimal(): BigDecimal = bigDecimalOf(this)
 
+@HiddenFromObjC
 fun Int.toBigDecimal(): BigDecimal = bigDecimalOf(this)
 
+@HiddenFromObjC
 fun Double.toBigDecimal(): BigDecimal = bigDecimalOf(this)
 
+@HiddenFromObjC
 operator fun BigDecimal.plus(other: BigDecimal): BigDecimal = add(other)
+@HiddenFromObjC
 operator fun BigDecimal.minus(other: BigDecimal): BigDecimal = subtract(other)
+@HiddenFromObjC
 operator fun BigDecimal.times(other: BigDecimal): BigDecimal = multiply(other)
+@HiddenFromObjC
 operator fun BigDecimal.div(other: BigDecimal): BigDecimal = divide(other)
+@HiddenFromObjC
 operator fun BigDecimal.rem(other: BigDecimal): BigDecimal = remainder(other)
+@HiddenFromObjC
 operator fun BigDecimal.unaryMinus(): BigDecimal = negate()
+@HiddenFromObjC
 operator fun BigDecimal.unaryPlus(): BigDecimal = plus()
 
 expect fun BigDecimal.toInt(): Int

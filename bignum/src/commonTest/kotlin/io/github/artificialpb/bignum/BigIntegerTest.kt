@@ -1,5 +1,6 @@
 package io.github.artificialpb.bignum
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.datatest.withData
 import io.kotest.matchers.comparables.shouldBeGreaterThan
@@ -220,6 +221,33 @@ class BigIntegerConstructionTest : FunSpec({
         "-111".bignumToBigInteger(2) shouldBe bi("-7")
         42.bignumToBigInteger() shouldBe bi("42")
         42L.bignumToBigInteger() shouldBe bi("42")
+        ULong.MAX_VALUE.bignumToBigInteger() shouldBe bi("18446744073709551615")
+    }
+
+    test("unsigned long factory") {
+        bigIntegerOf(0UL) shouldBe bi("0")
+        bigIntegerOf(Long.MAX_VALUE.toULong()) shouldBe bi("9223372036854775807")
+        bigIntegerOf(Long.MAX_VALUE.toULong() + 1UL) shouldBe bi("9223372036854775808")
+        bigIntegerOf(ULong.MAX_VALUE) shouldBe bi("18446744073709551615")
+    }
+
+    test("exact conversions") {
+        bi("2147483647").toIntExact() shouldBeExactly Int.MAX_VALUE
+        bi("-2147483648").toIntExact() shouldBeExactly Int.MIN_VALUE
+        shouldThrow<ArithmeticException> { bi("2147483648").toIntExact() }
+        shouldThrow<ArithmeticException> { bi("-2147483649").toIntExact() }
+
+        bi("9223372036854775807").toLongExact() shouldBeExactly Long.MAX_VALUE
+        bi("-9223372036854775808").toLongExact() shouldBeExactly Long.MIN_VALUE
+        bi("-1").toLongExact() shouldBeExactly -1L
+        shouldThrow<ArithmeticException> { bi("9223372036854775808").toLongExact() }
+        shouldThrow<ArithmeticException> { bi("-9223372036854775809").toLongExact() }
+
+        bi("0").toULongExact() shouldBe 0UL
+        bi("9223372036854775808").toULongExact() shouldBe Long.MAX_VALUE.toULong() + 1UL
+        bi("18446744073709551615").toULongExact() shouldBe ULong.MAX_VALUE
+        shouldThrow<ArithmeticException> { bi("18446744073709551616").toULongExact() }
+        shouldThrow<ArithmeticException> { bi("-1").toULongExact() }
     }
 })
 

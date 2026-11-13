@@ -205,6 +205,21 @@ jobs:
           --no-watch-fs
           --stacktrace
 
+      # Runs on macOS because klib dumps for Apple targets can only be built here.
+      - name: Check public Kotlin API
+        id: check-abi
+        run: ./gradlew :bignum:checkKotlinAbi --no-configuration-cache --no-watch-fs --stacktrace
+
+      - name: Regenerate public Kotlin API dumps
+        if: failure() && steps.check-abi.outcome == 'failure'
+        run: ./gradlew :bignum:updateKotlinAbi --no-configuration-cache --no-watch-fs
+
+      - uses: actions/upload-artifact@v7
+        if: failure() && steps.check-abi.outcome == 'failure'
+        with:
+          name: kotlin-abi-dumps
+          path: bignum/api
+
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
@@ -212,3 +227,38 @@ jobs:
           path: |
             bignum/build/reports/tests
             bignum/build/test-results
+
+  test-swift-package:
+    name: Test Swift package
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: ./.github/actions/environment-setup
+
+      - name: Build XCFramework
+        run: >-
+          ./gradlew
+          :bignum:assembleBignumKtReleaseXCFramework
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
+
+      - name: Check XCFramework minimum OS versions
+        run: scripts/check-xcframework-min-os.sh
+
+      - name: Test Swift package against the built XCFramework
+        env:
+          BIGNUM_USE_LOCAL_XCFRAMEWORK: '1'
+        run: swift test
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: swift-api-header
+          path: bignum/build/XCFrameworks/release/BignumKt.xcframework/macos-arm64/BignumKt.framework/Headers/BignumKt.h
+          if-no-files-found: ignore

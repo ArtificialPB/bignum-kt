@@ -1,4 +1,9 @@
+@file:OptIn(ExperimentalObjCRefinement::class)
+
 package io.github.artificialpb.bignum
+
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 /**
  * Platform implementations should also implement [Number] for parity with `java.math.BigInteger`.
@@ -73,18 +78,60 @@ expect fun bigIntegerOf(value: String): BigInteger
 expect fun bigIntegerOf(value: Long): BigInteger
 expect fun bigIntegerOf(value: Int): BigInteger
 
+@HiddenFromObjC
 fun String.toBigInteger(): BigInteger = bigIntegerOf(this)
 
+@HiddenFromObjC
 fun String.toBigInteger(radix: Int): BigInteger = BigInteger(this, radix)
 
+@HiddenFromObjC
 fun Long.toBigInteger(): BigInteger = bigIntegerOf(this)
 
+@HiddenFromObjC
 fun Int.toBigInteger(): BigInteger = bigIntegerOf(this)
 
+@HiddenFromObjC
+fun bigIntegerOf(value: ULong): BigInteger {
+    val signed = bigIntegerOf(value.toLong())
+    return if (value <= Long.MAX_VALUE.toULong()) signed else signed.add(TWO_TO_THE_64)
+}
+
+@HiddenFromObjC
+fun ULong.toBigInteger(): BigInteger = bigIntegerOf(this)
+
+private val TWO_TO_THE_64 = bigIntegerOf(1).shiftLeft(64)
+
+// Exact conversions, like java.math.BigInteger's intValueExact() and longValueExact()
+
+/** Returns this value as an [Int], or throws [ArithmeticException] if it doesn't fit. */
+@Throws(ArithmeticException::class)
+fun BigInteger.toIntExact(): Int {
+    if (bitLength() < Int.SIZE_BITS) return toInt()
+    throw ArithmeticException("BigInteger out of int range")
+}
+
+/** Returns this value as a [Long], or throws [ArithmeticException] if it doesn't fit. */
+@Throws(ArithmeticException::class)
+fun BigInteger.toLongExact(): Long {
+    if (bitLength() < Long.SIZE_BITS) return toLong()
+    throw ArithmeticException("BigInteger out of long range")
+}
+
+/** Returns this value as a [ULong], or throws [ArithmeticException] if it's negative or doesn't fit. */
+@Throws(ArithmeticException::class)
+fun BigInteger.toULongExact(): ULong {
+    if (signum() >= 0 && bitLength() <= ULong.SIZE_BITS) return toLong().toULong()
+    throw ArithmeticException("BigInteger out of unsigned long range")
+}
+
 // Operators
+@HiddenFromObjC
 operator fun BigInteger.plus(other: BigInteger): BigInteger = add(other)
+@HiddenFromObjC
 operator fun BigInteger.minus(other: BigInteger): BigInteger = subtract(other)
+@HiddenFromObjC
 operator fun BigInteger.times(other: BigInteger): BigInteger = multiply(other)
+@HiddenFromObjC
 operator fun BigInteger.div(other: BigInteger): BigInteger = divide(other)
 expect operator fun BigInteger.rem(other: BigInteger): BigInteger
 expect operator fun BigInteger.unaryMinus(): BigInteger
@@ -94,8 +141,10 @@ expect operator fun BigInteger.inc(): BigInteger
 expect operator fun BigInteger.dec(): BigInteger
 
 // Range support for idiomatic loops: for (i in a..b)
+@HiddenFromObjC
 operator fun BigInteger.rangeTo(other: BigInteger): BigIntegerRange = BigIntegerRange(this, other)
 
+@HiddenFromObjC
 class BigIntegerRange(
     override val start: BigInteger,
     override val endInclusive: BigInteger,

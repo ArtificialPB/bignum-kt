@@ -1,0 +1,192 @@
+name: Release
+
+# Cuts a release from master: builds and verifies the Swift XCFramework, commits the release
+# version (including the Package.swift checksum), tags it, starts the next snapshot, attaches the
+# XCFramework to the GitHub release, and publishes both versions to Maven Central.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version, e.g. 1.0.6
+        type: string
+        required: true
+      next-snapshot:
+        description: Next snapshot version, e.g. 1.0.7-SNAPSHOT (defaults to the next patch)
+        type: string
+        required: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release ${{ inputs.version }}
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.versions.outputs.tag }}
+      snapshot-sha: ${{ steps.commit.outputs.snapshot-sha }}
+    env:
+      XCFRAMEWORK_DIR: bignum/build/XCFrameworks/release
+      XCFRAMEWORK_ZIP: bignum/build/XCFrameworks/release/BignumKt.xcframework.zip
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Resolve versions
+        id: versions
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_NEXT_SNAPSHOT: ${{ inputs.next-snapshot }}
+        run: |
+          version="${INPUT_VERSION#v}"
+          if [[ ! $version =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Release version must look like 1.2.3, got '$INPUT_VERSION'"
+            exit 1
+          fi
+          next="${INPUT_NEXT_SNAPSHOT:-${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((BASH_REMATCH[3] + 1))-SNAPSHOT}"
+          tag="v$version"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "::error::Tag $tag already exists"
+            exit 1
+          fi
+          if ! grep -q '^VERSION_NAME=.*-SNAPSHOT$' gradle.properties; then
+            echo "::error::master is not on a -SNAPSHOT version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "Releasing $version ($tag), next snapshot $next"
+
+      - uses: ./.github/actions/environment-setup
+
+      - name: Build and test
+        run: >-
+          ./gradlew
+          build
+          :bignum:assembleBignumKtReleaseXCFramework
+          --no-configuration-cache
+          --no-watch-fs
+          --stacktrace
+
+      - name: Check XCFramework minimum OS versions
+        run: scripts/check-xcframework-min-os.sh
+
+      - name: Package XCFramework
+        id: xcframework
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "$XCFRAMEWORK_DIR/BignumKt.xcframework" "$XCFRAMEWORK_ZIP"
+          checksum="$(swift package compute-checksum "$XCFRAMEWORK_ZIP")"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+          echo "XCFramework checksum: $checksum"
+
+      - name: Test Swift package against the built XCFramework
+        env:
+          BIGNUM_USE_LOCAL_XCFRAMEWORK: '1'
+        run: swift test
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: BignumKt.xcframework
+          path: ${{ env.XCFRAMEWORK_ZIP }}
+          if-no-files-found: error
+
+      - name: Commit release, tag, and start next snapshot
+        id: commit
+        env:
+          VERSION: ${{ steps.versions.outputs.version }}
+          NEXT: ${{ steps.versions.outputs.next }}
+          TAG: ${{ steps.versions.outputs.tag }}
+          CHECKSUM: ${{ steps.xcframework.outputs.checksum }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          scripts/release-version.sh release "$VERSION" "$CHECKSUM"
+          git add gradle.properties README.md Package.swift
+          git commit -m "chore: release $VERSION"
+          git tag "$TAG"
+
+          scripts/release-version.sh snapshot "$NEXT"
+          git add gradle.properties README.md
+          git commit -m "chore: start ${NEXT%-SNAPSHOT} snapshot"
+          echo "snapshot-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # The asset is uploaded to a draft before anything is pushed, so a pushed tag never
+      # references a missing XCFramework.
+      - name: Create draft GitHub release
+        id: draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.versions.outputs.tag }}
+        # The release commit isn't on GitHub yet; once the tag is pushed the release attaches to it.
+        run: |
+          gh release create "$TAG" "$XCFRAMEWORK_ZIP" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$TAG" \
+            --target master \
+            --generate-notes \
+            --draft
+
+      - name: Push release commits and tag
+        id: push
+        env:
+          TAG: ${{ steps.versions.outputs.tag }}
+        run: git push --atomic origin HEAD:master "refs/tags/$TAG"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.versions.outputs.tag }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+
+      - name: Delete draft release after a failed push
+        if: failure() && steps.draft.outcome == 'success' && steps.push.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.versions.outputs.tag }}
+        run: gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes
+
+      - name: Verify released XCFramework checksum
+        env:
+          TAG: ${{ steps.versions.outputs.tag }}
+          CHECKSUM: ${{ steps.xcframework.outputs.checksum }}
+        run: |
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/BignumKt.xcframework.zip"
+          downloaded="$(curl -fsSL --retry 5 --retry-all-errors "$url" | shasum -a 256 | cut -d' ' -f1)"
+          if [[ $downloaded != "$CHECKSUM" ]]; then
+            echo "::error::Released asset checksum $downloaded does not match Package.swift checksum $CHECKSUM"
+            exit 1
+          fi
+
+  publish-release:
+    name: Publish release to Maven Central
+    needs: release
+    uses: ./.github/workflows/publish-library.yml
+    with:
+      ref: ${{ needs.release.outputs.tag }}
+      # Already built and tested by the release job; the ref only differs by version strings.
+      run-build: false
+    secrets: inherit
+
+  # Pushes made with GITHUB_TOKEN don't trigger other workflows, so the snapshot deploy that a
+  # master push would normally start is invoked explicitly.
+  publish-snapshot:
+    name: Publish next snapshot to Maven Central
+    needs: [release, publish-release]
+    uses: ./.github/workflows/publish-library.yml
+    with:
+      ref: ${{ needs.release.outputs.snapshot-sha }}
+      # Already built and tested by the release job; the ref only differs by version strings.
+      run-build: false
+    secrets: inherit
