@@ -83,7 +83,7 @@ let a = try BigInteger(string: "123456789012345678901234567890")
 let b = a * a + BigInteger(42)
 let (quotient, remainder) = b.quotientAndRemainder(dividingBy: a)
 
-let amount = BigInteger(uint64: 5_000_000_000) + BigInteger.companion.one
+let amount = BigInteger(uint64: 5_000_000_000) + BigInteger.one
 let raw = try amount.toULongExact()  // UInt64; throws if out of range
 let bytes = amount.toData()          // big-endian two's complement
 

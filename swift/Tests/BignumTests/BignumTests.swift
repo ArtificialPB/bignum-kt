@@ -101,16 +101,17 @@ final class BignumTests: XCTestCase {
     func testBigIntegerFixedWidthIntegers() throws {
         XCTAssertEqual(BigInteger(int64: .min).description, "-9223372036854775808")
         XCTAssertEqual(BigInteger(uint64: .max).description, "18446744073709551615")
-        XCTAssertEqual(BigInteger(uint64: 0), BigInteger.companion.zero)
+        XCTAssertEqual(BigInteger(uint64: 0), BigInteger.zero)
 
         XCTAssertEqual(try BigInteger(int64: .min).toLongExact(), .min)
         XCTAssertEqual(try BigInteger(uint64: .max).toULongExact(), .max)
-        XCTAssertThrowsError(try BigInteger(int64: .max).add(other: BigInteger.companion.one).toLongExact())
-        XCTAssertThrowsError(try BigInteger(int64: .min).subtract(other: BigInteger.companion.one).toLongExact())
-        XCTAssertThrowsError(try BigInteger(uint64: .max).add(other: BigInteger.companion.one).toULongExact())
+        XCTAssertThrowsError(try BigInteger(int64: .max).add(other: BigInteger.one).toLongExact())
+        XCTAssertThrowsError(try BigInteger(int64: .min).subtract(other: BigInteger.one).toLongExact())
+        XCTAssertThrowsError(try BigInteger(uint64: .max).add(other: BigInteger.one).toULongExact())
         XCTAssertThrowsError(try BigInteger(-1).toULongExact())
 
-        XCTAssertEqual(BigInteger.companion.two * BigInteger.companion.ten, BigInteger(20))
+        XCTAssertEqual(BigInteger.two * BigInteger.ten, BigInteger(20))
+        XCTAssertEqual(BigInteger.companion.zero, BigInteger.zero)
     }
 
     func testBigDecimalArithmetic() throws {
@@ -170,6 +171,12 @@ final class BignumTests: XCTestCase {
         let (quotient, remainder) = try BigDecimal(string: "7.5").quotientAndRemainder(dividingBy: BigDecimal(2))
         XCTAssertEqual(quotient.description, "3.0")
         XCTAssertEqual(remainder.description, "1.5")
+
+        let value = try BigDecimal(string: "1234.5")
+        let rounded = try value.quotientAndRemainder(dividingBy: BigDecimal(1), mathContext: MathContext(precision: 10))
+        XCTAssertEqual(rounded.quotient.description, "1234.0")
+        XCTAssertEqual(rounded.remainder.description, "0.5")
+        XCTAssertThrowsError(try value.quotientAndRemainder(dividingBy: BigDecimal(1), mathContext: MathContext(precision: 2)))
     }
 
     func testBigDecimalComparisonIgnoresScaleButEqualityDoesNot() throws {

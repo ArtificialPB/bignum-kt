@@ -17,6 +17,17 @@ extension BigDecimal {
         return (result.get(index: 0)!, result.get(index: 1)!)
     }
 
+    /// Returns the integral quotient and the remainder of dividing by `divisor`, rounding the quotient
+    /// according to `mathContext`. Throws if `divisor` is zero, if the integral quotient needs more
+    /// digits than `mathContext.precision`, or if it needs rounding under `RoundingMode.unnecessary`.
+    public func quotientAndRemainder(
+        dividingBy divisor: BigDecimal,
+        mathContext: MathContext
+    ) throws -> (quotient: BigDecimal, remainder: BigDecimal) {
+        let result = try __divideAndRemainder(other: divisor, mathContext: mathContext)
+        return (result.get(index: 0)!, result.get(index: 1)!)
+    }
+
     public static func + (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal { lhs.add(other: rhs) }
 
     public static func - (lhs: BigDecimal, rhs: BigDecimal) -> BigDecimal { lhs.subtract(other: rhs) }

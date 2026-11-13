@@ -1,4 +1,12 @@
 extension BigInteger {
+    public static var zero: BigInteger { companion.zero }
+
+    public static var one: BigInteger { companion.one }
+
+    public static var two: BigInteger { companion.two }
+
+    public static var ten: BigInteger { companion.ten }
+
     /// Creates a value equal to `value`.
     public convenience init(_ value: Int) {
         self.init(int64: Int64(value))
