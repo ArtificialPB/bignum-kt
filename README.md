@@ -83,6 +83,10 @@ let a = try BigInteger(string: "123456789012345678901234567890")
 let b = a * a + BigInteger(42)
 let (quotient, remainder) = b.quotientAndRemainder(dividingBy: a)
 
+let amount = BigInteger(uint64: 5_000_000_000) + BigInteger.companion.one
+let raw = try amount.toULongExact()  // UInt64; throws if out of range
+let bytes = amount.toData()          // big-endian two's complement
+
 let price = try BigDecimal(string: "19.99")
 let total = price * BigDecimal(3)
 let share = try total.divide(other: BigDecimal(7), scale: 2, roundingMode: .halfEven)
@@ -99,6 +103,13 @@ scale (`2.0 != 2.00`) while `<` compares numeric value only.
 Kotlin Multiplatform apps should not add the Swift package. Use the Maven dependency instead and expose it to Swift
 through your own framework with `api(...)` plus `export("io.github.artificialpb:bignum:<version>")`. Mixing both
 links two Kotlin runtimes and produces two incompatible `BigInteger` types.
+
+The types keep their names (`BigInteger`, `BigDecimal`, `MathContext`, `RoundingMode`) without a framework prefix.
+The Swift operators, `Comparable`, `quotientAndRemainder` and the `Int`/`Double` conversions come from the Swift
+package rather than the Kotlin library; to get them in a Kotlin Multiplatform app, copy
+[`BigInteger+Swift.swift`](swift/Sources/Bignum/BigInteger+Swift.swift) and
+[`BigDecimal+Swift.swift`](swift/Sources/Bignum/BigDecimal+Swift.swift) into your app and import your shared
+framework at the top of each.
 
 ## Usage
 

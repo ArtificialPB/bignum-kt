@@ -4,11 +4,13 @@ package io.github.artificialpb.bignum
 
 import io.github.artificialpb.bignum.tommath.*
 import kotlinx.cinterop.*
+import platform.Foundation.NSData
 import kotlin.experimental.ExperimentalObjCName
 import kotlin.experimental.ExperimentalObjCRefinement
 import kotlin.native.HiddenFromObjC
 import kotlin.native.ObjCName
 
+@ObjCName(name = "BignumBigInteger", swiftName = "BigInteger", exact = true)
 actual class BigInteger private constructor() : Number(), Comparable<BigInteger> {
     private var sign: Int = Int.MIN_VALUE
     internal var size: Int = Int.MIN_VALUE
@@ -106,6 +108,23 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             initialize(if (magnitudeSign == 0) 0 else signum, size, limbs)
         }
     }
+
+    // Native-only constructors and conversions for Swift, which can't see the top-level factories
+    // and extensions.
+
+    constructor(@ObjCName("int64") value: Long) : this() {
+        val limbs = canonicalLimbsForMagnitude(longMagnitude(value))
+        initializeUnchecked(if (value < 0) -1 else if (value == 0L) 0 else 1, limbs.size, limbs)
+    }
+
+    constructor(@ObjCName("uint64") value: ULong) : this() {
+        val limbs = canonicalLimbsForMagnitude(value)
+        initializeUnchecked(if (value == 0UL) 0 else 1, limbs.size, limbs)
+    }
+
+    /** Creates a value from big-endian two's-complement bytes, like the `ByteArray` constructor. */
+    @Throws(NumberFormatException::class)
+    constructor(data: NSData) : this(data.toByteArray())
 
     private fun initialize(sign: Int, size: Int, limbs: ULongArray) {
         require(sign in -1..1) { "Invalid signum: $sign" }
@@ -600,6 +619,24 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
+    /** The big-endian two's-complement bytes, like [toByteArray]. */
+    fun toData(): NSData = toByteArray().toNSData()
+
+    @Throws(ArithmeticException::class)
+    fun toLongExact(): Long {
+        ifMagnitudeFitsInULong { magnitude ->
+            if (sign >= 0 && magnitude <= MAX_SIGNED_LONG_MAGNITUDE) return magnitude.toLong()
+            if (sign < 0 && magnitude <= MAX_SIGNED_LONG_MAGNITUDE + 1UL) return (0UL - magnitude).toLong()
+        }
+        throw ArithmeticException("BigInteger out of long range")
+    }
+
+    @Throws(ArithmeticException::class)
+    fun toULongExact(): ULong {
+        if (sign >= 0) ifMagnitudeFitsInULong { magnitude -> return magnitude }
+        throw ArithmeticException("BigInteger out of unsigned long range")
+    }
+
     override fun toByte(): Byte = toInt().toByte()
 
     override fun toShort(): Short = toInt().toShort()
@@ -733,6 +770,14 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
             hashCode += factor * carry.toInt()
         }
         return hashCode * sign
+    }
+
+    /** Constants for Swift, which can't see the top-level factories. */
+    companion object {
+        val zero: BigInteger get() = ZERO
+        val one: BigInteger get() = ONE
+        val two: BigInteger get() = TWO
+        val ten: BigInteger get() = TEN
     }
 }
 

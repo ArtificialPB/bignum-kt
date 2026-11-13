@@ -10,12 +10,6 @@ extension BigDecimal {
         self.init(int64: Int64(value))
     }
 
-    /// Creates the value of `value`'s shortest decimal representation, matching
-    /// `java.math.BigDecimal.valueOf(double)`. Throws if `value` is NaN or infinite.
-    public static func valueOf(_ value: Double) throws -> BigDecimal {
-        try BigDecimal_nonJvmKt.__bigDecimalOf(double: value)
-    }
-
     /// Returns the integral quotient and the remainder of dividing by `divisor`.
     /// Traps if `divisor` is zero.
     public func quotientAndRemainder(dividingBy divisor: BigDecimal) -> (quotient: BigDecimal, remainder: BigDecimal) {

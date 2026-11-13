@@ -7,6 +7,7 @@ import kotlin.experimental.ExperimentalObjCRefinement
 import kotlin.native.HiddenFromObjC
 import kotlin.native.ObjCName
 
+@ObjCName(name = "BignumRoundingMode", swiftName = "RoundingMode", exact = true)
 actual enum class RoundingMode {
     UP,
     DOWN,
@@ -18,6 +19,7 @@ actual enum class RoundingMode {
     UNNECESSARY,
 }
 
+@ObjCName(name = "BignumMathContext", swiftName = "MathContext", exact = true)
 actual class MathContext {
     private val precisionValue: Int
     private val roundingModeValue: RoundingMode
@@ -69,6 +71,7 @@ actual class MathContext {
     override fun toString(): String = "precision=$precision roundingMode=$roundingMode"
 }
 
+@ObjCName(name = "BignumBigDecimal", swiftName = "BigDecimal", exact = true)
 actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal> {
     private var unscaled: BigInteger = ZERO
     private var scaleValue: Int = 0

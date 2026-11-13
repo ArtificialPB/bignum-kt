@@ -1,35 +1,7 @@
-import Foundation
-
 extension BigInteger {
     /// Creates a value equal to `value`.
     public convenience init(_ value: Int) {
-        let bytes = KotlinByteArray(size: 8)
-        var remaining = Int64(value)
-        for index in stride(from: 7, through: 0, by: -1) {
-            bytes.set(index: Int32(index), value: Int8(truncatingIfNeeded: remaining))
-            remaining >>= 8
-        }
-        try! self.init(bytes: bytes)
-    }
-
-    /// Creates a value from its big-endian two's-complement representation, as produced by
-    /// ``twosComplement``. Throws if `data` is empty.
-    public convenience init(twosComplement data: Data) throws {
-        let bytes = KotlinByteArray(size: Int32(data.count))
-        for (index, byte) in data.enumerated() {
-            bytes.set(index: Int32(index), value: Int8(bitPattern: byte))
-        }
-        try self.init(bytes: bytes)
-    }
-
-    /// The minimal big-endian two's-complement representation of this value.
-    public var twosComplement: Data {
-        let bytes = toByteArray()
-        var data = Data(count: Int(bytes.size))
-        for index in 0..<Int(bytes.size) {
-            data[index] = UInt8(bitPattern: bytes.get(index: Int32(index)))
-        }
-        return data
+        self.init(int64: Int64(value))
     }
 
     /// Returns the truncated quotient and the remainder of dividing by `divisor`.

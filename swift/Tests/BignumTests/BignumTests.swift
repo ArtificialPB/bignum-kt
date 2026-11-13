@@ -87,14 +87,30 @@ final class BignumTests: XCTestCase {
 
     func testBigIntegerConversions() throws {
         let large = try BigInteger(string: "-98765432109876543210")
-        XCTAssertEqual(try BigInteger(twosComplement: large.twosComplement), large)
-        XCTAssertEqual(BigInteger(-129).twosComplement, Data([0xFF, 0x7F]))
-        XCTAssertThrowsError(try BigInteger(twosComplement: Data()))
+        XCTAssertEqual(try BigInteger(data: large.toData()), large)
+        XCTAssertEqual(BigInteger(-129).toData(), Data([0xFF, 0x7F]))
+        XCTAssertEqual(try BigInteger(data: Data([0x00, 0x80])), BigInteger(128))
+        XCTAssertThrowsError(try BigInteger(data: Data()))
 
         XCTAssertEqual(Int(exactly: BigInteger(Int.min)), Int.min)
         XCTAssertNil(Int(exactly: large))
         XCTAssertEqual(Int(truncatingIfNeeded: BigInteger(Int.max) + BigInteger(1)), Int.min)
         XCTAssertEqual(Double(BigInteger(1).shiftLeft(n: 70)), 0x1p70)
+    }
+
+    func testBigIntegerFixedWidthIntegers() throws {
+        XCTAssertEqual(BigInteger(int64: .min).description, "-9223372036854775808")
+        XCTAssertEqual(BigInteger(uint64: .max).description, "18446744073709551615")
+        XCTAssertEqual(BigInteger(uint64: 0), BigInteger.companion.zero)
+
+        XCTAssertEqual(try BigInteger(int64: .min).toLongExact(), .min)
+        XCTAssertEqual(try BigInteger(uint64: .max).toULongExact(), .max)
+        XCTAssertThrowsError(try BigInteger(int64: .max).add(other: BigInteger.companion.one).toLongExact())
+        XCTAssertThrowsError(try BigInteger(int64: .min).subtract(other: BigInteger.companion.one).toLongExact())
+        XCTAssertThrowsError(try BigInteger(uint64: .max).add(other: BigInteger.companion.one).toULongExact())
+        XCTAssertThrowsError(try BigInteger(-1).toULongExact())
+
+        XCTAssertEqual(BigInteger.companion.two * BigInteger.companion.ten, BigInteger(20))
     }
 
     func testBigDecimalArithmetic() throws {
