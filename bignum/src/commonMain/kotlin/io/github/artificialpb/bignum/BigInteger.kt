@@ -90,6 +90,40 @@ fun Long.toBigInteger(): BigInteger = bigIntegerOf(this)
 @HiddenFromObjC
 fun Int.toBigInteger(): BigInteger = bigIntegerOf(this)
 
+@HiddenFromObjC
+fun bigIntegerOf(value: ULong): BigInteger {
+    val signed = bigIntegerOf(value.toLong())
+    return if (value <= Long.MAX_VALUE.toULong()) signed else signed.add(TWO_TO_THE_64)
+}
+
+@HiddenFromObjC
+fun ULong.toBigInteger(): BigInteger = bigIntegerOf(this)
+
+private val TWO_TO_THE_64 = bigIntegerOf(1).shiftLeft(64)
+
+// Exact conversions, like java.math.BigInteger's intValueExact() and longValueExact()
+
+/** Returns this value as an [Int], or throws [ArithmeticException] if it doesn't fit. */
+@Throws(ArithmeticException::class)
+fun BigInteger.toIntExact(): Int {
+    if (bitLength() < Int.SIZE_BITS) return toInt()
+    throw ArithmeticException("BigInteger out of int range")
+}
+
+/** Returns this value as a [Long], or throws [ArithmeticException] if it doesn't fit. */
+@Throws(ArithmeticException::class)
+fun BigInteger.toLongExact(): Long {
+    if (bitLength() < Long.SIZE_BITS) return toLong()
+    throw ArithmeticException("BigInteger out of long range")
+}
+
+/** Returns this value as a [ULong], or throws [ArithmeticException] if it's negative or doesn't fit. */
+@Throws(ArithmeticException::class)
+fun BigInteger.toULongExact(): ULong {
+    if (signum() >= 0 && bitLength() <= ULong.SIZE_BITS) return toLong().toULong()
+    throw ArithmeticException("BigInteger out of unsigned long range")
+}
+
 // Operators
 @HiddenFromObjC
 operator fun BigInteger.plus(other: BigInteger): BigInteger = add(other)

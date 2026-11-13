@@ -109,6 +109,8 @@ final class BignumTests: XCTestCase {
         XCTAssertThrowsError(try BigInteger(int64: .min).subtract(other: BigInteger.one).toLongExact())
         XCTAssertThrowsError(try BigInteger(uint64: .max).add(other: BigInteger.one).toULongExact())
         XCTAssertThrowsError(try BigInteger(-1).toULongExact())
+        XCTAssertEqual(try BigInteger(-5).toIntExact(), -5)
+        XCTAssertThrowsError(try BigInteger(int64: 1 << 31).toIntExact())
 
         XCTAssertEqual(BigInteger.two * BigInteger.ten, BigInteger(20))
         XCTAssertEqual(BigInteger.companion.zero, BigInteger.zero)

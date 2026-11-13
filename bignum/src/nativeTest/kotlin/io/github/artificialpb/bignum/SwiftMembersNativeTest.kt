@@ -14,19 +14,6 @@ class SwiftMembersNativeTest : FunSpec({
         BigInteger(1UL shl 60) shouldBe bigIntegerOf(1L shl 60)
     }
 
-    test("exact conversions") {
-        bigIntegerOf(Long.MIN_VALUE).toLongExact() shouldBe Long.MIN_VALUE
-        bigIntegerOf(Long.MAX_VALUE).toLongExact() shouldBe Long.MAX_VALUE
-        bigIntegerOf(-1).toLongExact() shouldBe -1L
-        shouldThrow<ArithmeticException> { bigIntegerOf("9223372036854775808").toLongExact() }
-        shouldThrow<ArithmeticException> { bigIntegerOf("-9223372036854775809").toLongExact() }
-
-        bigIntegerOf(0).toULongExact() shouldBe 0UL
-        bigIntegerOf("18446744073709551615").toULongExact() shouldBe ULong.MAX_VALUE
-        shouldThrow<ArithmeticException> { bigIntegerOf("18446744073709551616").toULongExact() }
-        shouldThrow<ArithmeticException> { bigIntegerOf(-1).toULongExact() }
-    }
-
     test("NSData round trip") {
         for (value in listOf("0", "-1", "127", "128", "-129", "-98765432109876543210")) {
             val bigInteger = bigIntegerOf(value)

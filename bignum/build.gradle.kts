@@ -4,6 +4,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPom
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
@@ -55,6 +56,13 @@ val pinnedTommathTargets = mapOf(
 
 kotlin {
     jvmToolchain(jvmBaselineVersion)
+
+    // Public API dumps in bignum/api: checkKotlinAbi fails the build when the API changes, and
+    // updateKotlinAbi regenerates the dumps after an intended change.
+    @OptIn(ExperimentalAbiValidation::class)
+    abiValidation {
+        enabled.set(true)
+    }
     compilerOptions {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }

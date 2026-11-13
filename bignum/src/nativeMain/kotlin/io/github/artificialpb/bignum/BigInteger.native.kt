@@ -109,8 +109,7 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
         }
     }
 
-    // Native-only constructors and conversions for Swift, which can't see the top-level factories
-    // and extensions.
+    // Native-only constructors for Swift, which can't see the top-level factories.
 
     constructor(@ObjCName("int64") value: Long) : this() {
         val limbs = canonicalLimbsForMagnitude(longMagnitude(value))
@@ -621,21 +620,6 @@ actual class BigInteger private constructor() : Number(), Comparable<BigInteger>
 
     /** The big-endian two's-complement bytes, like [toByteArray]. */
     fun toData(): NSData = toByteArray().toNSData()
-
-    @Throws(ArithmeticException::class)
-    fun toLongExact(): Long {
-        ifMagnitudeFitsInULong { magnitude ->
-            if (sign >= 0 && magnitude <= MAX_SIGNED_LONG_MAGNITUDE) return magnitude.toLong()
-            if (sign < 0 && magnitude <= MAX_SIGNED_LONG_MAGNITUDE + 1UL) return (0UL - magnitude).toLong()
-        }
-        throw ArithmeticException("BigInteger out of long range")
-    }
-
-    @Throws(ArithmeticException::class)
-    fun toULongExact(): ULong {
-        if (sign >= 0) ifMagnitudeFitsInULong { magnitude -> return magnitude }
-        throw ArithmeticException("BigInteger out of unsigned long range")
-    }
 
     override fun toByte(): Byte = toInt().toByte()
 
