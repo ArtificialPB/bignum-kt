@@ -1,4 +1,9 @@
+@file:OptIn(ExperimentalObjCRefinement::class)
+
 package io.github.artificialpb.bignum
+
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
 
 /**
  * Platform implementations should also implement [Number] for parity with `java.math.BigInteger`.
@@ -73,18 +78,26 @@ expect fun bigIntegerOf(value: String): BigInteger
 expect fun bigIntegerOf(value: Long): BigInteger
 expect fun bigIntegerOf(value: Int): BigInteger
 
+@HiddenFromObjC
 fun String.toBigInteger(): BigInteger = bigIntegerOf(this)
 
+@HiddenFromObjC
 fun String.toBigInteger(radix: Int): BigInteger = BigInteger(this, radix)
 
+@HiddenFromObjC
 fun Long.toBigInteger(): BigInteger = bigIntegerOf(this)
 
+@HiddenFromObjC
 fun Int.toBigInteger(): BigInteger = bigIntegerOf(this)
 
 // Operators
+@HiddenFromObjC
 operator fun BigInteger.plus(other: BigInteger): BigInteger = add(other)
+@HiddenFromObjC
 operator fun BigInteger.minus(other: BigInteger): BigInteger = subtract(other)
+@HiddenFromObjC
 operator fun BigInteger.times(other: BigInteger): BigInteger = multiply(other)
+@HiddenFromObjC
 operator fun BigInteger.div(other: BigInteger): BigInteger = divide(other)
 expect operator fun BigInteger.rem(other: BigInteger): BigInteger
 expect operator fun BigInteger.unaryMinus(): BigInteger
@@ -94,8 +107,10 @@ expect operator fun BigInteger.inc(): BigInteger
 expect operator fun BigInteger.dec(): BigInteger
 
 // Range support for idiomatic loops: for (i in a..b)
+@HiddenFromObjC
 operator fun BigInteger.rangeTo(other: BigInteger): BigIntegerRange = BigIntegerRange(this, other)
 
+@HiddenFromObjC
 class BigIntegerRange(
     override val start: BigInteger,
     override val endInclusive: BigInteger,

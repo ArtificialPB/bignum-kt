@@ -1,6 +1,11 @@
-@file:OptIn(ExperimentalUnsignedTypes::class)
+@file:OptIn(ExperimentalUnsignedTypes::class, ExperimentalObjCName::class, ExperimentalObjCRefinement::class)
 
 package io.github.artificialpb.bignum
+
+import kotlin.experimental.ExperimentalObjCName
+import kotlin.experimental.ExperimentalObjCRefinement
+import kotlin.native.HiddenFromObjC
+import kotlin.native.ObjCName
 
 actual enum class RoundingMode {
     UP,
@@ -27,7 +32,8 @@ actual class MathContext {
         this.roundingModeValue = roundingMode
     }
 
-    actual constructor(value: String) {
+    @Throws(IllegalArgumentException::class)
+    actual constructor(@ObjCName("string") value: String) {
         if (!value.startsWith("precision=")) {
             throw IllegalArgumentException("bad string format")
         }
@@ -50,8 +56,10 @@ actual class MathContext {
         roundingModeValue = parsedRoundingMode
     }
 
+    @HiddenFromObjC
     actual fun getPrecision(): Int = precisionValue
 
+    @HiddenFromObjC
     actual fun getRoundingMode(): RoundingMode = roundingModeValue
 
     override fun equals(other: Any?): Boolean = other is MathContext && precision == other.precision && roundingMode == other.roundingMode
@@ -70,23 +78,24 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
     private var engineeringStringCache: String? = null
     private var bigIntegerCache: BigInteger? = null
 
-    actual constructor(value: String) : this() {
+    @Throws(NumberFormatException::class)
+    actual constructor(@ObjCName("string") value: String) : this() {
         parseString(value) { unscaled, scale ->
             initialize(unscaled, scale, trusted = true)
         }
     }
 
-    actual constructor(value: BigInteger) : this(value, 0)
+    actual constructor(@ObjCName("bigInteger") value: BigInteger) : this(value, 0)
 
-    actual constructor(value: BigInteger, scale: Int) : this() {
+    actual constructor(@ObjCName("unscaledValue") value: BigInteger, scale: Int) : this() {
         initialize(value, scale, trusted = false)
     }
 
-    actual constructor(value: Int) : this() {
+    actual constructor(@ObjCName("int32") value: Int) : this() {
         initialize(bigIntegerOf(value), 0, trusted = true)
     }
 
-    actual constructor(value: Long) : this() {
+    actual constructor(@ObjCName("int64") value: Long) : this() {
         initialize(bigIntegerOf(value), 0, trusted = true)
     }
 
@@ -119,6 +128,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return bigDecimalOfInternal(left + right, targetScale)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun add(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) add(other) else roundToMathContext(add(other), mathContext)
 
     actual fun subtract(other: BigDecimal): BigDecimal {
@@ -128,6 +138,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return bigDecimalOfInternal(left - right, targetScale)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun subtract(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) subtract(other) else roundToMathContext(subtract(other), mathContext)
 
     actual fun multiply(other: BigDecimal): BigDecimal {
@@ -158,8 +169,10 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return bigDecimalOfInternal(unscaled * other.unscaled, scale)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun multiply(other: BigDecimal, mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) multiply(other) else roundToMathContext(multiply(other), mathContext)
 
+    @Throws(ArithmeticException::class)
     actual fun divide(other: BigDecimal): BigDecimal {
         requireNonZero(other)
         val preferredScale = safeScaleSubtract(scaleValue, other.scaleValue)
@@ -213,10 +226,13 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return bigDecimalOfInternal(quotient, safeScaleAdd(preferredScale, scaleAdjustment))
     }
 
+    @Throws(ArithmeticException::class)
     actual fun divide(other: BigDecimal, roundingMode: RoundingMode): BigDecimal = divide(other, scaleValue, roundingMode)
 
+    @Throws(ArithmeticException::class)
     actual fun divide(other: BigDecimal, scale: Int, roundingMode: RoundingMode): BigDecimal = divideToScale(other, scale, roundingMode)
 
+    @Throws(ArithmeticException::class)
     actual fun divide(other: BigDecimal, mathContext: MathContext): BigDecimal {
         if (mathContext.precision == 0) {
             return divide(other)
@@ -252,8 +268,10 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
 
     actual fun remainder(other: BigDecimal): BigDecimal = divideAndRemainder(other)[1]
 
+    @Throws(ArithmeticException::class)
     actual fun remainder(other: BigDecimal, mathContext: MathContext): BigDecimal = divideAndRemainder(other, mathContext)[1]
 
+    @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigDecimal): Array<BigDecimal> {
         requireNonZero(other)
         if (signum() == 0) {
@@ -329,6 +347,8 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         }
     }
 
+    @Throws(ArithmeticException::class)
+    @ObjCName(swiftName = "__divideAndRemainder")
     actual fun divideAndRemainder(other: BigDecimal, mathContext: MathContext): Array<BigDecimal> {
         if (mathContext.precision == 0) {
             return divideAndRemainder(other)
@@ -353,6 +373,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return integerToBigDecimal(integerPart, preferredScale)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun divideToIntegralValue(other: BigDecimal, mathContext: MathContext): BigDecimal {
         if (mathContext.precision == 0 || compareMagnitude(other) < 0) {
             return divideToIntegralValue(other)
@@ -389,6 +410,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return bigDecimalOfInternal(unscaled.pow(exponent), safeScaleMultiply(scaleValue, exponent))
     }
 
+    @Throws(ArithmeticException::class)
     actual fun pow(exponent: Int, mathContext: MathContext): BigDecimal {
         if (mathContext.precision == 0) {
             return pow(exponent)
@@ -429,6 +451,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return roundToMathContext(result, mathContext)
     }
 
+    @Throws(ArithmeticException::class)
     actual fun sqrt(mathContext: MathContext): BigDecimal {
         val sign = signum()
         when (sign) {
@@ -520,16 +543,20 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
 
     actual fun abs(): BigDecimal = if (signum() >= 0) this else negate()
 
+    @Throws(ArithmeticException::class)
     actual fun abs(mathContext: MathContext): BigDecimal = if (signum() >= 0) plus(mathContext) else negate(mathContext)
 
     actual fun negate(): BigDecimal = bigDecimalOfInternal(-unscaled, scaleValue)
 
+    @Throws(ArithmeticException::class)
     actual fun negate(mathContext: MathContext): BigDecimal = negate().plus(mathContext)
 
     actual fun plus(): BigDecimal = this
 
+    @Throws(ArithmeticException::class)
     actual fun plus(mathContext: MathContext): BigDecimal = if (mathContext.precision == 0) this else roundToMathContext(this, mathContext)
 
+    @Throws(ArithmeticException::class)
     actual fun round(mathContext: MathContext): BigDecimal = plus(mathContext)
 
     actual fun signum(): Int = unscaled.signum()
@@ -547,8 +574,10 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
 
     actual fun unscaledValue(): BigInteger = unscaled
 
+    @Throws(ArithmeticException::class)
     actual fun setScale(newScale: Int): BigDecimal = setScale(newScale, RoundingMode.UNNECESSARY)
 
+    @Throws(ArithmeticException::class)
     actual fun setScale(newScale: Int, roundingMode: RoundingMode): BigDecimal {
         if (newScale == scaleValue) return this
         if (signum() == 0) return bigDecimalOfInternal(ZERO, newScale)
@@ -695,6 +724,7 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
         return converted
     }
 
+    @Throws(ArithmeticException::class)
     actual fun toBigIntegerExact(): BigInteger = setScale(0, RoundingMode.UNNECESSARY).toBigInteger()
 
     actual fun ulp(): BigDecimal = bigDecimalOfInternal(ONE, scaleValue)
@@ -784,12 +814,16 @@ actual class BigDecimal private constructor() : Number(), Comparable<BigDecimal>
     }
 }
 
+@HiddenFromObjC
 actual fun bigDecimalOf(value: String): BigDecimal = BigDecimal(value)
 
+@HiddenFromObjC
 actual fun bigDecimalOf(value: BigInteger): BigDecimal = BigDecimal(value)
 
+@HiddenFromObjC
 actual fun bigDecimalOf(value: BigInteger, scale: Int): BigDecimal = BigDecimal(value, scale)
 
+@HiddenFromObjC
 actual fun bigDecimalOf(value: Long): BigDecimal = when (value) {
     0L -> ZERO_DECIMAL
     1L -> ONE_DECIMAL
@@ -797,6 +831,7 @@ actual fun bigDecimalOf(value: Long): BigDecimal = when (value) {
     else -> BigDecimal(value)
 }
 
+@HiddenFromObjC
 actual fun bigDecimalOf(value: Int): BigDecimal = when (value) {
     0 -> ZERO_DECIMAL
     1 -> ONE_DECIMAL
@@ -804,7 +839,9 @@ actual fun bigDecimalOf(value: Int): BigDecimal = when (value) {
     else -> BigDecimal(value)
 }
 
-actual fun bigDecimalOf(value: Double): BigDecimal = BigDecimal(jvmDoubleToString(value))
+@Throws(NumberFormatException::class)
+@ObjCName(swiftName = "__bigDecimalOf")
+actual fun bigDecimalOf(@ObjCName("double") value: Double): BigDecimal = BigDecimal(jvmDoubleToString(value))
 
 internal data class PowerOfTenDivision(
     val quotient: BigInteger,
@@ -1361,14 +1398,19 @@ private inline fun numberFormatRequire(condition: Boolean, lazyMessage: () -> St
     if (!condition) throw NumberFormatException(lazyMessage())
 }
 
+@HiddenFromObjC
 actual fun BigDecimal.toInt(): Int = toBigInteger().toInt()
 
+@HiddenFromObjC
 actual fun BigDecimal.toLong(): Long = toBigInteger().toLong()
 
+@HiddenFromObjC
 actual fun BigDecimal.toFloat(): Float = toString().toFloat()
 
+@HiddenFromObjC
 actual fun BigDecimal.toDouble(): Double = toString().toDouble()
 
+@Throws(ArithmeticException::class)
 actual fun BigDecimal.toIntExact(): Int {
     val integer = toBigIntegerExact()
     if (integer < INT_MIN_BIG_INTEGER || integer > INT_MAX_BIG_INTEGER) {
@@ -1377,6 +1419,7 @@ actual fun BigDecimal.toIntExact(): Int {
     return integer.toInt()
 }
 
+@Throws(ArithmeticException::class)
 actual fun BigDecimal.toLongExact(): Long {
     val integer = toBigIntegerExact()
     if (integer < LONG_MIN_BIG_INTEGER || integer > LONG_MAX_BIG_INTEGER) {
