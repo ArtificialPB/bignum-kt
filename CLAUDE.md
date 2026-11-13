@@ -52,6 +52,10 @@ bignum-kt/
 # JavaScript only (Node.js)
 ./gradlew jsNodeTest
 
+# Check the public Kotlin API against bignum/api; regenerate after intended changes (macOS for Apple targets)
+./gradlew :bignum:checkKotlinAbi
+./gradlew :bignum:updateKotlinAbi
+
 # Build the Swift package XCFramework and test the Swift package against it (macOS only)
 ./gradlew :bignum:assembleBignumKtReleaseXCFramework
 BIGNUM_USE_LOCAL_XCFRAMEWORK=1 swift test

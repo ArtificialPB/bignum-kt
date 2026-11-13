@@ -1,0 +1,73 @@
+public final class io/github/artificialpb/bignum/BigDecimalKt {
+	public static final fun div (Ljava/math/BigDecimal;Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+	public static final fun getPrecision (Ljava/math/MathContext;)I
+	public static final fun getRoundingMode (Ljava/math/MathContext;)Ljava/math/RoundingMode;
+	public static final fun minus (Ljava/math/BigDecimal;Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+	public static final fun plus (Ljava/math/BigDecimal;Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+	public static final fun rem (Ljava/math/BigDecimal;Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+	public static final fun times (Ljava/math/BigDecimal;Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+	public static final fun toBigDecimal (D)Ljava/math/BigDecimal;
+	public static final fun toBigDecimal (I)Ljava/math/BigDecimal;
+	public static final fun toBigDecimal (J)Ljava/math/BigDecimal;
+	public static final fun toBigDecimal (Ljava/lang/String;)Ljava/math/BigDecimal;
+	public static final fun toBigDecimal (Ljava/math/BigInteger;I)Ljava/math/BigDecimal;
+	public static synthetic fun toBigDecimal$default (Ljava/math/BigInteger;IILjava/lang/Object;)Ljava/math/BigDecimal;
+	public static final fun unaryMinus (Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+	public static final fun unaryPlus (Ljava/math/BigDecimal;)Ljava/math/BigDecimal;
+}
+
+public final class io/github/artificialpb/bignum/BigDecimal_jvmKt {
+	public static final fun bigDecimalOf (D)Ljava/math/BigDecimal;
+	public static final fun bigDecimalOf (I)Ljava/math/BigDecimal;
+	public static final fun bigDecimalOf (J)Ljava/math/BigDecimal;
+	public static final fun bigDecimalOf (Ljava/lang/String;)Ljava/math/BigDecimal;
+	public static final fun bigDecimalOf (Ljava/math/BigInteger;)Ljava/math/BigDecimal;
+	public static final fun bigDecimalOf (Ljava/math/BigInteger;I)Ljava/math/BigDecimal;
+	public static final fun toDouble (Ljava/math/BigDecimal;)D
+	public static final fun toFloat (Ljava/math/BigDecimal;)F
+	public static final fun toInt (Ljava/math/BigDecimal;)I
+	public static final fun toIntExact (Ljava/math/BigDecimal;)I
+	public static final fun toLong (Ljava/math/BigDecimal;)J
+	public static final fun toLongExact (Ljava/math/BigDecimal;)J
+}
+
+public final class io/github/artificialpb/bignum/BigIntegerKt {
+	public static final fun bigIntegerOf-VKZWuLQ (J)Ljava/math/BigInteger;
+	public static final fun div (Ljava/math/BigInteger;Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun minus (Ljava/math/BigInteger;Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun plus (Ljava/math/BigInteger;Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun rangeTo (Ljava/math/BigInteger;Ljava/math/BigInteger;)Lio/github/artificialpb/bignum/BigIntegerRange;
+	public static final fun times (Ljava/math/BigInteger;Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun toBigInteger (I)Ljava/math/BigInteger;
+	public static final fun toBigInteger (J)Ljava/math/BigInteger;
+	public static final fun toBigInteger (Ljava/lang/String;)Ljava/math/BigInteger;
+	public static final fun toBigInteger (Ljava/lang/String;I)Ljava/math/BigInteger;
+	public static final fun toBigInteger-VKZWuLQ (J)Ljava/math/BigInteger;
+	public static final fun toIntExact (Ljava/math/BigInteger;)I
+	public static final fun toLongExact (Ljava/math/BigInteger;)J
+	public static final fun toULongExact (Ljava/math/BigInteger;)J
+}
+
+public final class io/github/artificialpb/bignum/BigIntegerRange : java/lang/Iterable, kotlin/jvm/internal/markers/KMappedMarker, kotlin/ranges/ClosedRange {
+	public fun <init> (Ljava/math/BigInteger;Ljava/math/BigInteger;)V
+	public synthetic fun contains (Ljava/lang/Comparable;)Z
+	public fun contains (Ljava/math/BigInteger;)Z
+	public synthetic fun getEndInclusive ()Ljava/lang/Comparable;
+	public fun getEndInclusive ()Ljava/math/BigInteger;
+	public synthetic fun getStart ()Ljava/lang/Comparable;
+	public fun getStart ()Ljava/math/BigInteger;
+	public fun isEmpty ()Z
+	public fun iterator ()Ljava/util/Iterator;
+}
+
+public final class io/github/artificialpb/bignum/BigInteger_jvmKt {
+	public static final fun bigIntegerOf (I)Ljava/math/BigInteger;
+	public static final fun bigIntegerOf (J)Ljava/math/BigInteger;
+	public static final fun bigIntegerOf (Ljava/lang/String;)Ljava/math/BigInteger;
+	public static final fun dec (Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun inc (Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun lcm (Ljava/math/BigInteger;Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun rem (Ljava/math/BigInteger;Ljava/math/BigInteger;)Ljava/math/BigInteger;
+	public static final fun unaryMinus (Ljava/math/BigInteger;)Ljava/math/BigInteger;
+}
+

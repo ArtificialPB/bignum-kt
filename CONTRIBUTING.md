@@ -59,6 +59,8 @@ bignum-kt/
 ./gradlew macosArm64Test          # Native tests (macOS ARM64)
 ./gradlew allTests                # All platform tests
 ./gradlew build                   # Full build (all targets)
+./gradlew :bignum:checkKotlinAbi   # Check the public Kotlin API against bignum/api (macOS for Apple targets)
+./gradlew :bignum:updateKotlinAbi  # Regenerate bignum/api after an intended API change
 ./gradlew coverage                # JVM/common HTML + XML coverage reports
 ./gradlew coverageHtml            # JVM/common HTML coverage report
 ./gradlew coverageXml             # JVM/common XML coverage report
@@ -68,6 +70,10 @@ bignum-kt/
 BIGNUM_USE_LOCAL_XCFRAMEWORK=1 swift test             # Test the Swift package against that XCFramework
 scripts/check-xcframework-min-os.sh                   # Check no object needs a newer OS than Package.swift declares
 ```
+
+Public API changes must update the dumps in `bignum/api` in the same PR. Generating them for the Apple targets needs a
+Mac; without one, the `Test (macOS ARM64)` CI job uploads regenerated dumps as the `kotlin-abi-dumps` artifact when
+the check fails, so they can be copied into `bignum/api`.
 
 Coverage is reported through Kover for the JVM target. That includes `commonMain` and `jvmMain` code exercised by JVM tests, but it does not include Kotlin/Native execution coverage.
 
