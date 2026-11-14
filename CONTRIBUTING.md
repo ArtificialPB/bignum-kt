@@ -96,6 +96,9 @@ Releases are cut by running the [Release workflow](.github/workflows/release.yml
 3. Uploads `BignumKt.xcframework.zip` to a draft GitHub release, pushes `master` and the tag atomically, then publishes the release and verifies the downloadable asset matches the checksum.
 4. Publishes the release and the next snapshot to Maven Central through `publish-library.yml`, skipping its build and test step since step 1 already ran it.
 
+Add `-f dry-run=true` to run steps 1 and 2 and check the release `Package.swift` without pushing, creating a GitHub
+release or publishing anything. Do this after changing the release workflow or scripts.
+
 Pushing a `v*` tag by hand does not publish anything: the Swift package checksum has to be committed in the tagged commit, which only the Release workflow does. Swift Package Manager consumers resolve versions from these tags and download the XCFramework from the matching GitHub release.
 
 ## Architecture

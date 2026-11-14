@@ -39,7 +39,11 @@ Releases are cut entirely in GitHub Actions by `.github/workflows/release.yml` (
 
 3. Confirm the next snapshot version, usually the next patch such as `1.0.2-SNAPSHOT`. Only pass `next-snapshot` when the user wants something other than the next patch.
 
-4. Dispatch the release:
+4. Optionally start with a dry run. It builds and verifies everything and creates the release commits and tag on the runner, but pushes nothing, creates no GitHub release and publishes nothing. Do one before the first release after changing `release.yml` or the release scripts:
+   ```bash
+   gh workflow run release.yml --repo ArtificialPB/bignum-kt --ref master -f version=1.0.1 -f dry-run=true
+   ```
+   Then dispatch the release:
    ```bash
    gh workflow run release.yml --repo ArtificialPB/bignum-kt --ref master -f version=1.0.1
    # or, with an explicit next snapshot:
