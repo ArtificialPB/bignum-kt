@@ -58,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.artificialpb:bignum:1.0.6-SNAPSHOT")
+    implementation("io.github.artificialpb:bignum:1.0.7-SNAPSHOT")
 }
 ```
 
