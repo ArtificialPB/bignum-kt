@@ -2,8 +2,8 @@
 import PackageDescription
 
 // Updated by scripts/release-version.sh during the Release workflow.
-let releaseVersion = "1.0.5"
-let releaseChecksum = "0000000000000000000000000000000000000000000000000000000000000000"
+let releaseVersion = "1.0.6"
+let releaseChecksum = "24dd701be9badbf241cd17c72991532188c954cbaadfc705e3a8071d258db645"
 
 // Set BIGNUM_USE_LOCAL_XCFRAMEWORK=1 to build against the XCFramework produced by
 // `./gradlew :bignum:assembleBignumKtReleaseXCFramework` instead of the released binary.
