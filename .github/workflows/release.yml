@@ -3,6 +3,9 @@ name: Release
 # Cuts a release from master: builds and verifies the Swift XCFramework, commits the release
 # version (including the Package.swift checksum), tags it, starts the next snapshot, attaches the
 # XCFramework to the GitHub release, and publishes both versions to Maven Central.
+#
+# With dry-run, it stops after creating the release commits and tag on the runner: nothing is
+# pushed, no GitHub release is created, and nothing is published.
 on:
   workflow_dispatch:
     inputs:
@@ -14,6 +17,10 @@ on:
         description: Next snapshot version, e.g. 1.0.7-SNAPSHOT (defaults to the next patch)
         type: string
         required: false
+      dry-run:
+        description: Build and verify everything, but don't push, create a GitHub release, or publish
+        type: boolean
+        default: false
 
 concurrency:
   group: release
@@ -24,7 +31,7 @@ permissions:
 
 jobs:
   release:
-    name: Release ${{ inputs.version }}
+    name: Release ${{ inputs.version }}${{ inputs.dry-run && ' (dry run)' || '' }}
     runs-on: macos-latest
     permissions:
       contents: write
@@ -122,10 +129,28 @@ jobs:
           git commit -m "chore: start ${NEXT%-SNAPSHOT} snapshot"
           echo "snapshot-sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Verify release manifest
+        env:
+          TAG: ${{ steps.versions.outputs.tag }}
+          CHECKSUM: ${{ steps.xcframework.outputs.checksum }}
+        run: |
+          git log --format='%h %s%d' -3
+          git show "$TAG" --format='%n%s' -- gradle.properties README.md Package.swift
+
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/BignumKt.xcframework.zip"
+          git show "$TAG:Package.swift" > "$RUNNER_TEMP/Package.swift"
+          target="$(cd "$RUNNER_TEMP" && swift package dump-package | jq -c '.targets[] | select(.name == "BignumKt")')"
+          echo "Release binary target: $target"
+          if [[ $(jq -r .url <<<"$target") != "$url" || $(jq -r .checksum <<<"$target") != "$CHECKSUM" ]]; then
+            echo "::error::The release Package.swift doesn't point at $url with checksum $CHECKSUM"
+            exit 1
+          fi
+
       # The asset is uploaded to a draft before anything is pushed, so a pushed tag never
       # references a missing XCFramework.
       - name: Create draft GitHub release
         id: draft
+        if: ${{ !inputs.dry-run }}
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.versions.outputs.tag }}
@@ -140,11 +165,13 @@ jobs:
 
       - name: Push release commits and tag
         id: push
+        if: ${{ !inputs.dry-run }}
         env:
           TAG: ${{ steps.versions.outputs.tag }}
         run: git push --atomic origin HEAD:master "refs/tags/$TAG"
 
       - name: Publish GitHub release
+        if: ${{ !inputs.dry-run }}
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.versions.outputs.tag }}
@@ -158,6 +185,7 @@ jobs:
         run: gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes
 
       - name: Verify released XCFramework checksum
+        if: ${{ !inputs.dry-run }}
         env:
           TAG: ${{ steps.versions.outputs.tag }}
           CHECKSUM: ${{ steps.xcframework.outputs.checksum }}
@@ -172,6 +200,7 @@ jobs:
   publish-release:
     name: Publish release to Maven Central
     needs: release
+    if: ${{ !inputs.dry-run }}
     uses: ./.github/workflows/publish-library.yml
     with:
       ref: ${{ needs.release.outputs.tag }}
@@ -184,6 +213,7 @@ jobs:
   publish-snapshot:
     name: Publish next snapshot to Maven Central
     needs: [release, publish-release]
+    if: ${{ !inputs.dry-run }}
     uses: ./.github/workflows/publish-library.yml
     with:
       ref: ${{ needs.release.outputs.snapshot-sha }}
